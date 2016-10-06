@@ -1,0 +1,38 @@
+Lecture 3: Operational Semantics
+
+Operational semantics for our little "IMP" language
+
+Semantics for expressions:
+
+informal idea; the need for heaps
+	H ::== . | H, x -> c	
+
+down arrow means in: e \downarrow c, e evaluates to c
+H ; e \downarrow c: e evaluates to c under heap H
+	
+definition of heaps
+
+the evaluation judgement (relation form)
+
+the evaluation inference rules (relation definition)
+	const: H; c \da c
+	var:   H; x \da H(x)
+	add:   H ; e1 \da c1  H ; e2 \da c2  / H ; e1 + e2 \da c1 + c2
+
+A complete derivation is a tree of instantiations with axiomos at the leaves
+
+Proofs are by induction on the structure ( i.e. height) of the expression e
+
+Statement Semantics
+	h1 ; s1 -> h2; s2
+	
+
+
+R E A D	
+	READ MORE ABOUT INTERFERENCE RULES ** For the math people :D
+	look at interpreter code for fun :D
+	what constants's value get changed at instantiation?
+
+	
+	
+	

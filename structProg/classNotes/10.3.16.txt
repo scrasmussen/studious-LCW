@@ -1,0 +1,31 @@
+****Set up bitbucket repo : https://hpcl.cs.uoregon.edu/wiki/index.php?n=Main.Creating
+* look at piazza
+** white space only matters in Fortran and Python
+* grop
+
+Real World OCaml: chap 4
+mli : are the interface files
+
+how code is graded
+take .ml, use 'use', and do a bunch of use cases
+
+Backus-Naur Form (BNF): used to define languages: used to define the metalanguage a.k.a. metaprogramming
+
+grammer design to create concrete syntax
+
+Theorem: all expressions contain a constant (c) or a variable (x)
+
+Inductive Hypothesis (IH)
+
+Proof by induction using the height of expression trees. 
+Base Case: Given h = 1, E_1 \in {c, x} 
+Assumes a tree E, of h > 1, contains c or x.
+E_1 contians E, therefore it contains c or x.
+
+
+Structural Proof
+Case 1: e is a constant => e contains a constant
+Case 2: e is x => e contains a var
+Case 3: e is e_1 + e_2; by IH e1 and e2 contain a const or variable
+Case 4: e is e_1 * e_2; 
+
