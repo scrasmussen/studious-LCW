@@ -1,0 +1,84 @@
+1: Readings: Stump 1.10-1.11, Pierce 1-4 
+	 and additional reading https://www.cs.uoregon.edu/Classes/16F/cis624/week1.html
+3: Stump 4.1
+
+
+1: Additional Reading
+ocamlc: The Caml byte code compiler (see especially the -i and -c options)
+ocamlopt: The Caml native code compiler
+ocaml: The read/eval/print loop for Caml
+
+
+metalanguage: is a form of language or set of terms used for the description 
+	or analysis of another language
+parametric polymorphism: a way to make a language more expressive, while still
+	maintaining a full static type-safety. Generic functions and generic 
+	datatypes can handle values without knowing their type
+polymorphism: provision of a single interface to entities of different types
+ad hoc polymorphism := function overloading
+
+READINGS:
+Stump 1.10
+Interlude: proof by natural-number induction
+/\ := conjunction
+\/ := disjunction
+proof by natural number induction: 
+	base case
+	prove P(n+1) give P(n) , (The inductive case)
+
+Strong vs Weak Induction
+Induction: All x, P(x). Proven by P(0) and P(n)=>P(n+1)
+Strong induction hypothesis: all x. x < n implies P(x). nice when recursion is using numbers smaller than n
+
+1.10 Proof by structural induction
+THEOREM 1.11.1 Suppose [[t]]delta is defined, and suppose that delta 
+subset_or_equal to delta_prime. Then [[t]]delta_prime is also defined, and 
+equals [[t]] delta.
+
+Weak Induction: If p(k) is true then p(k+1) is true
+Strong Induction: If p(i) is true for all i less than or equal to k, then p(k+1) is true
+
+Pierce 1-4
+
+
+
+LECTURE 1
+Essential Language Concepts:
+	mutation and iteration; scope and functions; types; objects; threads
+
+LECTURE 2 : SYNTAX
+
+A program is a statement S, defined as
+s ::== skip | x := e | s; s | is e s s | while e s
+e ::== c | x | e + e | e * e
+{c \in N}
+{x \in x_i, y_i, z_i | i \in N}
+
+::== := can be 
+Metavariables: anything in the syntax class
+Parsing: converting a string into a tree
+
+let E_0 = nullset
+For i > 0, let E_i be E_i-1 union "expressions of the form c, x, e_1 + e_2, or 
+  e_1 * e_2 where e_1, e_2 \in E_i-1
+
+Let E = U_i\leq0  E_i
+
+
+structural induction: invokes induction hypothesis on smaller terms
+
+an environment maps variables to values
+expressions are type checked in a context
+a context maps variables to types
+
+
+call (application) associates to the left
+function types associates to the right
+
+currying: using functions to simulate multiple arguments
+
+This is how to make a comment (* THE COMMENT *)
+
+static (aka lexical scope ?? )
+
+
