@@ -42,23 +42,31 @@ let rec prod1 t =
   | Node(i,Empty,r) -> i * prod1 r
   | Node(i,l,r) -> i * prod1 l * prod1 r
 
-
+(* compute the average *)
 let sumTuples (i1, n1) (i2, n2) = (i1 + i2, n1 + n2)
-let helpDiv (sum, count) = sum / count
 let rec helpAvg sum n t =
   match t with
   | Empty -> (sum, n)
   | Node(i,Empty,Empty) -> (sum + i, n + 1)
-  | Node(i,l,Empty) -> sumTuples (i, 1) (helpAvg sum n l)
-  | Node(i,Empty,r) -> sumTuples (i, 1) (helpAvg sum n r)
-  | Node(i,l,r)     -> sumTuples (i+sum, 1+n) @@ sumTuples (helpAvg 0 0 l) (helpAvg 0 0 r)
+  | Node(i,l,Empty)     -> sumTuples (i, 1) (helpAvg sum n l)
+  | Node(i,Empty,r)     -> sumTuples (i, 1) (helpAvg sum n r)
+  | Node(i,l,r)         -> sumTuples (i+sum, 1+n) @@ sumTuples (helpAvg 0 0 l) (helpAvg 0 0 r)
 
-(* compute the average *)
+let helpDiv (sum, count) = sum / count
 let avg1 t =
   match t with
     Empty -> raise Division_by_zero
   | Node(i,l,r) ->  helpDiv (helpAvg i 1 r)
-    
+
+(* produce a tree with the same shape as its second argument with the int at each position *)
+(* the result of applying the first argument to the int at the same position in the second *)
+(* argument *)
+let rec map f t =
+  match t with
+  | Node(i,Empty,Empty) -> Node(f i,Empty,Empty)
+  | Node(i,l,Empty)     -> Node(f i,map f l,Empty)
+  | Node(i,Empty,r)     -> Node(f i,Empty,map f r)
+  | Node(i,l,r)         -> Node(f i,map f l,map f r)
   
 
 let rec fold f a t =
