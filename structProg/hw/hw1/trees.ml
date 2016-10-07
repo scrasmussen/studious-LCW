@@ -58,9 +58,7 @@ let avg1 t =
     Empty -> raise Division_by_zero
   | Node(i,l,r) ->  helpDiv (helpAvg i 1 r)
 
-(* produce a tree with the same shape as its second argument with the int at each position *)
-(* the result of applying the first argument to the int at the same position in the second *)
-(* argument *)
+(* produce a tree by applying the first argument to the int in the second argument *)
 let rec map f t =
   match t with
   | Node(i,Empty,Empty) -> Node(f i,Empty,Empty)
@@ -68,6 +66,11 @@ let rec map f t =
   | Node(i,Empty,r)     -> Node(f i,Empty,map f r)
   | Node(i,l,r)         -> Node(f i,map f l,map f r)
   
+(* negate all integers of a tree *)
+let negate i = -i
+let rec negateAll t =
+  map negate t
+
 
 let rec fold f a t =
   match t with
