@@ -43,15 +43,15 @@ let rec prod1 t =
   | Node(i,l,r) -> i * prod1 l * prod1 r
 
 
+let sumTuples (i1, n1) (i2, n2) = (i1 + i2, n1 + n2)
 let helpDiv (sum, count) = sum / count
-let sumTuple ((i1, n1), (i2, n2)) = (i1 + i2, n1 + n2)
 let rec helpAvg sum n t =
   match t with
   | Empty -> (sum, n)
   | Node(i,Empty,Empty) -> (sum + i, n + 1)
-  | Node(i,l,Empty) -> sumTuple ( (i, 1),  helpAvg sum n l )
-  | Node(i,Empty,r) -> sumTuple ( (i, 1),  helpAvg sum n r )
-(*   | Node(i,l,r) -> i * prod1 l * prod1 r *)
+  | Node(i,l,Empty) -> sumTuples (i, 1) (helpAvg sum n l)
+  | Node(i,Empty,r) -> sumTuples (i, 1) (helpAvg sum n r)
+  | Node(i,l,r)     -> sumTuples (i+sum, 1+n) @@ sumTuples (helpAvg 0 0 l) (helpAvg 0 0 r)
 
 (* compute the average *)
 let avg1 t =
