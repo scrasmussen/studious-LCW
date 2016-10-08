@@ -71,13 +71,28 @@ let negate i = -i
 let rec negateAll t =
   map negate t
 
-
 let rec fold f a t =
   match t with
       Empty -> a
     | Node(j,l,r) -> fold f (fold f (f a j) l) r
 
 (* put sum2, prod2, and avg2 here *)
+(* compute the sum, sum of an empty tree is 0 *)
+let foldsum a b = a + b
+let sum2 t = fold foldsum 0 t
+
+(* compute the product, product of an empty tree is 1 *)
+let foldprod a b = a * b
+let prod2 t = fold foldprod 1 t
+
+(* compute the average using the fold function *)
+let sumAndCount (sum,count) i = (sum+i,count+1)
+let avg2 t = helpDiv(fold sumAndCount (0,0) t)
+
+(*
+
+
+*)
 
 type 'a iterator = Nomore | More of 'a * (unit -> 'a iterator)
 
