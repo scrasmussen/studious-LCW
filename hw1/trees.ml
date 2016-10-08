@@ -60,6 +60,7 @@ let avg1 t =
 (* produce a tree by applying the first argument to the int in the second argument *)
 let rec map f t =
   match t with
+  | Empty -> Empty
   | Node(i,Empty,Empty) -> Node(f i,Empty,Empty)
   | Node(i,l,Empty)     -> Node(f i,map f l,Empty)
   | Node(i,Empty,r)     -> Node(f i,Empty,map f r)
@@ -92,7 +93,7 @@ let avg2 t = (fun (sum,n) -> sum/n) (fold (fun (sum,n) i -> (sum+i,n+1)) (0,0) t
   e.g. when and how it traverses the tree
 
   p1: 
-
+  
   p2:
 
 *)
