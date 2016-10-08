@@ -52,11 +52,10 @@ let rec helpAvg sum n t =
   | Node(i,Empty,r)     -> sumTuples (i, 1) (helpAvg sum n r)
   | Node(i,l,r)         -> sumTuples (i+sum, 1+n) @@ sumTuples (helpAvg 0 0 l) (helpAvg 0 0 r)
 
-let helpDiv (sum, count) = sum / count
 let avg1 t =
   match t with
     Empty -> raise Division_by_zero
-  | Node(i,l,r) ->  helpDiv (helpAvg i 1 r)
+  | Node(i,l,r) ->  (fun (sum,count) -> sum / count) (helpAvg i 1 r)
 
 (* produce a tree by applying the first argument to the int in the second argument *)
 let rec map f t =
@@ -78,19 +77,23 @@ let rec fold f a t =
 
 (* put sum2, prod2, and avg2 here *)
 (* compute the sum, sum of an empty tree is 0 *)
-let foldsum a b = a + b
-let sum2 t = fold foldsum 0 t
+let sum2 t = fold (fun a b -> a + b) 0 t
 
 (* compute the product, product of an empty tree is 1 *)
-let foldprod a b = a * b
-let prod2 t = fold foldprod 1 t
+let prod2 t = fold (fun a b -> a * b) 1 t
 
 (* compute the average using the fold function *)
-let sumAndCount (sum,count) i = (sum+i,count+1)
-let avg2 t = helpDiv(fold sumAndCount (0,0) t)
+let avg2 t = (fun (sum,n) -> sum/n) (fold (fun (sum,n) i -> (sum+i,n+1)) (0,0) t)
 
 (*
+  f)
+  explain how a client of the iter function would use it to process all the
+  ints in a tree. in a second paragraph explain how iter is implemented 
+  e.g. when and how it traverses the tree
 
+  p1: 
+
+  p2:
 
 *)
 
