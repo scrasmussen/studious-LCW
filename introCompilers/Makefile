@@ -1,4 +1,5 @@
 FILE=quack.l
+CC=g++
 
 all: scanner
 
@@ -6,7 +7,7 @@ flex: $(FILE)
 	flex $(FILE)
 
 scanner: flex
-	gcc lex.yy.c -lfl -o scanner
+	$(CC) lex.yy.c -lfl -o scanner
 
 clean:
 	rm -f *~ scanner
