@@ -1,8 +1,9 @@
+FILE=quack.l
 
 all: scanner
 
-flex: quackScanner.lex
-	flex quackScanner.lex
+flex: $(FILE)
+	flex $(FILE)
 
 scanner: flex
 	gcc lex.yy.c -lfl -o scanner
