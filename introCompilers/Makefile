@@ -1,13 +1,17 @@
-FILE=quack.l
+BFILE=quack.y
+FFILE=quack.l
 CC=g++
 
 all: scanner
 
-flex: $(FILE)
-	flex $(FILE)
+bison: $(BFILE)
+	bison -d $(BFILE)
+
+flex: bison $(FFILE)
+	flex $(FFILE)
 
 scanner: flex
-	$(CC) lex.yy.c -lfl -o scanner
+	$(CC) quack.tab.c lex.yy.c -lfl -o scanner
 
 clean:
-	rm -f *~ scanner
+	rm -f *~ scanner *.yy.* *.tab.*
