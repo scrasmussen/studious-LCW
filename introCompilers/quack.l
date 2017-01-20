@@ -9,12 +9,10 @@ using namespace std;
 [0-9]+          { cout << "Found an integer:" << yytext << endl; }
 [a-zA-Z0-9]+    { cout << "Found a string: " << yytext << endl; }
 %%
-int main(int argv , char* argv[]) {
+int main(int argc, char* argv[]) {
 // read file
-if (argv < 2) {
-
-}
-
+//if (argv < 2) {
+//}
 // lex through the input:
 // yylex();
 }
