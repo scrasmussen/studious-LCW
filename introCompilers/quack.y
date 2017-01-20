@@ -2,7 +2,6 @@
 %{
   #include <cstdio>
   #include <iostream>
-  using namespace std;
 
   // Bison stuff
   extern "C" int yylex();
@@ -26,18 +25,35 @@
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> STRING
-
+ //KEYWORDS
+%token <sval> CLASS
+%token <sval> DEF
+%token <sval> EXTENDS
+%token <sval> IF
+%token <sval> ELIF
+%token <sval> ELSE
+%token <sval> WHILE
+%token <sval> RETURN
 %%
  // this is the actual grammar that bison will parse, but for right now it's just
  // something silly to echo to the screen what bison gets from flex.  We'll
  // make a real one shortly:
 quack:
-  INT quack      { cout << "bison found an int: " << $1 << endl; }
-  | FLOAT quack  { cout << "bison found a float: " << $1 << endl; }
-  | STRING quack { cout << "bison found a string: " << $1 << endl; }
-  | INT          { cout << "bison found an int: " << $1 << endl; }
-  | FLOAT        { cout << "bison found a float: " << $1 << endl; }
-  | STRING       { cout << "bison found a string: " << $1 << endl; }
+  INT quack      { std::cout << "bison found an int: " << $1 << std::endl; }
+  | FLOAT quack  { std::cout << "bison found a float: " << $1 << std::endl; }
+  | STRING quack { std::cout << "bison found a string: " << $1 << std::endl; }
+  | INT          { std::cout << "bison found an int: " << $1 << std::endl; }
+  | FLOAT        { std::cout << "bison found a float: " << $1 << std::endl; }
+  | STRING       { std::cout << "bison found a string: " << $1 << std::endl; }
+// Keywords
+  | CLASS quack  { std::cout << "LINE# CLASS " << std::endl; }
+  | DEF quack  { std::cout << "LINE# DEF " << std::endl; }
+  | EXTENDS quack  { std::cout << "LINE# EXTENDS " << std::endl; }
+  | IF quack  { std::cout << "LINE# IF " << std::endl; }
+  | ELIF quack  { std::cout << "LINE# ELIF " << std::endl; }
+  | ELSE quack  { std::cout << "LINE# ELSE " << std::endl; }
+  | WHILE quack  { std::cout << "LINE# WHILE " << std::endl; }
+  | RETURN quack  { std::cout << "LINE# RETURN " << std::endl; }
   ;
 %%
 
@@ -51,7 +67,7 @@ int main(int argc, char*argv[]) {
   FILE *f = fopen(argv[1], "r");
   // make sure it is valid:
   if (!f) {
-    cout << "Unable to open input file!" << endl;
+    std::cout << "Unable to open input file!" << std::endl;
     return -1;
   }
   // set flex to read from it instead of defaulting to STDIN:
@@ -64,6 +80,6 @@ int main(int argc, char*argv[]) {
 }
 
 void yyerror(const char *s) {
-  cout << "QUACK, parse error!  Message: " << s << endl;
+  std::cout << "QUACK, parse error!  Message: " << s << std::endl;
   exit(-1);
 }
