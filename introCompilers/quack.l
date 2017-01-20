@@ -1,18 +1,18 @@
 %{
+#include <cstdio>
 #include <iostream>
 using namespace std;
 #define YY_DECL extern "C" int yylex()
+#include "quack.tab.h" // token types
 %}
 %%
 [ \t\n]         ;
-[0-9]+\.[0-9]+  { cout << "Found a floating-point number:" << yytext << endl; }
-[0-9]+          { cout << "Found an integer:" << yytext << endl; }
-[a-zA-Z0-9]+    { cout << "Found a string: " << yytext << endl; }
-%%
-int main(int argc, char* argv[]) {
-// read file
-//if (argv < 2) {
-//}
-// lex through the input:
-// yylex();
+[0-9]+\.[0-9]+ { yylval.fval = atof(yytext); return FLOAT; }
+[0-9]+            { yylval.ival = atoi(yytext); return INT; }
+[a-zA-Z0-9]+      {
+// we have to copy because we can't rely on yytext not changing underneath us:
+yylval.sval = strdup(yytext);
+return STRING;
 }
+.               ;
+%%
