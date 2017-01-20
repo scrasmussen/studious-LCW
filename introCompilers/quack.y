@@ -41,16 +41,21 @@ quack:
   ;
 %%
 
-int main(int, char**) {
+int main(int argc, char*argv[]) {
   // open a file handle to a particular file:
-  FILE *myfile = fopen("a.quack.file", "r");
+
+  if (argc < 2) {
+    std::cerr << "Usage: " << argv[0] << " QUACK.INPUT.FILE" << std::endl;
+    return 1;
+  }
+  FILE *f = fopen(argv[1], "r");
   // make sure it is valid:
-  if (!myfile) {
-    cout << "I can't open a.quack.file!" << endl;
+  if (!f) {
+    cout << "Unable to open input file!" << endl;
     return -1;
   }
   // set flex to read from it instead of defaulting to STDIN:
-  yyin = myfile;
+  yyin = f;
 
   // parse through the input until there is no more:
   do {
