@@ -1,4 +1,4 @@
-%x comment str_lit
+%x comment str_lit1 str_lit2 str_lit3
 %{
 #include <cstdio>
 #include <iostream>
@@ -13,7 +13,6 @@ void printl(int line, std::string token, std::string s)
 %}
 %%
 
-"\""[a-zA-Z0-9\ \\0\\b\\t\\n\\r\\f\\\"\\\\]*?"\""  printl(lineNum, "STRING_LIT", yytext);
 [ \t\r]        ;
 class           { printl(lineNum, "CLASS", yytext); }
 def             { printl(lineNum, "DEF", yytext); }
@@ -27,6 +26,7 @@ and             { printl(lineNum, "AND", yytext); }
 or              { printl(lineNum, "OR", yytext); }
 not             { printl(lineNum, "NOT", yytext); }
 :               { printl(lineNum, ":", yytext); }
+
 \(              { printl(lineNum, "(", yytext); }
 \)              { printl(lineNum, ")", yytext); }
 \.              { printl(lineNum, ".", yytext); }
@@ -48,6 +48,19 @@ not             { printl(lineNum, "NOT", yytext); }
 <comment>\n              ++lineNum;
 <comment>"*"+"/"         BEGIN(INITIAL);
 "//".*\n        ++lineNum;
+
+"\"\"\""            { BEGIN(str_lit3);std::cout << lineNum <<"\"";}
+"\"\""              {std::cout << lineNum <<"\""; BEGIN(str_lit2);}
+"\""                {std::cout << lineNum <<"\""; BEGIN(str_lit1);}
+<str_lit3>"\"\"\""   {std::cout << yytext << "\" "<< std::endl; BEGIN(INITIAL);}
+<str_lit2>"\"\""     {std::cout << yytext << "\" "<< std::endl; BEGIN(INITIAL);}
+<str_lit1>"\""       {std::cout << yytext << "\" "<< std::endl; BEGIN(INITIAL);}
+<str_lit3,str_lit2,str_lit1>\n                    ++lineNum;
+<str_lit3,str_lit2,str_lit1>\\\\                  {std::cout << yytext;}
+<str_lit3,str_lit2,str_lit1>\\[^0btnrf\"][.]*     {
+fprintf(stderr, "Illegal escape code: \"");
+fprintf(stderr, yytext);
+fprintf(stderr, "\"\n"); }
 
 
 
