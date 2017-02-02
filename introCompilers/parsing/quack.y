@@ -24,14 +24,8 @@
 %token <fval> FLOAT
 %token <sval> STRING
  //KEYWORDS
-%token CLASS
- //%token <sval> DEF
- //%token <sval> EXTENDS
- //%token <sval> IF
- //%token <sval> ELIF
- //%token <sval> ELSE
- //%token <sval> WHILE
- //%token <sval> RETURN
+%token CLASS 
+%token DEF EXTENDS IF ELIF ELSE WHILE RETURN
 %%
 
  // this is the actual grammar that bison will parse, but for right now it's just
