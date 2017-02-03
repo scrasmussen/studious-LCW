@@ -7,7 +7,6 @@
 
   /* int yylex(); */
   extern void yyerror(const char *msg);
-  extern int lineNum;
 %}
 
 // Bison by defines a C union holding each of the types of tokens that Flex could return,
@@ -23,14 +22,20 @@
 %token <ival> INT
 %token <fval> FLOAT
 %token <sval> STRING
- //KEYWORDS
-%token CLASS 
-%token DEF EXTENDS IF ELIF ELSE WHILE RETURN
+
+// KEYWORDS
+%token CLASS DEF EXTENDS IF ELIF ELSE WHILE RETURN
+// PUNCTUATION
+
+// IDENTIFIERS
+%token <strval> IDENT
+%token ELLIPSIS
+// INTEGER AND STRING LITERALS
+%token <strval> INT_LIT STRING_LIT
+
 %%
 
- // this is the actual grammar that bison will parse, but for right now it's just
- // something silly to echo to the screen what bison gets from flex.  We'll
- // make a real one shortly:
+// ---GRAMMAR---
 quack:
 /*  INT quack      { std::cout << "bison found an int: " << $1 << std::endl; }
   | FLOAT quack  { std::cout << "bison found a float: " << $1 << std::endl; }
@@ -39,12 +44,6 @@ quack:
   | FLOAT        { std::cout << "bison found a float: " << $1 << std::endl; }
   | STRING       { std::cout << "bison found a string: " << $1 << std::endl; }*/
 // Keywords
-  | CLASS quack  { std::cout << lineNum << " CLASS \"class\"" << std::endl; }
-/*  | DEF quack  { std::cout << "LINE# DEF " << std::endl; }
-  | EXTENDS quack  { std::cout << "LINE# EXTENDS " << std::endl; }
-  | IF quack  { std::cout << "LINE# IF " << std::endl; }
-  | ELIF quack  { std::cout << "LINE# ELIF " << std::endl; }
-  | ELSE quack  { std::cout << "LINE# ELSE " << std::endl; }
-  | WHILE quack  { std::cout << "LINE# WHILE " << std::endl; }
-  | RETURN quack  { std::cout << "LINE# RETURN " << std::endl; } */
+  | CLASS quack  { std::cout << "PARSER: CLASS" << std::endl; }
+  | IDENT quack  { std::cout << "PARSER: IDENT" << std::endl; }
   ;
