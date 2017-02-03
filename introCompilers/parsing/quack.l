@@ -33,8 +33,8 @@ return          { printl("RETURN", yytext); return RETURN;}
 and             { printl("AND", yytext); return AND;}
 or              { printl("OR", yytext); return OR;}
 not             { printl("NOT", yytext); return NOT;}
-:               { printl(":", yytext); return SEMICOLON;}
 
+[:]              { printl(":", yytext); return SEMICOLON;}
 [(]              { printl("(", yytext); return LPAREN;}
 [)]              { printl(")", yytext); return RPAREN;}
 [.]              { printl(".", yytext); return DOT;}
