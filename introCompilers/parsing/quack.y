@@ -30,8 +30,8 @@
 
 // KEYWORDS
 %token CLASS "class"
-%token DEF EXTENDS IF ELIF ELSE WHILE RETURN
-%token IF "if"
+%token DEF EXTENDS ELIF ELSE WHILE RETURN
+%token IF
 %token AND OR NOT
 %token SEMICOLON ':'
 %token LPAREN '('
@@ -61,16 +61,13 @@
 %start Program
 %%
 // ----GRAMMAR----
-Program
-: Classes Statements {msg("Program:Class Statement");}
-| Classes {msg("Program:Class");}
-| Statements {msg("Program:Statement");}
-| /* empty */
-;
+Program: | Classes Statements {msg("Program: Class Statement");};
+// |  Classes {msg("Program:Class");}      
+// | Statements {msg("Program:Statement");}
 
 Classes
 : /* empty */
-| Classes Class
+| Classes Class {msg("Classes: Classes Class");}
 ;
 
 Statements
@@ -83,24 +80,44 @@ Class
 ;
 
 Class_Signature
-: 'class' IDENT '(' quack ')' {msg("Class_Signature: 'class' IDENT '(' quack ')'");}
+: 'class' IDENT '(' quack ')' {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}
+/*| "class" IDENT '(' Formal_Args ')' EXTENDS IDENT {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}*/
+/* ARTLESS need to add extends ident */
 ;
 
-Class_Body
-: quack;
+Formal_Args : quack;
 
-Statement_Block
-: '{' '}' {msg("Statement_Block: '{' '}'");}
-| '{' Statement  '}' {msg("Statement_Block: '{' Statement '}'");}
+Class_Body : '{' Statements Methods '}';
+
+Statements
+: /* empty */
+| Statements Statement
 ;
 
 Statement
 : /* empty? */
-| WHILE R_Expr Statement_Block {msg("Statement:WHILE etc");}
-| "if" R_Expr quack {msg("Statement: if R_Expr quack");} 
+| WHILE R_Expr Statement_Block {msg("Statement:WHILE etc");}   /* ARTLESS FINISH IF ELIF ELSE WHILE */
+| IF R_Expr quack {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
-| L_Expr 
+| L_Expr '='  R_Expr ';' {msg("Statement: L_Expr '=' R_Expr ';'");}
+| L_Expr ':' IDENT '=' R_Expr ';' {msg("Statement: L_Expr ':' IDENT '=' R_Expr ';'");}
+| R_Expr ';' {msg("Statement: R_Expr ';'");}
+| RETURN ';' {msg("Statement: RETURN ';'");}
+| RETURN R_Expr ';' {msg("Statement: RETURN R_Expr ';'");}
 ;
+
+Statement_Block
+: '{' '}' {msg("Statement_Block: '{' '}'");}
+| '{' Statements  '}' {msg("Statement_Block: '{' Statement '}'");}
+;
+
+Methods
+: /* empty */
+| Methods Method
+;
+
+Method
+: 'def' IDENT '(' Formal_Args ')' Statement_Block
 
 L_Expr
 : IDENT {msg("L_Expr: IDENT");}
@@ -111,11 +128,10 @@ R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT");} 
 | INT_LIT {msg("R_Expr: INT_LIT");}
 | R_Expr "<=" R_Expr {msg("R_Expr: <=");} 
-| quack { msg("R_Expr: quack"); };
+| quack { msg("R_Expr: quack"); }
+;
 
 
-Statement_Block
-: quack;
 
 quack:
 // Keywords
