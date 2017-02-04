@@ -39,6 +39,7 @@ not             { printl("NOT", yytext); return NOT;}
 [(]              { printl("(", yytext); return LPAREN;}
 [)]              { printl(")", yytext); return RPAREN;}
 [.]              { printl(".", yytext); return DOT;}
+[,]              { printl(".", yytext); return COMMA;}
 [+]              { printl("+", yytext); return PLUS;}
 [-]              { printl("-", yytext); return MINUS;}
 [*]              { printl("*", yytext); return TIMES;}

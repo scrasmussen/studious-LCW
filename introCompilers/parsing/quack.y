@@ -39,6 +39,7 @@
 %token LPAREN "("
 %token RPAREN ")"
 %token DOT "."
+%token COMMA ","
 %token PLUS "+"
 %token MINUS "-"
 %token TIMES "*"
@@ -51,7 +52,6 @@
 %token EQUALS "="
 %token RCURLY "{"
 %token LCURLY "}"
-%token ENDOFFILE 
 
 // PUNCTUATION
 
@@ -64,8 +64,6 @@
 %%
 // ----GRAMMAR----
 Program: | Classes Statements {msg("Program: Class Statement");};
-// |  Classes {msg("Program:Class");}      
-// | Statements {msg("Program:Statement");}
 
 Classes
 : /* empty */
@@ -74,7 +72,7 @@ Classes
 
 Statements
 : /* empty */
-| Statements Statement
+| Statement Statements {msg("Statements: Statements Statement");}
 ;
 
 Class
@@ -82,8 +80,8 @@ Class
 ;
 
 Class_Signature
-: "class" IDENT "(" Formal_Args ")" {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}
-/*| "class" IDENT "(" Formal_Args ")" EXTENDS IDENT {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}*/
+: "class" IDENT "(" Formal_Args ")" {msg("Class_Signature: class IDENT ( Formal_Args )");}
+/*| "class" IDENT "(" Formal_Args ")" EXTENDS IDENT {msg("Class_Signature: class IDENT ( Formal_Args )");}*/
 /* ARTLESS need to add extends ident */
 ;
 
@@ -94,43 +92,43 @@ Formal_Args
 
 Idents
 : /* empty */
-| Idents Ident {msg("Idents: Idents Ident");}
+| Ident Idents {msg("Idents: Idents Ident");}
 ;
 
 Ident
 : "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
 
-Class_Body : "{" Statements Methods "}";
+Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");};
 
 Statement
-: /* empty? */
+: /* empty */
 | WHILE R_Expr Statement_Block {msg("Statement:WHILE etc");}   /* ARTLESS FINISH IF ELIF ELSE WHILE */
 | IF R_Expr Statement_Block {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
-| L_Expr "="  R_Expr ";" {msg("Statement: L_Expr '=' R_Expr ';'");}
-| L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr ':' IDENT '=' R_Expr ';'");}
-| R_Expr ";" {msg("Statement: R_Expr ';'");}
-| RETURN ";" {msg("Statement: RETURN ';'");}
-| RETURN R_Expr ";" {msg("Statement: RETURN R_Expr ';'");}
+| L_Expr "="  R_Expr ";" {msg("Statement: L_Expr = R_Expr ;");}
+| L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr : IDENT = R_Expr ;");}
+| R_Expr ";" {msg("Statement: R_Expr ;");}
+| RETURN ";" {msg("Statement: RETURN ;");}
+| RETURN R_Expr ";" {msg("Statement: RETURN R_Expr ;");}
 ;
 
 Statement_Block
-: "{" "}" {msg("Statement_Block: '{' '}'");}
-| "{" Statements  "}" {msg("Statement_Block: '{' Statement '}'");}
+: "{" "}" {msg("Statement_Block: { }");}
+| "{" Statements  "}" {msg("Statement_Block: { Statement }");}
 ;
 
 Methods
 : /* empty */
-| Methods Method
+| Method Methods
 ;
 
 Method
-: "def" IDENT "(" Formal_Args ")" Statement_Block {msg("Method: 'def' IDENT '(' Formal_args ')' Statement_Block");}
+: "def" IDENT "(" Formal_Args ")" Statement_Block {msg("Method: def IDENT ( Formal_args ) Statement_Block");}
 ;
 
 L_Expr
 : IDENT {msg("L_Expr: IDENT");}
-| R_Expr "." IDENT {msg("L_Expr: R_Expr '.' IDENT");}
+| R_Expr "." IDENT {msg("L_Expr: R_Expr . IDENT");}
 ;
 
 R_Expr
