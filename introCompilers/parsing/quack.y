@@ -73,7 +73,7 @@ Classes
 Statements
 : /* empty */
 | Statement Statements {msg("Statements: Statement Statements");}
-| Statement  {msg("Statements:  Statement");}
+
 ;
 
 Class
@@ -82,8 +82,7 @@ Class
 
 Class_Signature
 : "class" IDENT "(" Formal_Args ")" {msg("Class_Signature: class IDENT ( Formal_Args )");}
-/*| "class" IDENT "(" Formal_Args ")" EXTENDS IDENT {msg("Class_Signature: class IDENT ( Formal_Args )");}*/
-/* ARTLESS need to add extends ident */
+| "class" IDENT "(" Formal_Args ")" EXTENDS IDENT {msg("Class_Signature: class IDENT ( Formal_Args ) EXTENDS IDENT");}
 ;
 
 Formal_Args
@@ -124,8 +123,8 @@ Methods
 ;
 
 Method
-: DEF IDENT "(" Formal_Args ")" Statement_Block {msg("Method: DEF IDENT ( Formal_args ) Statement_Block");}
-| DEF IDENT "(" Formal_Args ")" ":" IDENT Statement_Block {msg("Method: DEF IDENT ( Formal_args ) : IDENT Statement_Block");}
+: DEF IDENT "(" Formal_Args ")" ":" IDENT Statement_Block {msg("Method: DEF IDENT ( Formal_args ) : IDENT Statement_Block");}
+| DEF IDENT "(" Formal_Args ")" Statement_Block {msg("Method: DEF IDENT ( Formal_args ) Statement_Block");}
 ;
 
 L_Expr
@@ -137,6 +136,7 @@ R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT");} 
 | INT_LIT {msg("R_Expr: INT_LIT");}
 | L_Expr {msg("R_Expr: L_Expr");}
+/* ARTLESS PRESIDENTZ */
 | R_Expr "+" R_Expr {msg("R_Expr: R_Expr + R_Expr");}
 | R_Expr "-" R_Expr {msg("R_Expr: R_Expr - R_Expr");}
 | R_Expr "*" R_Expr {msg("R_Expr: R_Expr * R_Expr");}
@@ -147,10 +147,12 @@ R_Expr
 | R_Expr "<" R_Expr {msg("R_Expr: R_Expr < R_Expr");}
 | R_Expr ">=" R_Expr {msg("R_Expr: R_Expr >= R_Expr");}
 | R_Expr ">" R_Expr {msg("R_Expr: R_Expr > R_Expr");}
+/* ARTLESS BOOLEAN? */
 | R_Expr "AND" R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
 | R_Expr "OR" R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
 | "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
 | R_Expr "." IDENT "(" Actual_Args ")" {msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
+| IDENT "(" Actual_Args ")" {msg("R_Expr: IDENT ( Actual_Args )");}
 ;
 
 Actual_Args

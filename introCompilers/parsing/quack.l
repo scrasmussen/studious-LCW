@@ -12,7 +12,7 @@ char *start;
 
 void printl(std::string token, std::string s) {
   if (PRINTTOKEN == 1) 
-    std::cout << yylineno << " " << token << " \"" << s << "\"" << std::endl;
+    std::cout << "  " << yylineno << " " << token << " \"" << s << "\"" << std::endl;
 }
 
 %}
