@@ -33,23 +33,25 @@
 %token DEF EXTENDS ELIF ELSE WHILE RETURN
 %token IF
 %token AND OR NOT
-%token SEMICOLON ':'
-%token LPAREN '('
-%token RPAREN ')'
-%token DOT '.'
-%token PLUS '+'
-%token MINUS '-'
-%token TIMES '*'
-%token DIV '/'
+
+%token SEMICOLON ";"
+%token COLON ":"
+%token LPAREN "("
+%token RPAREN ")"
+%token DOT "."
+%token PLUS "+"
+%token MINUS "-"
+%token TIMES "*"
+%token DIV "/"
 %token EQUIV "=="
 %token LEQ "<="
 %token GEQ ">="
-%token LT '<'
-%token GT '>' 
-%token EQUALS '='
-%token RCURLY '{'
-%token LCURLY '}'
-
+%token LT "<"
+%token GT ">" 
+%token EQUALS "="
+%token RCURLY "{"
+%token LCURLY "}"
+%token ENDOFFILE 
 
 // PUNCTUATION
 
@@ -80,35 +82,41 @@ Class
 ;
 
 Class_Signature
-: 'class' IDENT '(' quack ')' {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}
-/*| "class" IDENT '(' Formal_Args ')' EXTENDS IDENT {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}*/
+: "class" IDENT "(" Formal_Args ")" {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}
+/*| "class" IDENT "(" Formal_Args ")" EXTENDS IDENT {msg("Class_Signature: 'class' IDENT '(' Formal_Args ')'");}*/
 /* ARTLESS need to add extends ident */
 ;
 
-Formal_Args : quack;
-
-Class_Body : '{' Statements Methods '}';
-
-Statements
+Formal_Args
 : /* empty */
-| Statements Statement
+| IDENT ":" IDENT Idents {msg("Formal_Args: IDENT : IDENT Idents");}
 ;
+
+Idents
+: /* empty */
+| Idents Ident {msg("Idents: Idents Ident");}
+;
+
+Ident
+: "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
+
+Class_Body : "{" Statements Methods "}";
 
 Statement
 : /* empty? */
 | WHILE R_Expr Statement_Block {msg("Statement:WHILE etc");}   /* ARTLESS FINISH IF ELIF ELSE WHILE */
-| IF R_Expr quack {msg("Statement: IF R_Expr quack");} 
+| IF R_Expr Statement_Block {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
-| L_Expr '='  R_Expr ';' {msg("Statement: L_Expr '=' R_Expr ';'");}
-| L_Expr ':' IDENT '=' R_Expr ';' {msg("Statement: L_Expr ':' IDENT '=' R_Expr ';'");}
-| R_Expr ';' {msg("Statement: R_Expr ';'");}
-| RETURN ';' {msg("Statement: RETURN ';'");}
-| RETURN R_Expr ';' {msg("Statement: RETURN R_Expr ';'");}
+| L_Expr "="  R_Expr ";" {msg("Statement: L_Expr '=' R_Expr ';'");}
+| L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr ':' IDENT '=' R_Expr ';'");}
+| R_Expr ";" {msg("Statement: R_Expr ';'");}
+| RETURN ";" {msg("Statement: RETURN ';'");}
+| RETURN R_Expr ";" {msg("Statement: RETURN R_Expr ';'");}
 ;
 
 Statement_Block
-: '{' '}' {msg("Statement_Block: '{' '}'");}
-| '{' Statements  '}' {msg("Statement_Block: '{' Statement '}'");}
+: "{" "}" {msg("Statement_Block: '{' '}'");}
+| "{" Statements  "}" {msg("Statement_Block: '{' Statement '}'");}
 ;
 
 Methods
@@ -117,47 +125,40 @@ Methods
 ;
 
 Method
-: 'def' IDENT '(' Formal_Args ')' Statement_Block
+: "def" IDENT "(" Formal_Args ")" Statement_Block {msg("Method: 'def' IDENT '(' Formal_args ')' Statement_Block");}
+;
 
 L_Expr
 : IDENT {msg("L_Expr: IDENT");}
-| R_Expr '.' IDENT {msg("L_Expr: R_Expr '.' IDENT");}
+| R_Expr "." IDENT {msg("L_Expr: R_Expr '.' IDENT");}
 ;
 
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT");} 
 | INT_LIT {msg("R_Expr: INT_LIT");}
-| R_Expr "<=" R_Expr {msg("R_Expr: <=");} 
-| quack { msg("R_Expr: quack"); }
+| L_Expr {msg("R_Expr: L_Expr");}
+| R_Expr "+" R_Expr {msg("R_Expr: R_Expr + R_Expr");}
+| R_Expr "-" R_Expr {msg("R_Expr: R_Expr - R_Expr");}
+| R_Expr "*" R_Expr {msg("R_Expr: R_Expr * R_Expr");}
+| R_Expr "/" R_Expr {msg("R_Expr: R_Expr / R_Expr");}
+| "-" R_Expr {msg("R_Expr: - R_Expr");}
+| R_Expr "==" R_Expr {msg("R_Expr: R_Expr == R_Expr");}
+| R_Expr "<=" R_Expr {msg("R_Expr: R_Expr <= R_Expr");}
+| R_Expr "<" R_Expr {msg("R_Expr: R_Expr < R_Expr");}
+| R_Expr ">=" R_Expr {msg("R_Expr: R_Expr >= R_Expr");}
+| R_Expr ">" R_Expr {msg("R_Expr: R_Expr > R_Expr");}
+| R_Expr "AND" R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
+| R_Expr "OR" R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
+| "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
+| R_Expr "." IDENT "(" Actual_Args ")" {msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 ;
 
-
-
-quack:
-// Keywords
-| CLASS quack
-| DEF quack
-| EXTENDS quack
-| IF quack
-| ELSE quack
-| RETURN quack
-| SEMICOLON quack
-  // IDENTIFIERS
-| IDENT quack
-| INT_LIT quack
-| LPAREN quack
-| RPAREN quack
-| DOT quack
-| PLUS quack
-| MINUS quack
-| TIMES quack
-| DIV quack
-| EQUIV quack
-| LEQ quack
-| GEQ quack
-| LT quack
-| GT quack
-| EQUALS quack
-| RCURLY quack
-| LCURLY quack
+Actual_Args
+: /* empty */
+| R_Expr R_Exprs {msg("Actual_Args: R_Expr R_Exprs");}
 ;
+
+R_Exprs
+: "," R_Expr {msg("R_Exprs: , R_Expr");}
+;
+

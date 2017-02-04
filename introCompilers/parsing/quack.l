@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string.h>
 #include "quack.tab.h"
-#define PRINTTOKEN 0
+#define PRINTTOKEN 1
 const char* ERROR_ESC="ERROR: only \\0, \\b, \\t, \\n, \\r, \\\\ allowed";
 const char* ERROR_NL="ERROR: newline in quoted string";
 
@@ -34,7 +34,8 @@ and             { printl("AND", yytext); return AND;}
 or              { printl("OR", yytext); return OR;}
 not             { printl("NOT", yytext); return NOT;}
 
-[:]              { printl(":", yytext); return SEMICOLON;}
+[:]              { printl(":", yytext); return COLON;}
+[;]              { printl(";", yytext); return SEMICOLON;}
 [(]              { printl("(", yytext); return LPAREN;}
 [)]              { printl(")", yytext); return RPAREN;}
 [.]              { printl(".", yytext); return DOT;}
