@@ -28,11 +28,6 @@ int main(int argc, char*argv[]) {
   // set flex to read from it instead of defaulting to STDIN:
   yyin = f;
 
-  std::cout << "Beginning Parsing\n";
   if (yyparse() == 0)
-    std::cout << "Parsing Successful\n";
-  else
-    std::cout << "Parsing Failed\n";
-  
-  std::cout << "Fin" << std::endl;
+    std::cout << "Finished parse with no errors\n";
 }
