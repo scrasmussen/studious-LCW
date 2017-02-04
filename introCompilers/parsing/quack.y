@@ -60,10 +60,14 @@
 %token ELLIPSIS
 // INTEGER AND STRING LITERALS
 %token <strval> INT_LIT STRING_LIT
+
 %start Program
 %%
 // ----GRAMMAR----
-Program: | Classes Statements {msg("Program: Class Statement");};
+Program
+: /* empty */
+|Classes Statements {msg("Program: Class Statement");}
+;
 
 Classes
 : /* empty */
@@ -102,14 +106,24 @@ Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }
 
 Statement
 : /* empty */
-| WHILE R_Expr Statement_Block {msg("Statement:WHILE etc");}   /* ARTLESS FINISH IF ELIF ELSE WHILE */
-| IF R_Expr Statement_Block {msg("Statement: IF R_Expr quack");} 
+| WHILE R_Expr Statement_Block {msg("Statement:WHILE R_Expr Statement_Block");}
+| IF R_Expr Statement_Block Elifs Else {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
 | L_Expr "="  R_Expr ";" {msg("Statement: L_Expr = R_Expr ;");}
 | L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr : IDENT = R_Expr ;");}
 | R_Expr ";" {msg("Statement: R_Expr ;");}
 | RETURN ";" {msg("Statement: RETURN ;");}
 | RETURN R_Expr ";" {msg("Statement: RETURN R_Expr ;");}
+;
+
+Elifs
+: /* empty */
+| ELIF R_Expr Statement_Block Elifs {msg("Elifs: ELIF R_Expr Statement_Block");}
+;
+
+Else
+: /* empty */
+| ELSE Statement_Block {msg("Else: ELSE Statement_Block");}
 ;
 
 Statement_Block
@@ -153,6 +167,7 @@ R_Expr
 | "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
 | R_Expr "." IDENT "(" Actual_Args ")" {msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 | IDENT "(" Actual_Args ")" {msg("R_Expr: IDENT ( Actual_Args )");}
+| "(" R_Expr ")" {msg("R_Expr: ( R_Expr )");}
 ;
 
 Actual_Args
