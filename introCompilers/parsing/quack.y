@@ -85,8 +85,12 @@ Class
 ;
 
 Class_Signature
-: "class" IDENT "(" Formal_Args ")" {msg("Class_Signature: class IDENT ( Formal_Args )");}
-| "class" IDENT "(" Formal_Args ")" EXTENDS IDENT {msg("Class_Signature: class IDENT ( Formal_Args ) EXTENDS IDENT");}
+: "class" IDENT "(" Formal_Args ")" Class_Sig_Extends {msg("Class_Signature: class IDENT ( Formal_Args )");}
+;
+
+Class_Sig_Extends
+: /* empty */
+| EXTENDS IDENT
 ;
 
 Formal_Args
@@ -137,8 +141,12 @@ Methods
 ;
 
 Method
-: DEF IDENT "(" Formal_Args ")" ":" IDENT Statement_Block {msg("Method: DEF IDENT ( Formal_args ) : IDENT Statement_Block");}
-| DEF IDENT "(" Formal_Args ")" Statement_Block {msg("Method: DEF IDENT ( Formal_args ) Statement_Block");}
+: DEF IDENT "(" Formal_Args ")" Method_Opt Statement_Block {msg("Method: DEF IDENT ( Formal_args ) Method_Opt Statement_Block");}
+;
+
+Method_Opt
+: /* empty */
+| ":" IDENT {msg("Method_Opt: : IDENT");}
 ;
 
 L_Expr
