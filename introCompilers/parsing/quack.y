@@ -6,7 +6,7 @@
   #include "lex.yy.h"
   #include "quack.tab.h"
 
-  int printparse=1;
+  int printparse=0;
 
   void msg (std::string s) {
     if (printparse)

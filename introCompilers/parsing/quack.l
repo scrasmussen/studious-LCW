@@ -3,11 +3,11 @@
 #include <iostream>
 #include <string.h>
 #include "quack.tab.h"
-#define PRINTTOKEN 1
-const char* ERROR_ESC="ERROR: only \\0, \\b, \\t, \\n, \\r, \\\\ allowed";
-const char* ERROR_NL="ERROR: newline in quoted string";
+#define PRINTTOKEN 0
+const char* ERROR_ESC="only \\0, \\b, \\t, \\n, \\r, \\\\ allowed";
+const char* ERROR_NL="newline in quoted string";
 
-void yyerror(const char *p) {std::cerr << "Error at " << yylineno << " " << p << " " << yytext << std::endl; }
+void yyerror(const char *p) {std::cerr << yylineno << ":" << p << " (at  '" << yytext <<"')" << std::endl; }
 char *start;
 
 void printl(std::string token, std::string s) {
