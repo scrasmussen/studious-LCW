@@ -72,7 +72,8 @@ Classes
 
 Statements
 : /* empty */
-| Statement Statements {msg("Statements: Statements Statement");}
+| Statement Statements {msg("Statements: Statement Statements");}
+| Statement  {msg("Statements:  Statement");}
 ;
 
 Class
@@ -119,11 +120,12 @@ Statement_Block
 
 Methods
 : /* empty */
-| Method Methods
+| Method Methods {msg("Methods: Method Methods");}
 ;
 
 Method
-: "def" IDENT "(" Formal_Args ")" Statement_Block {msg("Method: def IDENT ( Formal_args ) Statement_Block");}
+: DEF IDENT "(" Formal_Args ")" Statement_Block {msg("Method: DEF IDENT ( Formal_args ) Statement_Block");}
+| DEF IDENT "(" Formal_Args ")" ":" IDENT Statement_Block {msg("Method: DEF IDENT ( Formal_args ) : IDENT Statement_Block");}
 ;
 
 L_Expr
