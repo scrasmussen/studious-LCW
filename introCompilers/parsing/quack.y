@@ -176,6 +176,7 @@ Actual_Args
 ;
 
 R_Exprs
-: "," R_Expr {msg("R_Exprs: , R_Expr");}
+: /* empty */
+| "," R_Expr {msg("R_Exprs: , R_Expr");}
 ;
 
