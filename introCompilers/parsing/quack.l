@@ -60,7 +60,8 @@ not              { printl("NOT", yytext); return NOT;}
 
 
 ["](([\\][0btnrf"\\])|[^"\n\\])*["]  { return STRING_LIT;   
-                                       /* Next few lines based on code from class */ }
+                                       /* Next few lines based on code from class */ 
+                                       /* The code was cleaner and prettier */ }
 ["](([\\].)|[^"\n\\])*["]            { yyerror(ERROR_ESC); return STRING_LIT; }
 ["](([\\][^\n])|[^\n"])*\n           { yyerror(ERROR_NL);  return STRING_LIT; }
 
