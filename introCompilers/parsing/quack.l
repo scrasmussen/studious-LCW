@@ -20,7 +20,7 @@ void printl(std::string token, std::string s) {
 %option yylineno
 %option warn nodefault
 %option header-file="lex.yy.h"
-%x comment str_lit3
+%x comment strlit3 strlit2 strlit1
 %%
 
 class            { printl("CLASS", yytext); return CLASS;}
@@ -57,14 +57,24 @@ not              { printl("NOT", yytext); return NOT;}
 [a-zA-Z_][a-zA-Z0-9_]*   { printl("IDENT", yytext); return IDENT;}
 [0-9]+                   { printl("INT_LIT", yytext); return INT_LIT;}
 
-["](([\\][0btnrf"\\])|[^"\n\\])*["]  { return STRING_LIT; }
+
+
+["](([\\][0btnrf"\\])|[^"\n\\])*["]  { return STRING_LIT;   
+                                       /* Next few lines based on code from class */ }
 ["](([\\].)|[^"\n\\])*["]            { yyerror(ERROR_ESC); return STRING_LIT; }
 ["](([\\][^\n])|[^\n"])*\n           { yyerror(ERROR_NL);  return STRING_LIT; }
 
-["]["]["]       { BEGIN str_lit3; }
-<str_lit3>["]["]["] { BEGIN INITIAL; return STRING_LIT; }
 
-\.\.\.  { return ELLIPSIS; }
+
+"\"\"\""            { BEGIN(strlit3); printl("start strlit3",yytext);}
+"\"\""              { BEGIN(strlit2); printl("start strlit2",yytext);}
+"\""                { BEGIN(strlit1); printl("start strlit1",yytext);}
+<strlit3>"\"\"\""   {BEGIN(INITIAL);printl("end strlit3",yytext);}
+<strlit2>"\"\""     {BEGIN(INITIAL);printl("end strlit2",yytext);}
+<strlit1>"\""       {BEGIN(INITIAL);printl("end strlit1",yytext);}
+
+
+
 [/][/].*         { ; }
 [/][*]           { BEGIN comment; }
 <comment>[^*]*   { ; }
