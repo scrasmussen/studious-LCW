@@ -57,7 +57,6 @@
 
 // IDENTIFIERS
 %token <strval> IDENT
-%token ELLIPSIS
 // INTEGER AND STRING LITERALS
 %token <strval> INT_LIT STRING_LIT
 
