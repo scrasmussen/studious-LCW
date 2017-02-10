@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string.h>
 #include "quack.tab.h"
-#define PRINTTOKEN 0
+#define PRINTTOKEN 1
 const char* ERROR_ESC="only \\0, \\b, \\t, \\n, \\r, \\\\ allowed";
 const char* ERROR_NL="newline in quoted string";
 const char* ERROR_SYNTAX="Not caught by lexer";
@@ -55,11 +55,11 @@ not              { printl("NOT", yytext); return NOT;}
 [}]              { printl("}", yytext); return LCURLY;}
 
 [a-zA-Z_][a-zA-Z0-9_]*   { printl("IDENT", yytext); return IDENT;}
-[0-9]+                   { printl("INT_LIT", yytext); return INT_LIT;}
+[-]?[0-9]+                   { printl("INT_LIT", yytext); return INT_LIT;}
 
 
 
-["](([\\][0btnrf"\\])|[^"\n\\])*["]  { return STRING_LIT;   
+["](([\\][0btnrf"\\])|[^"\n\\])*["]  { printl("STRING_LIT", yytext); return STRING_LIT;   
                                        /* Next few lines based on code from class */ 
                                        /* The code was cleaner and prettier */ }
 ["](([\\].)|[^"\n\\])*["]            { yyerror(ERROR_ESC); return STRING_LIT; }
@@ -70,9 +70,12 @@ not              { printl("NOT", yytext); return NOT;}
 "\"\"\""            { BEGIN(strlit3); printl("start strlit3",yytext);}
 "\"\""              { BEGIN(strlit2); printl("start strlit2",yytext);}
 "\""                { BEGIN(strlit1); printl("start strlit1",yytext);}
-<strlit3>"\"\"\""   {BEGIN(INITIAL);printl("end strlit3",yytext);}
-<strlit2>"\"\""     {BEGIN(INITIAL);printl("end strlit2",yytext);}
-<strlit1>"\""       {BEGIN(INITIAL);printl("end strlit1",yytext);}
+<strlit3>"\"\"\""   {BEGIN(INITIAL);printl("end strlit3",yytext); return STRING_LIT; /*ARTLESS: WHAT'S IN STRING_LIT?*/}
+<strlit3>(([^"])|(["][^"])|(["]["][^"])|\n)*  {}
+<strlit2>"\"\""     {BEGIN(INITIAL);printl("end strlit2",yytext); return STRING_LIT;}
+<strlit2>(([^"])|(["][^"])|\n)*  {}
+<strlit1>"\""       {BEGIN(INITIAL);printl("end strlit1",yytext); return STRING_LIT;}
+<strlit2>(([^"])|\n)*  {}
 
 
 
