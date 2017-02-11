@@ -54,6 +54,7 @@
 %token LCURLY "}"
 
 // PUNCTUATION
+%right EQUALS LT GT LEQ GEQ
 %left MINUS PLUS
 %left DIF TIMES
 %left LPAREN
