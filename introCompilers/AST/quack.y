@@ -68,8 +68,7 @@
 %%
 // ----GRAMMAR----
 Program
-: /* empty */
-|Classes Statements {msg("Program: Class Statement");}
+:Classes Statements {msg("Program: Class Statement");}
 ;
 
 Classes
@@ -79,7 +78,7 @@ Classes
 
 Statements
 : /* empty */
-| Statement Statements {msg("Statements: Statement Statements");}
+| Statements Statement {msg("Statements: Statement Statements");}
 
 ;
 
@@ -112,8 +111,7 @@ Ident
 Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");};
 
 Statement
-: /* empty */
-| WHILE R_Expr Statement_Block {msg("Statement:WHILE R_Expr Statement_Block");}
+: WHILE R_Expr Statement_Block {msg("Statement:WHILE R_Expr Statement_Block");}
 | IF R_Expr Statement_Block Elifs Else {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
 | L_Expr "="  R_Expr ";" {msg("Statement: L_Expr = R_Expr ;");}
