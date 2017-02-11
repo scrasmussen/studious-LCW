@@ -61,6 +61,7 @@
 %left RPAREN
 %left LCURLY
 %left RCURLY
+%nonassoc EQUIV AND OR NOT
 
 // IDENTIFIERS
 %token <strval> IDENT
