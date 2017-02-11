@@ -54,6 +54,8 @@
 %token LCURLY "}"
 
 // PUNCTUATION
+%left MINUS PLUS
+%left DIF TIMES
 %left LPAREN
 %left RPAREN
 %left LCURLY
