@@ -14,16 +14,38 @@ struct classSignatureNode {
 };
 
 struct classSigExtendsNode {
-  char* extends;
+  char const* extends;
 };
 
 struct classNode {
   classSignatureNode sig;
 };
 
+struct returnNode {
+  
+};
+
+struct constructorNode {
+  const char* name;
+};
+
+struct rExprNode {
+  int val;
+  const char* str = "";
+  constructorNode constructor;
+};
+
+struct statementNode {
+  int value;
+  const char* str;
+};
 
 struct classesNode {
   std::vector<classNode> list;
+};
+
+struct statementsNode {
+  std::vector<statementNode> list;
 };
 
 struct ProgramNode {
