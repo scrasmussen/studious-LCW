@@ -28,7 +28,7 @@
 %union {
   int num;
   float fval;
-  char* str;
+  const char* str;
   struct ProgramNode* prog;
   struct classesNode* classesN;
   struct classNode* classN;
@@ -82,6 +82,8 @@
 %type <classesN> Classes
 %type <classN> Class
 %type <classSigN> Class_Signature
+%type <str> Class_Sig_Extends
+
 
 %start Program
 %%
@@ -89,7 +91,8 @@
 Program
 : Classes Statements { /*result = $1*/ ;msg("Program: Class Statement");
    classesNode *c=$1;
-   std::cout<<c->list.size()<<std::endl;
+   /* std::cout<<c->list.size()<<std::endl; */
+   root->classes=*c;
    /* std::cout<<root->node->t<<std::endl; */
  }
 ;
@@ -123,14 +126,14 @@ Class_Signature
   { msg("Class_Signature: class IDENT ( Formal_Args )");
     classSignatureNode *n = new classSignatureNode;
     n->name=$2;
+    n->extends=$6;
     $$ = n;
-    /* std::cout<<$2<<n->val<<std::endl; */
   }
 ;
 
 Class_Sig_Extends
-: /* empty */
-| EXTENDS IDENT
+: /* empty */ {$$="Obj";}
+| EXTENDS IDENT {$$=$2;}
 ;
 
 Formal_Args
