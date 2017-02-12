@@ -1,0 +1,8 @@
+#! /bin/bash
+
+PARSER=${HOME}/Dropbox/17W-compilers/dev/quack/scanner/parser
+
+echo "${PARSER} $*"
+
+${PARSER} $*
+
