@@ -2,9 +2,12 @@
 %{
 
   #include <iostream>
-  #include <string.h>
+  #include <string>
+  #include <list>
+  #include "Node.h"
   #include "lex.yy.h"
   #include "quack.tab.h"
+
 
   int printparse=0;
 
@@ -12,6 +15,9 @@
     if (printparse)
       std::cout << s << std::endl;
   }
+
+  /* extern struct ProgramNode *root; */
+  ProgramNode *root = new ProgramNode;
   
   /* int yylex(); */
   extern void yyerror(const char *msg);
@@ -20,9 +26,13 @@
 // Bison by defines a C union holding each of the types of tokens that Flex could return,
 // and have Bison use that union instead of "int" for the definition of "yystype":
 %union {
-  int ival;
+  int num;
   float fval;
-  char* strval;
+  char* str;
+  struct ProgramNode* prog;
+  struct classesNode* classesN;
+  struct classNode* classN;
+  struct classSignatureNode* classSigN;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -64,20 +74,32 @@
 %nonassoc EQUIV AND OR NOT
 
 // IDENTIFIERS
-%token <strval> IDENT
+%token <str> IDENT
 // INTEGER AND STRING LITERALS
-%token <strval> INT_LIT STRING_LIT
+%token <str> INT_LIT STRING_LIT
+
+%type <prog> Program
+%type <classesN> Classes
+%type <classN> Class
+%type <classSigN> Class_Signature
 
 %start Program
 %%
 // ----GRAMMAR----
 Program
-:Classes Statements {msg("Program: Class Statement");}
+: Classes Statements { /*result = $1*/ ;msg("Program: Class Statement");
+   classesNode *c=$1;
+   std::cout<<c->list.size()<<std::endl;
+   /* std::cout<<root->node->t<<std::endl; */
+ }
 ;
 
 Classes
-: /* empty */
-| Classes Class {msg("Classes: Classes Class");}
+: /* empty */ { $$ = new classesNode; }
+| Classes Class { msg("Classes: Classes Class");
+   classesNode *c=$1; classNode*n=$2;
+   c->list.push_back(*n);
+ }
 ;
 
 Statements
@@ -87,11 +109,23 @@ Statements
 ;
 
 Class
-: Class_Signature Class_Body {msg("Class: Class_Signature Class_body");}
+: Class_Signature Class_Body
+{msg("Class: Class_Signature Class_body");
+  classNode *n = new classNode;
+  classSignatureNode *csn = $1;
+  n->sig=*csn;
+  $$=n;
+}
 ;
 
 Class_Signature
-: "class" IDENT "(" Formal_Args ")" Class_Sig_Extends {msg("Class_Signature: class IDENT ( Formal_Args )");}
+: "class" IDENT "(" Formal_Args ")" Class_Sig_Extends
+  { msg("Class_Signature: class IDENT ( Formal_Args )");
+    classSignatureNode *n = new classSignatureNode;
+    n->name=$2;
+    $$ = n;
+    /* std::cout<<$2<<n->val<<std::endl; */
+  }
 ;
 
 Class_Sig_Extends
@@ -105,8 +139,8 @@ Formal_Args
 ;
 
 Idents
-: /* empty */
-| Ident Idents {msg("Idents: Idents Ident");}
+: /* empty */ 
+| Idents Ident {msg("Idents: Idents Ident");}
 ;
 
 Ident
@@ -142,7 +176,7 @@ Statement_Block
 
 Methods
 : /* empty */
-| Method Methods {msg("Methods: Method Methods");}
+| Methods Method {msg("Methods: Method Methods");}
 ;
 
 Method
@@ -161,10 +195,11 @@ L_Expr
 
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT");} 
-| INT_LIT {msg("R_Expr: INT_LIT");}
+| INT_LIT {/*printf("%s+\n",$1);*/
+   msg("R_Expr: INT_LIT");}
 | L_Expr {msg("R_Expr: L_Expr");}
 /* ARTLESS PRESIDENTZ */
-| R_Expr "+" R_Expr {msg("R_Expr: R_Expr + R_Expr");}
+| R_Expr "+" R_Expr { msg("R_Expr: R_Expr + R_Expr");}
 | R_Expr "-" R_Expr {msg("R_Expr: R_Expr - R_Expr");}
 | R_Expr "*" R_Expr {msg("R_Expr: R_Expr * R_Expr");}
 | R_Expr "/" R_Expr {msg("R_Expr: R_Expr / R_Expr");}
