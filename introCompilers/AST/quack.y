@@ -32,7 +32,10 @@
   struct ProgramNode* prog;
   struct classesNode* classesN;
   struct classNode* classN;
+  struct statementsNode* statementsN;
+  struct statementNode* statementN;
   struct classSignatureNode* classSigN;
+  struct rExprNode* rExprN;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -81,8 +84,11 @@
 %type <prog> Program
 %type <classesN> Classes
 %type <classN> Class
+%type <statementsN> Statements
+%type <statementN> Statement
 %type <classSigN> Class_Signature
 %type <str> Class_Sig_Extends
+%type <rExprN> R_Expr
 
 
 %start Program
@@ -91,8 +97,9 @@
 Program
 : Classes Statements { /*result = $1*/ ;msg("Program: Class Statement");
    classesNode *c=$1;
-   /* std::cout<<c->list.size()<<std::endl; */
    root->classes=*c;
+   // Add    root->statementss=*s;
+   /* std::cout<<c->list.size()<<std::endl; */
    /* std::cout<<root->node->t<<std::endl; */
  }
 ;
@@ -106,8 +113,11 @@ Classes
 ;
 
 Statements
-: /* empty */
-| Statements Statement {msg("Statements: Statement Statements");}
+: /* empty */ { $$ = new statementsNode; }
+| Statements Statement {msg("Statements: Statement Statements");
+   statementsNode *c=$1; statementNode*n=$2;
+   c->list.push_back(*n);
+ }
 
 ;
 
@@ -149,7 +159,8 @@ Idents
 Ident
 : "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
 
-Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");};
+Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");
+};
 
 Statement
 : WHILE R_Expr Statement_Block {msg("Statement:WHILE R_Expr Statement_Block");}
@@ -197,11 +208,10 @@ L_Expr
 ;
 
 R_Expr
-: STRING_LIT {msg("R_Expr: STRING_LIT");} 
-| INT_LIT {/*printf("%s+\n",$1);*/
-   msg("R_Expr: INT_LIT");}
+: STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; rN->str=$1; $$ = rN;} 
+| INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; rN->val=std::stoi($1); $$ = rN;}
 | L_Expr {msg("R_Expr: L_Expr");}
-/* ARTLESS PRESIDENTZ */
+
 | R_Expr "+" R_Expr { msg("R_Expr: R_Expr + R_Expr");}
 | R_Expr "-" R_Expr {msg("R_Expr: R_Expr - R_Expr");}
 | R_Expr "*" R_Expr {msg("R_Expr: R_Expr * R_Expr");}
@@ -212,12 +222,15 @@ R_Expr
 | R_Expr "<" R_Expr {msg("R_Expr: R_Expr < R_Expr");}
 | R_Expr ">=" R_Expr {msg("R_Expr: R_Expr >= R_Expr");}
 | R_Expr ">" R_Expr {msg("R_Expr: R_Expr > R_Expr");}
-/* ARTLESS BOOLEAN? */
+
 | R_Expr "AND" R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
 | R_Expr "OR" R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
 | "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
 | R_Expr "." IDENT "(" Actual_Args ")" {msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
-| IDENT "(" Actual_Args ")" {msg("R_Expr: IDENT ( Actual_Args )");}
+| IDENT "(" Actual_Args ")"
+{ constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
+  cN->name=$1; rN->constructor=*cN; $$=rN;
+  msg("R_Expr: IDENT ( Actual_Args )");}
 | "(" R_Expr ")" {msg("R_Expr: ( R_Expr )");}
 ;
 
