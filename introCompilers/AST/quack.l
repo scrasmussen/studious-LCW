@@ -1,7 +1,8 @@
 %{
 #include <cstdio>
 #include <iostream>
-#include <string.h>
+#include <string>
+#include "Node.h"
 #include "quack.tab.h"
 #define PRINTTOKEN 0
 const char* ERROR_ESC="only \\0, \\b, \\t, \\n, \\r, \\\\ allowed";
@@ -54,8 +55,9 @@ not              { printl("NOT", yytext); return NOT;}
 [{]              { printl("{", yytext); return RCURLY;}
 [}]              { printl("}", yytext); return LCURLY;}
 
-[a-zA-Z_][a-zA-Z0-9_]*   { printl("IDENT", yytext); return IDENT;}
-[-]?[0-9]+                   { printl("INT_LIT", yytext); return INT_LIT;}
+[a-zA-Z_][a-zA-Z0-9_]*   { printl("IDENT", yytext); yylval.str=strdup(yytext);  return IDENT;}
+[-]?[0-9]+                   { printl("INT_LIT", yytext);/*yylval.num=atof(yytext);*/
+                               yylval.str=strdup(yytext); return INT_LIT;}
 
 
 
