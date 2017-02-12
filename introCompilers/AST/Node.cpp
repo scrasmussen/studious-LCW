@@ -1,18 +1,10 @@
 #include <iostream>
 #include <string>
+#include <vector>
 #include "Node.h"
 
-// class Node {
-// protected:
-//   std::string name;
-
-// public:
-//   Node(std::string name);
-//   virtual void print(void) = 0;
-
-// };
-
 Node::Node(void){ setName("Empty"); return; }
+Node::~Node(void){ return; }
 
 Node::Node(std::string s){
   setName(s);
@@ -20,6 +12,10 @@ Node::Node(std::string s){
 }
 
 
-void Program::printNode(void) {
-  std::cout << "node\n"; return;
+void pNode::printNode(void) {
+  std::cout << "In Program node\n"; return;
+};
+
+void Classes::printNode(void) {
+  std::cout << "In Classes node\n"; return;
 };
