@@ -5,22 +5,6 @@
 
 #ifndef NODE_H
 #define NODE_H
-
-
-struct classSignatureNode {
-  char const* name;
-  char const* extends = "Obj";
-  int searched = 0;
-};
-
-struct classSigExtendsNode {
-  char const* extends;
-};
-
-struct classNode {
-  classSignatureNode sig;
-};
-
 struct returnNode {
   
 };
@@ -34,6 +18,32 @@ struct rExprNode {
   const char* str = "";
   constructorNode constructor;
 };
+
+struct argumentNode { //monil
+  char const* type;
+  char const* name;
+};
+
+struct formalArgumentsNode { //monil
+  std::vector<argumentNode> list;
+};
+
+
+struct classSignatureNode {
+  char const* name;
+  char const* extends = "Obj";
+  int searched = 0;
+  formalArgumentsNode fargs; //monil
+};
+
+struct classSigExtendsNode {
+  char const* extends;
+};
+
+struct classNode {
+  classSignatureNode sig;
+};
+
 
 struct statementNode {
   int value;
@@ -50,6 +60,7 @@ struct statementsNode {
 
 struct ProgramNode {
   classesNode classes;
+  statementsNode statements;
 };
 
 void checkClassHierarchy ( std::vector<classNode> );

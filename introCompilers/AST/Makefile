@@ -5,7 +5,7 @@ QFILE=$(TD)/hands.qk
 QFILE=$(TD)/LexChallenge.qk
 QFILE=$(TD)/robot.qk
 QFILE=$(TD)/Sqr.qk
-QFILE=Sqr.qk
+#QFILE=Sqr.qk
 LEXFILE=$(TD)/LexChallenge.qk
 # QFILE=$(TD)/bad_init.qk
 

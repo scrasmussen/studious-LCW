@@ -36,6 +36,7 @@
   struct statementNode* statementN;
   struct classSignatureNode* classSigN;
   struct rExprNode* rExprN;
+  struct formalArgumentsNode* formalA;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -87,6 +88,7 @@
 %type <statementsN> Statements
 %type <statementN> Statement
 %type <classSigN> Class_Signature
+%type <formalA> Formal_Args 
 %type <str> Class_Sig_Extends
 %type <rExprN> R_Expr
 
@@ -97,7 +99,9 @@
 Program
 : Classes Statements { /*result = $1*/ ;msg("Program: Class Statement");
    classesNode *c=$1;
+   //statementsNode *s=$2;
    root->classes=*c;
+   //root->statements=*s;
    // Add    root->statementss=*s;
    /* std::cout<<c->list.size()<<std::endl; */
    /* std::cout<<root->node->t<<std::endl; */
@@ -107,16 +111,17 @@ Program
 Classes
 : /* empty */ { $$ = new classesNode; }
 | Classes Class { msg("Classes: Classes Class");
-   classesNode *c=$1; classNode*n=$2;
+   classesNode *c=$1; classNode *n=$2;
    c->list.push_back(*n);
  }
 ;
 
 Statements
-: /* empty */ { $$ = new statementsNode; }
+: /* empty */ { //$$ = new statementsNode; 
+}
 | Statements Statement {msg("Statements: Statement Statements");
-   statementsNode *c=$1; statementNode*n=$2;
-   c->list.push_back(*n);
+   //statementsNode *s=$1; statementNode*n=$2;
+   //s->list.push_back(*n);
  }
 
 ;
@@ -137,6 +142,8 @@ Class_Signature
     classSignatureNode *n = new classSignatureNode;
     n->name=$2;
     n->extends=$6;
+    formalArgumentsNode *f=$4;
+    n->fargs=$4;
     $$ = n;
   }
 ;
@@ -145,19 +152,47 @@ Class_Sig_Extends
 : /* empty */ {$$="Obj";}
 | EXTENDS IDENT {$$=$2;}
 ;
-
+Formal_Args: {$$=new formalArgumentsNode;
+}
+        | "," IDENT ":" IDENT Formal_Args {
+    	/*formalArgumentsNode *c=$5; 
+	argumentNode *n;
+	n->type=$2;
+	n->name=$4;        
+   	c->list.push_back(*n);*/ 
+	} 
+        | IDENT ":" IDENT Formal_Args {
+    	/*formalArgumentsNode *c=$4; 
+	argumentNode *n;
+	n->type=$1;
+	n->name=$3;        
+   	c->list.push_back(*n);*/
+	}       
+        ;
+/*arguments:
+         IDENT COLON IDENT "," arguments {
+	argumentNode *n;
+	n->type=$1; n->name=$3;
+   	c->list.push_back(*n);
+    	formalArgumentsNode *f=$4;
+        c->list.push_back(*f);
+	}
+	;	
+/*
 Formal_Args
-: /* empty */
+: 
 | IDENT ":" IDENT Idents {msg("Formal_Args: IDENT : IDENT Idents");}
 ;
 
 Idents
-: /* empty */ 
+:  
 | Idents Ident {msg("Idents: Idents Ident");}
 ;
 
 Ident
 : "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
+
+*/
 
 Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");
 };
