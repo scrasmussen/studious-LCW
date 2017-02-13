@@ -33,7 +33,7 @@ struct classSignatureNode {
   char const* name;
   char const* extends = "Obj";
   int searched = 0;
-  formalArgumentsNode fargs; //monil
+  formalArgumentsNode *fargs; //monil
 };
 
 struct classSigExtendsNode {

@@ -152,21 +152,21 @@ Class_Sig_Extends
 : /* empty */ {$$="Obj";}
 | EXTENDS IDENT {$$=$2;}
 ;
-Formal_Args: {$$=new formalArgumentsNode;
+Formal_Args: {$$=new formalArgumentsNode; 
 }
         | "," IDENT ":" IDENT Formal_Args {
     	/*formalArgumentsNode *c=$5; 
-	argumentNode *n;
-	n->type=$2;
-	n->name=$4;        
-   	c->list.push_back(*n);*/ 
+	argumentNode n;
+	n.type=$2;
+	n.name=$4;        
+   	c->list.push_back(n);*/
 	} 
         | IDENT ":" IDENT Formal_Args {
-    	/*formalArgumentsNode *c=$4; 
-	argumentNode *n;
-	n->type=$1;
-	n->name=$3;        
-   	c->list.push_back(*n);*/
+    	//formalArgumentsNode *c=$4; 
+	//argumentNode n=new argumentNode;
+	//n.type=$1;
+	//n.name=$3;        
+   	//c->list.push_back(n);
 	}       
         ;
 /*arguments:
