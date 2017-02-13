@@ -40,10 +40,11 @@ struct whileNode {
 struct statementNode {
   int value;
   const char* str;
-  
+  rExprNode* rExpr;
 };
 
 struct statementsNode {
+
   std::vector<statementNode> list;
 };
 

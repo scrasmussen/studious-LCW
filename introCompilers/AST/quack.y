@@ -175,7 +175,8 @@ Statement
 | L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr : IDENT = R_Expr ;");}
 | R_Expr ";" {msg("Statement: R_Expr ;");}
 | RETURN ";" {msg("Statement: RETURN ;");}
-| RETURN R_Expr ";" {msg("Statement: RETURN R_Expr ;");}
+| RETURN R_Expr ";" {statementNode *n = new statementNode; /*n->rExpr= new rExprNode;*/
+   msg("Statement: RETURN R_Expr ;");}
 ;
 
 Elifs

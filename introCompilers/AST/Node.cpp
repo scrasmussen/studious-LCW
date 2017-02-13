@@ -9,8 +9,11 @@ void checkConstructorCalls ( ProgramNode *rootNode ) {
 
   for (auto &c : classList) {
     if (c.classBody != NULL) {
-            std::cout << "Entered" << std::endl;
 	    std::cout << c.classBody->name << std::endl;
+	    for (auto $s : c.classBody->statements->list)
+	      {
+		
+	      }
     }
       // std::cout << c->classBody.name << std::endl;
     // std::vector<statementNode> csList = c.classBody->statements->list;
