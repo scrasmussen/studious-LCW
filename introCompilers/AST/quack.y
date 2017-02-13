@@ -35,6 +35,7 @@
   struct statementsNode* statementsN;
   struct statementNode* statementN;
   struct classSignatureNode* classSigN;
+  struct classBodyNode* classBodyN;
   struct rExprNode* rExprN;
 }
 
@@ -87,6 +88,7 @@
 %type <statementsN> Statements
 %type <statementN> Statement
 %type <classSigN> Class_Signature
+%type <classBodyN> Class_Body
 %type <str> Class_Sig_Extends
 %type <rExprN> R_Expr
 
@@ -125,8 +127,8 @@ Class
 : Class_Signature Class_Body
 {msg("Class: Class_Signature Class_body");
   classNode *n = new classNode;
-  classSignatureNode *csn = $1;
-  n->sig=*csn;
+  n->sig=$1;
+  n->classBody=$2;
   $$=n;
 }
 ;
@@ -160,6 +162,9 @@ Ident
 : "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
 
 Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");
+   classBodyNode *node = new classBodyNode;
+   node->statements=$2;
+   $$=node;
 };
 
 Statement
@@ -229,7 +234,7 @@ R_Expr
 | R_Expr "." IDENT "(" Actual_Args ")" {msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 | IDENT "(" Actual_Args ")"
 { constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
-  cN->name=$1; rN->constructor=*cN; $$=rN;
+  cN->name=$1; rN->constructor=cN; $$=rN;
   msg("R_Expr: IDENT ( Actual_Args )");}
 | "(" R_Expr ")" {msg("R_Expr: ( R_Expr )");}
 ;

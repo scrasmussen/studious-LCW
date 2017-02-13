@@ -17,9 +17,6 @@ struct classSigExtendsNode {
   char const* extends;
 };
 
-struct classNode {
-  classSignatureNode sig;
-};
 
 struct returnNode {
   
@@ -32,27 +29,47 @@ struct constructorNode {
 struct rExprNode {
   int val;
   const char* str = "";
-  constructorNode constructor;
+  constructorNode *constructor ;
+};
+
+
+struct whileNode {
+  
 };
 
 struct statementNode {
   int value;
   const char* str;
-};
-
-struct classesNode {
-  std::vector<classNode> list;
+  
 };
 
 struct statementsNode {
   std::vector<statementNode> list;
 };
 
+struct classBodyNode {
+  const char* name="classBodyNode";
+  statementsNode* statements;
+};
+
+struct classNode {
+  const char* name="classNode";
+  classSignatureNode* sig;
+  classBodyNode* classBody;
+};
+
+struct classesNode {
+  std::vector<classNode> list;
+};
+
 struct ProgramNode {
   classesNode classes;
+  statementsNode statements;
 };
 
 void checkClassHierarchy ( std::vector<classNode> );
+void checkConstructorCalls ( ProgramNode* );
 
 extern ProgramNode *root;
 #endif
+	
