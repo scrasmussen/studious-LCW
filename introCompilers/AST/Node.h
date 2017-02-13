@@ -29,6 +29,8 @@ struct constructorNode {
 struct rExprNode {
   int val;
   const char* str = "";
+  rExprNode *rExprFirst ;
+  rExprNode *rExprSecond ;
   constructorNode *constructor ;
 };
 

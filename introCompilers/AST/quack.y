@@ -100,6 +100,8 @@ Program
 : Classes Statements { /*result = $1*/ ;msg("Program: Class Statement");
    classesNode *c=$1;
    root->classes=*c;
+   statementsNode *s=$2;//monil 
+   root->statements=*s;//monil
    // Add    root->statementss=*s;
    /* std::cout<<c->list.size()<<std::endl; */
    /* std::cout<<root->node->t<<std::endl; */
@@ -171,7 +173,15 @@ Statement
 : WHILE R_Expr Statement_Block {msg("Statement:WHILE R_Expr Statement_Block");}
 | IF R_Expr Statement_Block Elifs Else {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
-| L_Expr "="  R_Expr ";" {msg("Statement: L_Expr = R_Expr ;");}
+| L_Expr "="  R_Expr ";" {
+
+   statementNode *node = new statementNode;
+   node->str="assignment";
+   node->rExpr=$3;
+   $$=node;
+   msg("Statement: L_Expr = R_Expr ;");
+}
+
 | L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr : IDENT = R_Expr ;");}
 | R_Expr ";" {msg("Statement: R_Expr ;");}
 | RETURN ";" {msg("Statement: RETURN ;");}
@@ -232,11 +242,18 @@ R_Expr
 | R_Expr "AND" R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
 | R_Expr "OR" R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
 | "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
-| R_Expr "." IDENT "(" Actual_Args ")" {msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
-| IDENT "(" Actual_Args ")"
-{ constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
-  cN->name=$1; rN->constructor=cN; $$=rN;
-  msg("R_Expr: IDENT ( Actual_Args )");}
+| R_Expr "." IDENT "(" Actual_Args ")" {
+  constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
+  cN->name=$3; rN->constructor=cN; rN->rExprFirst=$1; 
+  rN->str="conswithrexpr"; 
+  $$=rN;
+  msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
+| IDENT "(" Actual_Args ")"{ 
+  constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
+  cN->name=$1; rN->constructor=cN; 
+  rN->str="cons_without_rexpr"; $$=rN; 
+  msg("R_Expr: IDENT ( Actual_Args )");
+}
 | "(" R_Expr ")" {msg("R_Expr: ( R_Expr )");}
 ;
 
