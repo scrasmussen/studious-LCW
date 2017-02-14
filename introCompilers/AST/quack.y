@@ -353,19 +353,96 @@ R_Expr
    }
 
 /*l%left EQUALS LT GT LEQ GEQ */
-| R_Expr '+' R_Expr { msg("R_Expr: R_Expr + R_Expr");}
-| R_Expr '-' R_Expr {msg("R_Expr: R_Expr - R_Expr");}
-| R_Expr '*' R_Expr {msg("R_Expr: R_Expr * R_Expr");}
-| R_Expr '/' R_Expr {msg("R_Expr: R_Expr / R_Expr");}
-| '-' R_Expr %prec NEG {msg("R_Expr: - R_Expr");} 
-| R_Expr EQUIV R_Expr {msg("R_Expr: R_Expr == R_Expr");}
-| R_Expr LEQ R_Expr {msg("R_Expr: R_Expr <= R_Expr");}
-| R_Expr LT R_Expr {msg("R_Expr: R_Expr < R_Expr");}
-| R_Expr GEQ R_Expr {msg("R_Expr: R_Expr >= R_Expr");}
-| R_Expr GT R_Expr {msg("R_Expr: R_Expr > R_Expr");}
-| R_Expr AND R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
-| R_Expr OR R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
-| NOT R_Expr {msg("R_Expr: NOT R_Expr");} 
+| R_Expr '+' R_Expr { 
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr + R_Expr");
+   }
+| R_Expr '-' R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr - R_Expr");
+   }
+| R_Expr '*' R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr * R_Expr");
+   }
+| R_Expr '/' R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr / R_Expr");
+   }
+| '-' R_Expr %prec NEG {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$2;
+   $$=rN;
+   msg("R_Expr: - R_Expr");
+   } 
+| R_Expr EQUIV R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr == R_Expr");
+   }
+| R_Expr LEQ R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr <= R_Expr");
+   }
+| R_Expr LT R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr < R_Expr");
+   }
+| R_Expr GEQ R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr >= R_Expr");
+   }
+| R_Expr GT R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr > R_Expr");
+   }
+| R_Expr AND R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr AND R_Expr");
+   }
+| R_Expr OR R_Expr {
+
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$1;
+   rN->rExprSecond=$3;
+   $$=rN;
+   msg("R_Expr: R_Expr OR R_Expr");
+   }
+| NOT R_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->rExprFirst=$2;
+   $$=rN;
+   msg("R_Expr: NOT R_Expr");
+   } 
 
 | R_Expr "." IDENT "(" Actual_Args ")" {
   //constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
