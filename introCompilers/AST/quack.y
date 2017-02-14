@@ -8,7 +8,7 @@
   #include "lex.yy.h"
   #include "quack.tab.h"
 
-
+  using namespace std;
   int printparse=0;
 
   void msg (std::string s) {
@@ -151,7 +151,7 @@ Class_Signature
 : "class" IDENT "(" Formal_Args ")" Class_Sig_Extends
   { msg("Class_Signature: class IDENT ( Formal_Args )");
     classSignatureNode *n = new classSignatureNode;
-    n->name=$2;
+    n->name=$2; cout<<$2<<endl;
     n->extends=$6;
     $$ = n;
   }
@@ -178,6 +178,7 @@ Ident
 Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");
    classBodyNode *node = new classBodyNode;
    node->statements=$2;
+   node->methods=$3;
    $$=node;
 };
 

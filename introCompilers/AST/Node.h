@@ -94,6 +94,7 @@ struct statementsNode {
 struct classBodyNode {
   const char* name="classBodyNode";
   statementsNode* statements;
+  methodsNode* methods;
 };
 
 struct classNode {
