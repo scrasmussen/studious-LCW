@@ -3,6 +3,14 @@
 #include <vector>
 #include "Node.h"
 
+
+// std::vector<rExprNode> getRExprNodes ( Statements *statements)
+void getRExprNodes ( statementsNode s)
+{
+  
+  std::cout<<"Entered\n";
+}
+
 void checkConstructorCalls ( ProgramNode *rootNode ) {
   std::vector<classNode> classList = rootNode->classes.list;
   std::vector<statementNode> statementList = rootNode->statements.list;

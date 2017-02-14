@@ -29,7 +29,7 @@ objs ast.o: node flex
 	$(CC) -c ast.cpp quack.tab.c lex.yy.c $(CFLAGS)
 
 ast: Node.o ast.o quack.tab.o lex.yy.o 
-	$(CC) -o quack ast.o quack.tab.o lex.yy.o Node.o  -lfl $(CFLAGS)
+	$(CC) -o quack Node.o ast.o quack.tab.o lex.yy.o  -lfl $(CFLAGS)
 
 run:
 	./quack ${QFILE}

@@ -41,10 +41,10 @@ struct statementNode {
   int value;
   const char* str;
   rExprNode* rExpr;
+  std::vector<rExprNode> *list;
 };
 
 struct statementsNode {
-
   std::vector<statementNode> list;
 };
 
@@ -70,6 +70,7 @@ struct ProgramNode {
 
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
+void getRExprNodes ( statementsNode *);
 
 extern ProgramNode *root;
 #endif

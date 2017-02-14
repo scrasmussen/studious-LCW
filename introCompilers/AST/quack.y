@@ -85,7 +85,7 @@
 %type <prog> Program
 %type <classesN> Classes
 %type <classN> Class
-%type <statementsN> Statements
+%type <statementsN> Statements Statement_Block
 %type <statementN> Statement
 %type <classSigN> Class_Signature
 %type <classBodyN> Class_Body
@@ -190,8 +190,9 @@ Else
 ;
 
 Statement_Block
-: "{" "}" {msg("Statement_Block: { }");}
-| "{" Statements  "}" {msg("Statement_Block: { Statement }");}
+: "{" "}" {msg("Statement_Block: { }") ;}
+| "{" Statements  "}" {msg("Statement_Block: { Statement }");
+  }
 ;
 
 Methods
