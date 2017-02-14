@@ -41,6 +41,8 @@
   struct statementBlockNode* sBlock;
   struct elifsNode* elifs;
   struct elifNode* elif;
+  struct methodsNode* methods;
+  struct methodNode* method;
   struct elseNode* elsE;
 }
 
@@ -98,6 +100,8 @@
 %type <sBlock> Statement_Block 
 %type <elifs> Elifs 
 %type <elif> elif 
+%type <methods> Methods 
+%type <method> Method 
 %type <elsE> Else 
 
 
@@ -213,7 +217,6 @@ Statement
 }
 
 | L_Expr ":" IDENT "=" R_Expr ";" {
- 
    statementNode *node = new statementNode;
    node->str="assignment longer";
    node->rExpr=$5;
@@ -221,10 +224,23 @@ Statement
    $$=node;
    msg("Statement: L_Expr : IDENT = R_Expr ;");
    }
-| R_Expr ";" {msg("Statement: R_Expr ;");}
-| RETURN ";" {msg("Statement: RETURN ;");}
-| RETURN R_Expr ";" {statementNode *n = new statementNode; /*n->rExpr= new rExprNode;*/
-   msg("Statement: RETURN R_Expr ;");}
+| R_Expr ";" {
+   statementNode *node = new statementNode;
+   node->rExpr=$1;
+   $$=node;
+   msg("Statement: R_Expr ;");
+   }
+| RETURN ";" {
+   statementNode *node = new statementNode;
+   $$=node;
+   msg("Statement: RETURN ;");
+   }
+| RETURN R_Expr ";" {
+   statementNode *node = new statementNode;
+   node->rExpr=$2;
+   $$=node;
+   msg("Statement: RETURN R_Expr ;");
+}
 ;
 
 Elifs: { $$=new elifsNode;}
@@ -242,21 +258,6 @@ elif: ELIF R_Expr Statement_Block {
 	//cout<<"elif"<<endl;
 	}
 	;
-/*
-Elifs
-:  {
-   $$= new elifsNode;
-}
-| ELIF R_Expr Statement_Block Elifs {
-
-   elifsNode *node=$4; 
-   statementBlockNode *st = $3;
-   rExprNode *pr = $2;
-   node->rExpr=*pr; 
-   node->statementBlock=*st; 
-   msg("Elifs: ELIF R_Expr Statement_Block");
-}
-; */
 
 Else
 : {
@@ -285,13 +286,25 @@ msg("Statement_Block: { Statement }");
 }
 ;
 
+
 Methods
-: /* empty */
-| Methods Method {msg("Methods: Method Methods");}
+:  {
+   $$=new methodsNode;
+   } 
+| Methods Method {
+   methodsNode *c=$1; methodNode *n=$2;
+   c->list.push_back(*n);
+   msg("Methods: Method Methods");
+   }
 ;
 
 Method
-: DEF IDENT "(" Formal_Args ")" Method_Opt Statement_Block {msg("Method: DEF IDENT ( Formal_args ) Method_Opt Statement_Block");}
+: DEF IDENT "(" Formal_Args ")" Method_Opt Statement_Block {
+   methodNode *n = new methodNode;
+   n->statementBlock=$7;
+   $$=n;
+   msg("Method: DEF IDENT ( Formal_args ) Method_Opt Statement_Block");
+   }
 ;
 
 Method_Opt
@@ -318,7 +331,12 @@ L_Expr
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; rN->str=$1; $$ = rN;} 
 | INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; rN->val=std::stoi($1); $$ = rN;}
-| L_Expr {msg("R_Expr: L_Expr");}
+| L_Expr {
+   rExprNode *rN = new rExprNode;
+   rN->lExpr=$1; 
+   $$=rN;
+   msg("R_Expr: L_Expr");
+   }
 
 | R_Expr "+" R_Expr { msg("R_Expr: R_Expr + R_Expr");}
 | R_Expr "-" R_Expr {msg("R_Expr: R_Expr - R_Expr");}
@@ -335,18 +353,33 @@ R_Expr
 | R_Expr "OR" R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
 | "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
 | R_Expr "." IDENT "(" Actual_Args ")" {
-  constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
-  cN->name=$3; rN->constructor=cN; rN->rExprFirst=$1; 
+  //constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
+  //cN->name=$3; rN->constructor=cN; rN->rExprFirst=$1; 
+  rExprNode *rN = new rExprNode;
+  rN->rExprFirst=$1; 
+  rN->rExprSecond=NULL; 
+  rN->name=$3; 
   rN->str="method"; 
   $$=rN;
   msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 | IDENT "(" Actual_Args ")"{ 
-  constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
-  cN->name=$1; rN->constructor=cN; 
-  rN->str="constructor"; $$=rN; 
+  //constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
+  //cN->name=$1; rN->constructor=cN; 
+  //rN->str="constructor"; $$=rN; 
+  rExprNode *rN = new rExprNode;
+  rN->rExprFirst=NULL; 
+  rN->name=$1; 
+  rN->str="const"; 
+  $$=rN;
   msg("R_Expr: IDENT ( Actual_Args )");
 }
-| "(" R_Expr ")" {msg("R_Expr: ( R_Expr )");}
+| "(" R_Expr ")" {
+  rExprNode *rN = new rExprNode;
+  rN->rExprFirst=$2; 
+  rN->rExprSecond=NULL; 
+  //rN->str="const"; 
+  $$=rN;
+  msg("R_Expr: ( R_Expr )");}
 ;
 
 Actual_Args

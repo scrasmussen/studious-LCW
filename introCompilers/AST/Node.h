@@ -27,12 +27,14 @@ struct constructorNode {
 };
 
 
-
+class lExprNode;
 struct rExprNode {
   int val;
   const char* str = "";
+  const char* name = "";
   rExprNode *rExprFirst ;
   rExprNode *rExprSecond ;
+  lExprNode *lExpr ;
   constructorNode *constructor ;
 };
 
@@ -62,6 +64,14 @@ struct elifsNode {
  
 };
 
+struct methodNode {
+ statementBlockNode  *statementBlock;
+};
+
+struct methodsNode {
+  std::vector<methodNode> list;
+ 
+};
 struct elseNode {
  statementBlockNode  *statementBlock;
 };
