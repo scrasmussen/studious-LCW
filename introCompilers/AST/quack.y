@@ -52,17 +52,21 @@
 // KEYWORDS
 %token CLASS "class"
 %token DEF EXTENDS ELIF ELSE WHILE RETURN
-%token IF %token AND OR NOT 
+%token IF 
+%token AND "and" 
+%token OR "or" 
+%token NOT "not"
 %token SEMICOLON ";"
 %token COLON ":"
 %token LPAREN "("
 %token RPAREN ")"
 %token DOT "."
 %token COMMA ","
-%token PLUS "+"
-%token MINUS "-"
-%token TIMES "*"
-%token DIV "/"
+%token PLUS '+'
+%token MINUS '-'
+%token NEG 
+%token TIMES '*'
+%token DIV '/'
 %token EQUIV "=="
 %token LEQ "<="
 %token GEQ ">="
@@ -73,14 +77,28 @@
 %token LCURLY "}"
 
 // PUNCTUATION
-%right EQUALS LT GT LEQ GEQ
-%left MINUS PLUS
-%left DIF TIMES
-%left LPAREN
-%left RPAREN
-%left LCURLY
-%left RCURLY
-%nonassoc EQUIV AND OR NOT
+//%left ATMOST ATLEAST
+//%left EQUALS LESS MORE
+//%left NEG
+//%right PLUS MINUS
+//%left MULT DIVIDE
+//%left DOT
+
+//%right EQUALS LT GT LEQ GEQ
+//%left MINUS PLUS
+//%left DIF TIMES
+//%left LPAREN
+//%left RPAREN
+//%left LCURLY
+//%left RCURLY
+//%nonassoc EQUIV AND OR NOT
+
+%left  AND OR NOT
+%left EQUIV LT GT LEQ GEQ
+%left NEG
+%left '+' '-'
+%left '*' '/'
+%left DOT
 
 // IDENTIFIERS
 %token <str> IDENT
@@ -163,12 +181,12 @@ Class_Sig_Extends
 ;
 
 Formal_Args
-: /* empty */
+: 
 | IDENT ":" IDENT Idents {msg("Formal_Args: IDENT : IDENT Idents");}
 ;
 
 Idents
-: /* empty */ 
+: 
 | Idents Ident {msg("Idents: Idents Ident");}
 ;
 
@@ -273,12 +291,7 @@ Else
 ;
 
 Statement_Block
-: "{" "}" {
-   //statementBlockNode *node = new statementBlockNode;
-   //$$=node;
-   msg("Statement_Block: { }");
-}
-| "{" Statements  "}" {
+: "{" Statements  "}" {
    statementBlockNode *node = new statementBlockNode;
    statementsNode *s=$2;//monil 
    node->statements=s;
@@ -339,20 +352,21 @@ R_Expr
    msg("R_Expr: L_Expr");
    }
 
-| R_Expr "+" R_Expr { msg("R_Expr: R_Expr + R_Expr");}
-| R_Expr "-" R_Expr {msg("R_Expr: R_Expr - R_Expr");}
-| R_Expr "*" R_Expr {msg("R_Expr: R_Expr * R_Expr");}
-| R_Expr "/" R_Expr {msg("R_Expr: R_Expr / R_Expr");}
-| "-" R_Expr {msg("R_Expr: - R_Expr");}
-| R_Expr "==" R_Expr {msg("R_Expr: R_Expr == R_Expr");}
-| R_Expr "<=" R_Expr {msg("R_Expr: R_Expr <= R_Expr");}
-| R_Expr "<" R_Expr {msg("R_Expr: R_Expr < R_Expr");}
-| R_Expr ">=" R_Expr {msg("R_Expr: R_Expr >= R_Expr");}
-| R_Expr ">" R_Expr {msg("R_Expr: R_Expr > R_Expr");}
+/*l%left EQUALS LT GT LEQ GEQ */
+| R_Expr '+' R_Expr { msg("R_Expr: R_Expr + R_Expr");}
+| R_Expr '-' R_Expr {msg("R_Expr: R_Expr - R_Expr");}
+| R_Expr '*' R_Expr {msg("R_Expr: R_Expr * R_Expr");}
+| R_Expr '/' R_Expr {msg("R_Expr: R_Expr / R_Expr");}
+| '-' R_Expr %prec NEG {msg("R_Expr: - R_Expr");} 
+| R_Expr EQUIV R_Expr {msg("R_Expr: R_Expr == R_Expr");}
+| R_Expr LEQ R_Expr {msg("R_Expr: R_Expr <= R_Expr");}
+| R_Expr LT R_Expr {msg("R_Expr: R_Expr < R_Expr");}
+| R_Expr GEQ R_Expr {msg("R_Expr: R_Expr >= R_Expr");}
+| R_Expr GT R_Expr {msg("R_Expr: R_Expr > R_Expr");}
+| R_Expr AND R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
+| R_Expr OR R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
+| NOT R_Expr {msg("R_Expr: NOT R_Expr");} 
 
-| R_Expr "AND" R_Expr {msg("R_Expr: R_Expr AND R_Expr");}
-| R_Expr "OR" R_Expr {msg("R_Expr: R_Expr OR R_Expr");}
-| "NOT" R_Expr {msg("R_Expr: NOT R_Expr");}
 | R_Expr "." IDENT "(" Actual_Args ")" {
   //constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
   //cN->name=$3; rN->constructor=cN; rN->rExprFirst=$1; 
