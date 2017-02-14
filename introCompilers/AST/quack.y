@@ -37,7 +37,11 @@
   struct classSignatureNode* classSigN;
   struct classBodyNode* classBodyN;
   struct rExprNode* rExprN;
+  struct lExprNode* lExprN;
   struct statementBlockNode* sBlock;
+  struct elifsNode* elifs;
+  struct elifNode* elif;
+  struct elseNode* elsE;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -90,7 +94,11 @@
 %type <classBodyN> Class_Body
 %type <str> Class_Sig_Extends
 %type <rExprN> R_Expr
+%type <lExprN> L_Expr
 %type <sBlock> Statement_Block 
+%type <elifs> Elifs 
+%type <elif> elif 
+%type <elsE> Else 
 
 
 %start Program
@@ -179,45 +187,99 @@ Statement
 
   msg("Statement:WHILE R_Expr Statement_Block");
 }
-| IF R_Expr Statement_Block Elifs Else {msg("Statement: IF R_Expr quack");} 
-| Statement_Block {msg("Statement: Statement_Block");}
+| IF R_Expr Statement_Block Elifs Else {
+   statementNode *node = new statementNode;
+   node->str="assignment";
+   node->rExpr=$2;
+   node->stblock=$3;
+   $$=node;
+   msg("Statement: IF R_Expr quack");
+} 
+| Statement_Block {
+   statementNode *node = new statementNode;
+   node->stblock=$1;
+   $$=node;
+   msg("Statement: Statement_Block");
+
+}
 | L_Expr "="  R_Expr ";" {
 
    statementNode *node = new statementNode;
    node->str="assignment";
    node->rExpr=$3;
+   node->lExpr=$1;
    $$=node;
    msg("Statement: L_Expr = R_Expr ;");
 }
 
-| L_Expr ":" IDENT "=" R_Expr ";" {msg("Statement: L_Expr : IDENT = R_Expr ;");}
+| L_Expr ":" IDENT "=" R_Expr ";" {
+ 
+   statementNode *node = new statementNode;
+   node->str="assignment longer";
+   node->rExpr=$5;
+   node->lExpr=$1;
+   $$=node;
+   msg("Statement: L_Expr : IDENT = R_Expr ;");
+   }
 | R_Expr ";" {msg("Statement: R_Expr ;");}
 | RETURN ";" {msg("Statement: RETURN ;");}
 | RETURN R_Expr ";" {statementNode *n = new statementNode; /*n->rExpr= new rExprNode;*/
    msg("Statement: RETURN R_Expr ;");}
 ;
 
+Elifs: { $$=new elifsNode;}
+        |Elifs elif {
+	elifsNode *c=$1; elifNode *n=$2;
+        c->list.push_back(*n);
+	//cout<<"elifs"<<endl;
+	}
+        ;
+elif: ELIF R_Expr Statement_Block {
+        elifNode *n = new elifNode;
+	n->rExpr=$2;
+	n->statementBlock=$3;
+	$$=n;	
+	//cout<<"elif"<<endl;
+	}
+	;
+/*
 Elifs
-: /* empty */
-| ELIF R_Expr Statement_Block Elifs {msg("Elifs: ELIF R_Expr Statement_Block");}
-;
+:  {
+   $$= new elifsNode;
+}
+| ELIF R_Expr Statement_Block Elifs {
+
+   elifsNode *node=$4; 
+   statementBlockNode *st = $3;
+   rExprNode *pr = $2;
+   node->rExpr=*pr; 
+   node->statementBlock=*st; 
+   msg("Elifs: ELIF R_Expr Statement_Block");
+}
+; */
 
 Else
-: /* empty */
-| ELSE Statement_Block {msg("Else: ELSE Statement_Block");}
+: {
+  $$=new elseNode;
+  } 
+| ELSE Statement_Block {
+  elseNode *node=new elseNode;
+  node->statementBlock=$2;
+  $$=node;
+  msg("Else: ELSE Statement_Block");
+  }
 ;
 
 Statement_Block
 : "{" "}" {
    statementBlockNode *node = new statementBlockNode;
    $$=node;
-
-msg("Statement_Block: { }");
+   msg("Statement_Block: { }");
 }
 | "{" Statements  "}" {
    statementBlockNode *node = new statementBlockNode;
-   statementsNode *s=$2;//monil 
-   node->statements=(statementsNode *)s;
+   //statementsNode *s=$2;//monil 
+   node->statements=$2;
    $$=node;
 msg("Statement_Block: { Statement }");
 }
@@ -238,8 +300,19 @@ Method_Opt
 ;
 
 L_Expr
-: IDENT {msg("L_Expr: IDENT");}
-| R_Expr "." IDENT {msg("L_Expr: R_Expr . IDENT");}
+: IDENT {
+   lExprNode *node=new lExprNode;
+   node->str=$1;
+   $$=node;
+   msg("L_Expr: IDENT");
+   }
+| R_Expr "." IDENT {
+   lExprNode *node=new lExprNode;
+   node->str=$3;
+   node->rExpr=$1;
+   $$=node;
+   msg("L_Expr: R_Expr . IDENT");
+}
 ;
 
 R_Expr
@@ -264,13 +337,13 @@ R_Expr
 | R_Expr "." IDENT "(" Actual_Args ")" {
   constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
   cN->name=$3; rN->constructor=cN; rN->rExprFirst=$1; 
-  rN->str="conswithrexpr"; 
+  rN->str="method"; 
   $$=rN;
   msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 | IDENT "(" Actual_Args ")"{ 
   constructorNode *cN = new constructorNode; rExprNode *rN = new rExprNode;
   cN->name=$1; rN->constructor=cN; 
-  rN->str="cons_without_rexpr"; $$=rN; 
+  rN->str="constructor"; $$=rN; 
   msg("R_Expr: IDENT ( Actual_Args )");
 }
 | "(" R_Expr ")" {msg("R_Expr: ( R_Expr )");}

@@ -26,6 +26,8 @@ struct constructorNode {
   const char* name;
 };
 
+
+
 struct rExprNode {
   int val;
   const char* str = "";
@@ -34,20 +36,43 @@ struct rExprNode {
   constructorNode *constructor ;
 };
 
+struct lExprNode {
+  const char* str = "";
+  rExprNode *rExpr;
+};
+
 
 struct whileNode {
   
 };
 
+class statementsNode;
 struct statementBlockNode {
  //statementsNode *statements; 
- void *statements; 
+ statementsNode *statements;
 };
+
+struct elifNode {
+ rExprNode* rExpr;
+ statementBlockNode  *statementBlock;
+};
+
+struct elifsNode {
+  std::vector<elifNode> list;
+ 
+};
+
+struct elseNode {
+ statementBlockNode  *statementBlock;
+};
+
+
 
 struct statementNode {
   int value;
   const char* str;
   rExprNode* rExpr;
+  lExprNode* lExpr;
   statementBlockNode* stblock; 
 };
 
