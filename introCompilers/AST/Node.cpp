@@ -6,7 +6,7 @@
 void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classNames) {
 
   /* ===== TODO, VOID STATEMENT NOT ENTERING ===== */
-  std::cout<<"NOTNULL\n";
+  //std::cout<<"NOTNULL\n";
     // statementsNode *a=(statementsNode *) n->statements;
       // if (!n->statements) 
 	// std::cout<<"NOTNULL\n";
@@ -43,7 +43,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames)
   // constructorNode *constructor ;
   
   if ( n->str="const"){
-    std::cout << n->name <<"REXPR\n";
+    //std::cout << n->name <<"REXPR\n";
     int found = 0;
       for (char const * a : *classNames) {
        if (strcmp(n->name,a)==0) {
@@ -80,6 +80,24 @@ void checkStatement(statementNode n, std::vector<char const*> *classNames)
     checkStatementBlock(n.stblock, classNames);
 }
 
+void checkMethod(methodNode  n, std::vector<char const*> *classNames)
+{
+  if (n.statementBlock != NULL && n.statementBlock->statements!=NULL)
+
+    for (statementNode s : n.statementBlock->statements->list)
+      {
+	checkStatement(s, classNames);
+      }
+
+//  if (n->methods != NULL)
+ //   for (methodsNode m : n->methods->list)
+  //    {
+//	checkMethods(m, classNames);
+ //     }
+
+}
+
+
 void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames)
 {
   if (n->statements != NULL)
@@ -87,6 +105,12 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames)
       {
 	checkStatement(s, classNames);
       }
+  if (n->methods != NULL)
+    for (methodNode m : n->methods->list)
+      {
+	checkMethod(m, classNames);
+      }
+
 }
 
 void checkConstructorCalls ( ProgramNode *rootNode ) {
