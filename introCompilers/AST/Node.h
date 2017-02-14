@@ -39,14 +39,20 @@ struct whileNode {
   
 };
 
+struct statementBlockNode {
+ //statementsNode *statements; 
+ void *statements; 
+};
+
 struct statementNode {
   int value;
   const char* str;
   rExprNode* rExpr;
+  statementBlockNode* stblock; 
 };
 
-struct statementsNode {
 
+struct statementsNode {
   std::vector<statementNode> list;
 };
 

@@ -37,6 +37,7 @@
   struct classSignatureNode* classSigN;
   struct classBodyNode* classBodyN;
   struct rExprNode* rExprN;
+  struct statementBlockNode* sBlock;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -45,9 +46,7 @@
 // KEYWORDS
 %token CLASS "class"
 %token DEF EXTENDS ELIF ELSE WHILE RETURN
-%token IF
-%token AND OR NOT
-
+%token IF %token AND OR NOT 
 %token SEMICOLON ";"
 %token COLON ":"
 %token LPAREN "("
@@ -91,6 +90,7 @@
 %type <classBodyN> Class_Body
 %type <str> Class_Sig_Extends
 %type <rExprN> R_Expr
+%type <sBlock> Statement_Block 
 
 
 %start Program
@@ -170,7 +170,15 @@ Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }
 };
 
 Statement
-: WHILE R_Expr Statement_Block {msg("Statement:WHILE R_Expr Statement_Block");}
+: WHILE R_Expr Statement_Block {
+   statementNode *node = new statementNode;
+   node->str="assignment";
+   node->rExpr=$2;
+   node->stblock=$3;
+   $$=node;
+
+  msg("Statement:WHILE R_Expr Statement_Block");
+}
 | IF R_Expr Statement_Block Elifs Else {msg("Statement: IF R_Expr quack");} 
 | Statement_Block {msg("Statement: Statement_Block");}
 | L_Expr "="  R_Expr ";" {
@@ -200,8 +208,19 @@ Else
 ;
 
 Statement_Block
-: "{" "}" {msg("Statement_Block: { }");}
-| "{" Statements  "}" {msg("Statement_Block: { Statement }");}
+: "{" "}" {
+   statementBlockNode *node = new statementBlockNode;
+   $$=node;
+
+msg("Statement_Block: { }");
+}
+| "{" Statements  "}" {
+   statementBlockNode *node = new statementBlockNode;
+   statementsNode *s=$2;//monil 
+   node->statements=(statementsNode *)s;
+   $$=node;
+msg("Statement_Block: { Statement }");
+}
 ;
 
 Methods
