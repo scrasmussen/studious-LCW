@@ -1,0 +1,13 @@
+class ab() {
+m=ab(1,2);
+n=bc(2,3);
+o=abc(2,3);
+}
+class bc(){
+m=ab(1,2);
+n=bc(2,3);
+o=abc(2,3);
+}
+m=ab(1,2);
+n=bc(2,3);
+o=abc(2,3);

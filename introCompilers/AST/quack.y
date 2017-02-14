@@ -274,14 +274,14 @@ Else
 
 Statement_Block
 : "{" "}" {
-   statementBlockNode *node = new statementBlockNode;
-   $$=node;
+   //statementBlockNode *node = new statementBlockNode;
+   //$$=node;
    msg("Statement_Block: { }");
 }
 | "{" Statements  "}" {
    statementBlockNode *node = new statementBlockNode;
-   //statementsNode *s=$2;//monil 
-   node->statements=$2;
+   statementsNode *s=$2;//monil 
+   node->statements=s;
    $$=node;
 msg("Statement_Block: { Statement }");
 }

@@ -76,8 +76,13 @@ void checkStatement(statementNode n, std::vector<char const*> *classNames)
   // statementBlockNode* stblock;
   if (n.rExpr!=NULL)
     checkRExpr(n.rExpr, classNames);
-  if (n.stblock!=NULL)
-    checkStatementBlock(n.stblock, classNames);
+/*jjjjj if (n.stblock!=NULL && n.stblock->statements!=NULL)
+    //checkStatementBlock(n.stblock, classNames);
+    for (statementNode s : n.stblock->statements->list)
+      {
+	checkStatement(s, classNames);
+      }*/ 
+
 }
 
 void checkMethod(methodNode  n, std::vector<char const*> *classNames)
