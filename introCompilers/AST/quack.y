@@ -64,11 +64,11 @@
 %token RPAREN ")"
 %token DOT "."
 %token COMMA ","
-%token PLUS '+'
-%token MINUS '-'
+%token PLUS "+"
+%token MINUS "-"
 %token NEG 
-%token TIMES '*'
-%token DIV '/'
+%token TIMES "*"
+%token DIV "/"
 %token EQUIV "=="
 %token LEQ "<="
 %token GEQ ">="
@@ -98,8 +98,8 @@
 %left  AND OR NOT
 %left EQUIV LT GT LEQ GEQ
 %left NEG
-%left '+' '-'
-%left '*' '/'
+%left PLUS MINUS 
+%left TIMES DIV 
 %left DOT
 
 // IDENTIFIERS
@@ -356,35 +356,35 @@ R_Expr
    }
 
 /*l%left EQUALS LT GT LEQ GEQ */
-| R_Expr '+' R_Expr { 
+| R_Expr PLUS R_Expr { 
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
    $$=rN;
    msg("R_Expr: R_Expr + R_Expr");
    }
-| R_Expr '-' R_Expr {
+| R_Expr MINUS R_Expr {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
    $$=rN;
    msg("R_Expr: R_Expr - R_Expr");
    }
-| R_Expr '*' R_Expr {
+| R_Expr TIMES R_Expr {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
    $$=rN;
    msg("R_Expr: R_Expr * R_Expr");
    }
-| R_Expr '/' R_Expr {
+| R_Expr DIV R_Expr {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
    $$=rN;
    msg("R_Expr: R_Expr / R_Expr");
    }
-| '-' R_Expr %prec NEG {
+| MINUS R_Expr %prec NEG {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
    $$=rN;
