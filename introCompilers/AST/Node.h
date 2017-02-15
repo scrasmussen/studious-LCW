@@ -9,8 +9,7 @@
 
 struct classSignatureNode {
   char const* name;
-  char const* extends = "Obj";
-  int searched = 0;
+  char const* extends;
 };
 
 struct classSigExtendsNode {
@@ -22,24 +21,37 @@ struct returnNode {
   
 };
 
-struct constructorNode {
-  const char* name;
-};
+
 
 
 class lExprNode;
+
 struct rExprNode {
+rExprNode(): rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL) {}
   int val;
   const char* str = "";
   const char* name = "";
   rExprNode *rExprFirst ;
   rExprNode *rExprSecond ;
   lExprNode *lExpr ;
-  constructorNode *constructor ;
 };
 
+struct rExprsNode {
+rExprsNode(): rExpr(NULL) {}
+  rExprNode *rExpr ;
+};
+
+struct actualArgsNode{
+actualArgsNode(): rExprs(NULL), rExpr(NULL){}
+  rExprsNode *rExprs ;
+  rExprNode *rExpr ;
+};
+
+
 struct lExprNode {
-  const char* str = "";
+lExprNode(): rExpr(NULL), strtest(NULL) {}
+  const char* str;
+  std::string *strtest;
   rExprNode *rExpr;
 };
 
@@ -50,21 +62,22 @@ struct whileNode {
 
 class statementsNode;
 struct statementBlockNode {
- //statementsNode *statements; 
+statementBlockNode() : statements(NULL) {}
  statementsNode *statements;
 };
 
 struct elifNode {
+elifNode() : rExpr(NULL), statementBlock(NULL) {}
  rExprNode* rExpr;
  statementBlockNode  *statementBlock;
 };
 
 struct elifsNode {
   std::vector<elifNode> list;
- 
 };
 
 struct methodNode {
+methodNode() : statementBlock(NULL) {}
  statementBlockNode  *statementBlock;
 };
 
@@ -73,12 +86,14 @@ struct methodsNode {
  
 };
 struct elseNode {
+elseNode(): statementBlock(NULL){}
  statementBlockNode  *statementBlock;
 };
 
 
 
 struct statementNode {
+statementNode():rExpr(NULL), lExpr(NULL), stblock(NULL){}
   int value;
   const char* str;
   rExprNode* rExpr;
@@ -92,13 +107,15 @@ struct statementsNode {
 };
 
 struct classBodyNode {
+classBodyNode(): statements(NULL), methods(NULL){}
   const char* name="classBodyNode";
   statementsNode* statements;
   methodsNode* methods;
 };
 
 struct classNode {
-  const char* name="classNode";
+classNode(): sig(NULL), classBody(NULL){}
+  const char* name;
   classSignatureNode* sig;
   classBodyNode* classBody;
 };
@@ -112,6 +129,8 @@ struct ProgramNode {
   statementsNode statements;
 };
 
+void checkLExpr(lExprNode *, std::vector<char const*> *);
+void checkStatement(statementNode , std::vector<char const*> *);
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
 

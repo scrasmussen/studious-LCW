@@ -43,7 +43,9 @@
   struct elifNode* elif;
   struct methodsNode* methods;
   struct methodNode* method;
-  struct elseNode* elsE;
+ struct elseNode* elsE;
+  struct rExprsNode* rExprNs;
+  struct actualArgsNode* ActArgs;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -121,7 +123,8 @@
 %type <methods> Methods 
 %type <method> Method 
 %type <elsE> Else 
-
+%type <ActArgs> Actual_Args
+%type <rExprNs> R_Exprs
 
 %start Program
 %%
@@ -475,12 +478,27 @@ R_Expr
 ;
 
 Actual_Args
-: /* empty */
-| R_Expr R_Exprs {msg("Actual_Args: R_Expr R_Exprs");}
+: {
+  $$=new actualArgsNode; 
+  }
+| R_Expr R_Exprs {
+  actualArgsNode *rN = new actualArgsNode;
+  rN->rExpr=$1;
+  rN->rExprs=$2;
+  $$=rN;
+  msg("Actual_Args: R_Expr R_Exprs");
+  }
 ;
 
 R_Exprs
-: /* empty */
-| "," R_Expr {msg("R_Exprs: , R_Expr");}
+: {
+  $$=new rExprsNode; 
+  }
+| "," R_Expr {
+  rExprsNode *rN = new rExprsNode;
+  rN->rExpr=$2;
+  $$=rN;
+  msg("R_Exprs: , R_Expr");
+  }
 ;
 
