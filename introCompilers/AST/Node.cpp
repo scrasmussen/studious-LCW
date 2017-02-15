@@ -113,6 +113,8 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames)
 
 void checkConstructorCalls ( ProgramNode *rootNode ) {
   std::vector<char const*> classNames;
+  classNames.push_back("Obj");
+
   for (auto &c : rootNode->classes.list)
     classNames.push_back(c.sig->name);
 
