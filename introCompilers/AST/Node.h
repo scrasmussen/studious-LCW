@@ -23,22 +23,22 @@ struct returnNode {
 
 
 
-
+class actualArgsNode;
 class lExprNode;
 
 struct rExprNode {
-rExprNode(): rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL) {}
+rExprNode(): rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL) {}
   int val;
   const char* str = "";
   const char* name = "";
   rExprNode *rExprFirst ;
   rExprNode *rExprSecond ;
   lExprNode *lExpr ;
+  actualArgsNode *actualArgs;
 };
 
 struct rExprsNode {
-rExprsNode(): rExpr(NULL) {}
-  rExprNode *rExpr ;
+  std::vector<rExprNode*> list;
 };
 
 struct actualArgsNode{
@@ -73,7 +73,7 @@ elifNode() : rExpr(NULL), statementBlock(NULL) {}
 };
 
 struct elifsNode {
-  std::vector<elifNode> list;
+  std::vector<elifNode*> list;
 };
 
 struct methodNode {
@@ -83,8 +83,8 @@ methodNode() : statementBlock(NULL) {}
 
 struct methodsNode {
   std::vector<methodNode> list;
- 
 };
+
 struct elseNode {
 elseNode(): statementBlock(NULL){}
  statementBlockNode  *statementBlock;
@@ -93,12 +93,14 @@ elseNode(): statementBlock(NULL){}
 
 
 struct statementNode {
-statementNode():rExpr(NULL), lExpr(NULL), stblock(NULL){}
+statementNode():rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL) {}
   int value;
   const char* str;
   rExprNode* rExpr;
   lExprNode* lExpr;
-  statementBlockNode* stblock; 
+  statementBlockNode* stblock;
+  elifsNode* elifs;
+  elseNode* elseN;
 };
 
 
@@ -129,6 +131,7 @@ struct ProgramNode {
   statementsNode statements;
 };
 
+void checkRExpr(rExprNode *, std::vector<char const*> *);
 void checkLExpr(lExprNode *, std::vector<char const*> *);
 void checkStatement(statementNode , std::vector<char const*> *);
 void checkClassHierarchy ( std::vector<classNode> );

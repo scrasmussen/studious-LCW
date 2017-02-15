@@ -43,7 +43,7 @@
   struct elifNode* elif;
   struct methodsNode* methods;
   struct methodNode* method;
- struct elseNode* elsE;
+  struct elseNode* elsE;
   struct rExprsNode* rExprNs;
   struct actualArgsNode* ActArgs;
 }
@@ -116,6 +116,7 @@
 %type <classBodyN> Class_Body
 %type <str> Class_Sig_Extends
 %type <rExprN> R_Expr
+%type <rExprNs> R_Exprs
 %type <lExprN> L_Expr
 %type <sBlock> Statement_Block 
 %type <elifs> Elifs 
@@ -124,20 +125,16 @@
 %type <method> Method 
 %type <elsE> Else 
 %type <ActArgs> Actual_Args
-%type <rExprNs> R_Exprs
 
 %start Program
 %%
 // ----GRAMMAR----
 Program
-: Classes Statements { /*result = $1*/ ;msg("Program: Class Statement");
+: Classes Statements {;msg("Program: Class Statement");
    classesNode *c=$1;
    root->classes=*c;
-   statementsNode *s=$2;//monil 
-   root->statements=*s;//monil
-   // Add    root->statementss=*s;
-   /* std::cout<<c->list.size()<<std::endl; */
-   /* std::cout<<root->node->t<<std::endl; */
+   statementsNode *s=$2;
+   root->statements=*s;
  }
 ;
 
@@ -215,9 +212,10 @@ Statement
 }
 | IF R_Expr Statement_Block Elifs Else {
    statementNode *node = new statementNode;
-   //node->str="assignment";
    node->rExpr=$2;
    node->stblock=$3;
+   node->elifs=$4;
+   node->elseN=$5;
    $$=node;
    msg("Statement: IF R_Expr quack");
 } 
@@ -268,8 +266,7 @@ Statement
 Elifs: { $$=new elifsNode;}
         |Elifs elif {
 	elifsNode *c=$1; elifNode *n=$2;
-        c->list.push_back(*n);
-	//cout<<"elifs"<<endl;
+        c->list.push_back(n);
 	}
         ;
 elif: ELIF R_Expr Statement_Block {
@@ -277,7 +274,6 @@ elif: ELIF R_Expr Statement_Block {
 	n->rExpr=$2;
 	n->statementBlock=$3;
 	$$=n;	
-	//cout<<"elif"<<endl;
 	}
 	;
 
@@ -453,8 +449,9 @@ R_Expr
   rExprNode *rN = new rExprNode;
   rN->rExprFirst=$1; 
   rN->rExprSecond=NULL; 
-  rN->name=$3; 
-  rN->str="method"; 
+  rN->name=$3;
+  rN->actualArgs=$5;
+  rN->str="method";
   $$=rN;
   msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 | IDENT "(" Actual_Args ")"{ 
@@ -464,7 +461,8 @@ R_Expr
   rExprNode *rN = new rExprNode;
   rN->rExprFirst=NULL; 
   rN->name=$1; 
-  rN->str="const"; 
+  rN->str="const";
+  rN->actualArgs=$3;
   $$=rN;
   msg("R_Expr: IDENT ( Actual_Args )");
 }
@@ -494,10 +492,11 @@ R_Exprs
 : {
   $$=new rExprsNode; 
   }
-| "," R_Expr {
-  rExprsNode *rN = new rExprsNode;
-  rN->rExpr=$2;
-  $$=rN;
+| R_Exprs "," R_Expr {
+  rExprsNode *c=$1;
+  rExprNode *n=$3;
+  c->list.push_back(n);
+  $$=c;
   msg("R_Exprs: , R_Expr");
   }
 ;

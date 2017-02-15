@@ -16,6 +16,16 @@ void checkConstructorClass(const char* name, std::vector<char const*> *className
  
 }
 
+void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames)
+{
+  if (n->rExpr!=NULL)
+    checkRExpr(n->rExpr, classNames);
+  if (n->rExprs!=NULL)
+      for (rExprNode *e : n->rExprs->list)
+	checkRExpr(e, classNames);
+  
+}
+
 void checkRExpr(rExprNode *n, std::vector<char const*> *classNames)
 {
   if ( strcmp(n->str,"const") == 0) 
@@ -27,6 +37,8 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames)
     checkRExpr(n->rExprSecond, classNames);
   if (n->lExpr!=NULL)
     checkLExpr(n->lExpr, classNames);
+  if (n->actualArgs!=NULL)
+    checkActualArgs(n->actualArgs, classNames);
 }
 
 void checkLExpr(lExprNode *n, std::vector<char const*> *classNames)
@@ -43,6 +55,26 @@ void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classN
     	checkStatement(s, classNames);
 }
 
+void checkElif(elifNode *n, std::vector<char const*> *classNames)
+{
+  if (n->rExpr!=NULL)
+    checkRExpr(n->rExpr, classNames);
+  if (n->statementBlock!=NULL)
+    checkStatementBlock(n->statementBlock, classNames);
+}
+
+void checkElifs(elifsNode *n, std::vector<char const*> *classNames)
+{
+  for (elifNode *e : n->list)
+    checkElif(e, classNames);
+}
+
+void checkElse(elseNode *n, std::vector<char const*> *classNames)
+{
+  if (n->statementBlock!=NULL)
+    checkStatementBlock(n->statementBlock, classNames);
+}
+
 void checkStatement(statementNode n, std::vector<char const*> *classNames)
 {
   if (n.rExpr!=NULL)
@@ -51,6 +83,10 @@ void checkStatement(statementNode n, std::vector<char const*> *classNames)
     checkLExpr(n.lExpr, classNames);
   if (n.stblock!=NULL)
     checkStatementBlock(n.stblock, classNames);
+  if (n.elifs!=NULL)
+    checkElifs(n.elifs, classNames);
+  if (n.elseN!=NULL)
+    checkElse(n.elseN, classNames);
 }
 
 void checkMethod(methodNode  n, std::vector<char const*> *classNames)
