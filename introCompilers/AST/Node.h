@@ -8,6 +8,7 @@
 
 static int BUILDSYMBOLTABLE=2;
 static int EMPTY=3;
+static int CHECKCONSTRUCTORCALLS=5;
 
 class symbol {
 public: 
@@ -214,9 +215,9 @@ struct ProgramNode {
 };
 
 
-void checkRExpr(rExprNode *, std::vector<char const*> *);
-void checkLExpr(lExprNode *, std::vector<char const*> *);
-void checkStatement(statementNode , std::vector<char const*> *);
+void checkRExpr(rExprNode *, std::vector<char const*> *, int);
+void checkLExpr(lExprNode *, std::vector<char const*> *,  int);
+void checkStatement(statementNode , std::vector<char const*> *, int);
 void buildSymbolTable( ProgramNode*);
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
