@@ -31,13 +31,9 @@ int main(int argc, char*argv[]) {
   
   // set flex to read from it instead of defaulting to STDIN:
   yyin = f;
-
   if (yyparse() == 0) {
     std::cout << "Finished parse with no errors\n";
   }
-
-
-  // std::cout << "|ROOT| " << root->classes.list.size() << std::endl;
 
   /* === TRAVERSAL ACTIONS === */
   traverse(CHECKCLASSHIERARCHY);
