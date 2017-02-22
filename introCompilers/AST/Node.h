@@ -47,6 +47,27 @@ class symTable {
      }
 };
 
+struct argumentNode {
+  char const* name;
+  char const* type;
+  symTable *sTable;
+};
+
+
+struct argumentsNode {
+  std::vector<argumentNode*> list;
+  symTable *sTable;
+};
+
+struct formalArgumentsNode {
+  char const* name;
+  char const* type;
+  argumentsNode* arguments;
+  symTable *sTable; 
+};
+
+
+
 struct classSignatureNode {
   char const* name;
   char const* extends;
@@ -96,6 +117,7 @@ struct actualArgsNode{
 struct lExprNode {
   lExprNode(): rExpr(NULL), strtest(NULL) {}
   const char* str;
+  const char* name;
   std::string *strtest;
   rExprNode *rExpr;
   symTable *sTable; 
@@ -129,6 +151,7 @@ struct methodNode {
   methodNode() : statementBlock(NULL) {}
   statementBlockNode  *statementBlock;
   symTable *sTable; 
+  const char* name;
 };
 
 struct methodsNode {
@@ -147,6 +170,7 @@ struct statementNode {
 statementNode():rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL) {}
   int value;
   const char* str;
+  const char* name;
   rExprNode* rExpr;
   lExprNode* lExpr;
   statementBlockNode* stblock;
