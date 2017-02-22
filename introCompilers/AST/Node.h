@@ -148,11 +148,17 @@ struct elifsNode {
   symTable *sTable; 
 };
 
+struct methodReturnNode {
+  symTable *sTable;
+  const char* name;
+};
+
 struct methodNode {
   methodNode() : statementBlock(NULL) {}
   statementBlockNode  *statementBlock;
   symTable *sTable; 
   const char* name;
+  methodReturnNode* methodReturn;
 };
 
 struct methodsNode {

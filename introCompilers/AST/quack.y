@@ -43,6 +43,7 @@
   struct elifNode* elif;
   struct methodsNode* methods;
   struct methodNode* method;
+  struct methodReturnNode* methodReturn;
   struct elseNode* elsE;
   struct rExprsNode* rExprNs;
   struct actualArgsNode* ActArgs;
@@ -126,6 +127,7 @@
 %type <elif> elif 
 %type <methods> Methods 
 %type <method> Method 
+%type <methodReturn> Method_Opt 
 %type <elsE> Else 
 %type <ActArgs> Actual_Args
 %type <fArgs> Formal_Args
@@ -347,6 +349,7 @@ Method
 : DEF IDENT "(" Formal_Args ")" Method_Opt Statement_Block {
    methodNode *n = new methodNode;
    n->statementBlock=$7;
+   n->methodReturn=$6;
    n->name=$2;
    $$=n;
    msg("Method: DEF IDENT ( Formal_args ) Method_Opt Statement_Block");
@@ -354,8 +357,15 @@ Method
 ;
 
 Method_Opt
-: /* empty */
-| ":" IDENT {msg("Method_Opt: : IDENT");}
+:  {
+   $$=new methodReturnNode;
+   } 
+| ":" IDENT {
+   methodReturnNode *n = new methodReturnNode;
+   n->name=$2;
+   $$=n;
+   msg("Method_Opt: : IDENT");
+}
 ;
 
 L_Expr
