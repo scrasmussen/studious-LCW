@@ -16,83 +16,83 @@ void checkConstructorClass(const char* name, std::vector<char const*> *className
  
 }
 
-void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames)
+void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   if (n->rExpr!=NULL)
-    checkRExpr(n->rExpr, classNames);
+    checkRExpr(n->rExpr, classNames, v);
   if (n->rExprs!=NULL)
       for (rExprNode *e : n->rExprs->list)
-	checkRExpr(e, classNames);
+	checkRExpr(e, classNames, v);
   
 }
 
-void checkRExpr(rExprNode *n, std::vector<char const*> *classNames)
+void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   if ( strcmp(n->str,"const") == 0) 
     checkConstructorClass(n->name, classNames);
   
   if (n->rExprFirst!=NULL)
-    checkRExpr(n->rExprFirst, classNames);
+    checkRExpr(n->rExprFirst, classNames, v);
   if (n->rExprSecond!=NULL)
-    checkRExpr(n->rExprSecond, classNames);
+    checkRExpr(n->rExprSecond, classNames, v);
   if (n->lExpr!=NULL)
-    checkLExpr(n->lExpr, classNames);
+    checkLExpr(n->lExpr, classNames, v);
   if (n->actualArgs!=NULL)
-    checkActualArgs(n->actualArgs, classNames);
+    checkActualArgs(n->actualArgs, classNames, v);
 }
 
-void checkLExpr(lExprNode *n, std::vector<char const*> *classNames)
+void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   if (n->rExpr!=NULL)
-    checkRExpr(n->rExpr, classNames);
+    checkRExpr(n->rExpr, classNames, v);
 }
 
 
-void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classNames)
+void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   if (n->statements!=NULL)
     for (statementNode s : n->statements->list)
-    	checkStatement(s, classNames);
+      checkStatement(s, classNames, v);
 }
 
-void checkElif(elifNode *n, std::vector<char const*> *classNames)
+void checkElif(elifNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   if (n->rExpr!=NULL)
-    checkRExpr(n->rExpr, classNames);
+    checkRExpr(n->rExpr, classNames, v);
   if (n->statementBlock!=NULL)
-    checkStatementBlock(n->statementBlock, classNames);
+    checkStatementBlock(n->statementBlock, classNames, v);
 }
 
-void checkElifs(elifsNode *n, std::vector<char const*> *classNames)
+void checkElifs(elifsNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   for (elifNode *e : n->list)
-    checkElif(e, classNames);
+    checkElif(e, classNames, v);
 }
 
-void checkElse(elseNode *n, std::vector<char const*> *classNames)
+void checkElse(elseNode *n, std::vector<char const*> *classNames,  std::vector<int> v)
 {
   if (n->statementBlock!=NULL)
-    checkStatementBlock(n->statementBlock, classNames);
+    checkStatementBlock(n->statementBlock, classNames, v);
 }
 
-void checkStatement(statementNode n, std::vector<char const*> *classNames)
+void checkStatement(statementNode n, std::vector<char const*> *classNames,  std::vector<int> v={EMPTY})
 {
   if (n.rExpr!=NULL)
-    checkRExpr(n.rExpr, classNames);
+    checkRExpr(n.rExpr, classNames, v);
   if (n.lExpr!=NULL)
-    checkLExpr(n.lExpr, classNames);
+    checkLExpr(n.lExpr, classNames, v);
   if (n.stblock!=NULL)
-    checkStatementBlock(n.stblock, classNames);
+    checkStatementBlock(n.stblock, classNames, v);
   if (n.elifs!=NULL)
-    checkElifs(n.elifs, classNames);
+    checkElifs(n.elifs, classNames, v);
   if (n.elseN!=NULL)
-    checkElse(n.elseN, classNames);
+    checkElse(n.elseN, classNames, v);
 }
 
-void checkMethod(methodNode  n, std::vector<char const*> *classNames)
+void checkMethod(methodNode  n, std::vector<char const*> *classNames,  std::vector<int> v={EMPTY})
 {  
   if (n.statementBlock!=NULL)
-    checkStatementBlock(n.statementBlock, classNames);
+    checkStatementBlock(n.statementBlock, classNames, v);
 }
 
 
@@ -101,18 +101,27 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, std
   if (n->statements != NULL)
     for (statementNode s : n->statements->list)
       {
-	checkStatement(s, classNames);
+	checkStatement(s, classNames, v);
       }
   if (n->methods != NULL)
     for (methodNode m : n->methods->list)
       {
-	checkMethod(m, classNames);
+	checkMethod(m, classNames, v);
       }
 
 }
+
+
+// void call(ACTION, node)
+//    if (action=BUILDSYMBOLTABLE)
+//           node.insert(name, type, scope)
+//
+
+
 // void checkProgramNode( ProgramNode *n, std::vector<int> v={EMPTY})
 // {
-
+//     for action in actionVec
+//         call(action)
 // }
 void buildSymbolTable(ProgramNode *rootNode)
 {
