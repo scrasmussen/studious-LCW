@@ -39,9 +39,9 @@ int main(int argc, char*argv[]) {
 
   // std::cout << "|ROOT| " << root->classes.list.size() << std::endl;
 
-  /* ==== CHECK FOR HEIRARCHY WELL FORMEDNESS ==== */
-  checkClassHierarchy(root->classes.list);
-  checkConstructorCalls(root);
-  buildSymbolTable(root);
+  /* === TRAVERSAL ACTIONS === */
+  traverse(CHECKCLASSHIERARCHY);
+  traverse(CHECKCONSTRUCTORCALLS);
+  traverse(BUILDSYMBOLTABLE);
   
 }
