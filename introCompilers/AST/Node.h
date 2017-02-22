@@ -6,6 +6,8 @@
 #ifndef NODE_H
 #define NODE_H
 
+static int BUILDSYMBOLTABLE=2;
+static int EMPTY=3;
 
 struct classSignatureNode {
   char const* name;
@@ -124,16 +126,33 @@ classNode(): sig(NULL), classBody(NULL){}
 
 struct classesNode {
   std::vector<classNode> list;
+  /* symTable var; */
 };
+
+/* class symTable { */
+/*  public: */
+/*   std::vector<symbol> s */
+/*     create { }  */
+/*   insert(a1)  { s.pushback(a1)}  */
+/*     lookup */
+/* } */
+
+/* class symbol { */
+/*   std::string name; */
+/*   std::string type; */
+/*   std::string scope; */
+/* }; */
 
 struct ProgramNode {
   classesNode classes;
   statementsNode statements;
 };
 
+
 void checkRExpr(rExprNode *, std::vector<char const*> *);
 void checkLExpr(lExprNode *, std::vector<char const*> *);
 void checkStatement(statementNode , std::vector<char const*> *);
+void buildSymbolTable( ProgramNode*);
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
 

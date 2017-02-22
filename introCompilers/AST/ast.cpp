@@ -42,5 +42,6 @@ int main(int argc, char*argv[]) {
   /* ==== CHECK FOR HEIRARCHY WELL FORMEDNESS ==== */
   checkClassHierarchy(root->classes.list);
   checkConstructorCalls(root);
+  buildSymbolTable(root);
   
 }

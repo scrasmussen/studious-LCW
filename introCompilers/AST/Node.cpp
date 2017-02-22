@@ -96,7 +96,7 @@ void checkMethod(methodNode  n, std::vector<char const*> *classNames)
 }
 
 
-void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames)
+void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, std::vector<int> v={EMPTY})
 {
   if (n->statements != NULL)
     for (statementNode s : n->statements->list)
@@ -109,6 +109,18 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames)
 	checkMethod(m, classNames);
       }
 
+}
+// void checkProgramNode( ProgramNode *n, std::vector<int> v={EMPTY})
+// {
+
+// }
+void buildSymbolTable(ProgramNode *rootNode)
+{
+  std::vector<int> actionVec;
+  std::vector<char const*> emptyClassNames;
+  actionVec.push_back(BUILDSYMBOLTABLE);
+
+  // checkProgramNode(rootNode, emptyClassNames, actionVec);
 }
 
 void checkConstructorCalls ( ProgramNode *rootNode ) {
