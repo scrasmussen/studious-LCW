@@ -9,13 +9,74 @@
 static int BUILDSYMBOLTABLE=2;
 static int EMPTY=3;
 
+class symbol {
+public: 
+   std::string name;
+   std::string type; 
+   std::string scope; 
+   std::string tag; 
+ };
+
+class symTable { 
+  public: 
+     std::vector<symbol> table; 
+     void insert(std:: vector<symbol> sTable, symbol sym)  { 
+	sTable.push_back(sym);
+     } 
+     void update(std:: vector<symbol> sTable, symbol sym)  { 
+		for (auto &c : sTable) {
+    			if(c.name.compare(sym.name)==0) {
+				c.name=sym.name;
+				c.type=sym.type;
+				c.scope	=sym.scope;
+				c.tag=sym.tag;	
+			}
+		}
+     }
+     symbol lookup(std:: vector<symbol> sTable, symbol sym)  { 
+		for (auto &c : sTable) {
+    			if(c.name.compare(sym.name)==0) {
+				return c;
+			}
+		}
+	sym.name="";
+	sym.type="";
+	sym.scope="";
+	sym.tag="";	
+	return sym;
+     }
+};
+
+struct argumentNode {
+  char const* name;
+  char const* type;
+  symTable *sTable;
+};
+
+
+struct argumentsNode {
+  std::vector<argumentNode*> list;
+  symTable *sTable;
+};
+
+struct formalArgumentsNode {
+  char const* name;
+  char const* type;
+  argumentsNode* arguments;
+  symTable *sTable; 
+};
+
+
+
 struct classSignatureNode {
   char const* name;
   char const* extends;
+  symTable *sTable; 
 };
 
 struct classSigExtendsNode {
   char const* extends;
+  symTable *sTable; 
 };
 
 
@@ -29,7 +90,7 @@ class actualArgsNode;
 class lExprNode;
 
 struct rExprNode {
-rExprNode(): rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL) {}
+  rExprNode(): rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL) {}
   int val;
   const char* str = "";
   const char* name = "";
@@ -37,24 +98,29 @@ rExprNode(): rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL) 
   rExprNode *rExprSecond ;
   lExprNode *lExpr ;
   actualArgsNode *actualArgs;
+  symTable *sTable; 
 };
 
 struct rExprsNode {
   std::vector<rExprNode*> list;
+  symTable *sTable; 
 };
 
 struct actualArgsNode{
-actualArgsNode(): rExprs(NULL), rExpr(NULL){}
+  actualArgsNode(): rExprs(NULL), rExpr(NULL){}
   rExprsNode *rExprs ;
   rExprNode *rExpr ;
+  symTable *sTable; 
 };
 
 
 struct lExprNode {
-lExprNode(): rExpr(NULL), strtest(NULL) {}
+  lExprNode(): rExpr(NULL), strtest(NULL) {}
   const char* str;
+  const char* name;
   std::string *strtest;
   rExprNode *rExpr;
+  symTable *sTable; 
 };
 
 
@@ -64,50 +130,59 @@ struct whileNode {
 
 class statementsNode;
 struct statementBlockNode {
-statementBlockNode() : statements(NULL) {}
- statementsNode *statements;
+  statementBlockNode() : statements(NULL) {}
+  statementsNode *statements;
+  symTable *sTable; 
 };
 
 struct elifNode {
-elifNode() : rExpr(NULL), statementBlock(NULL) {}
- rExprNode* rExpr;
- statementBlockNode  *statementBlock;
+  elifNode() : rExpr(NULL), statementBlock(NULL) {}
+  rExprNode* rExpr;
+  statementBlockNode  *statementBlock;
+  symTable *sTable; 
 };
 
 struct elifsNode {
   std::vector<elifNode*> list;
+  symTable *sTable; 
 };
 
 struct methodNode {
-methodNode() : statementBlock(NULL) {}
- statementBlockNode  *statementBlock;
+  methodNode() : statementBlock(NULL) {}
+  statementBlockNode  *statementBlock;
+  symTable *sTable; 
+  const char* name;
 };
 
 struct methodsNode {
   std::vector<methodNode> list;
+  symTable *sTable; 
 };
 
 struct elseNode {
 elseNode(): statementBlock(NULL){}
- statementBlockNode  *statementBlock;
+  statementBlockNode  *statementBlock;
+  symTable *sTable; 
 };
-
 
 
 struct statementNode {
 statementNode():rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL) {}
   int value;
   const char* str;
+  const char* name;
   rExprNode* rExpr;
   lExprNode* lExpr;
   statementBlockNode* stblock;
   elifsNode* elifs;
   elseNode* elseN;
+  symTable *sTable; 
 };
 
 
 struct statementsNode {
   std::vector<statementNode> list;
+  symTable *sTable; 
 };
 
 struct classBodyNode {
@@ -115,6 +190,7 @@ classBodyNode(): statements(NULL), methods(NULL){}
   const char* name="classBodyNode";
   statementsNode* statements;
   methodsNode* methods;
+  symTable *sTable; 
 };
 
 struct classNode {
@@ -122,30 +198,19 @@ classNode(): sig(NULL), classBody(NULL){}
   const char* name;
   classSignatureNode* sig;
   classBodyNode* classBody;
+  symTable *sTable; 
 };
 
 struct classesNode {
   std::vector<classNode> list;
-  /* symTable var; */
+  symTable *sTable; 
 };
 
-/* class symTable { */
-/*  public: */
-/*   std::vector<symbol> s */
-/*     create { }  */
-/*   insert(a1)  { s.pushback(a1)}  */
-/*     lookup */
-/* } */
-
-/* class symbol { */
-/*   std::string name; */
-/*   std::string type; */
-/*   std::string scope; */
-/* }; */
 
 struct ProgramNode {
   classesNode classes;
   statementsNode statements;
+  symTable *sTable; 
 };
 
 

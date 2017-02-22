@@ -46,6 +46,9 @@
   struct elseNode* elsE;
   struct rExprsNode* rExprNs;
   struct actualArgsNode* ActArgs;
+  struct formalArgumentsNode* fArgs;
+  struct argumentsNode* Args;
+  struct argumentNode* Arg;
 }
 
 // define the "terminal symbol" token types I'm going to use (in CAPS
@@ -125,6 +128,9 @@
 %type <method> Method 
 %type <elsE> Else 
 %type <ActArgs> Actual_Args
+%type <fArgs> Formal_Args
+%type <Args> arguments
+//%type <Arg> argument
 
 %start Program
 %%
@@ -181,6 +187,31 @@ Class_Sig_Extends
 ;
 
 Formal_Args
+:  { $$ = new formalArgumentsNode; }
+| IDENT ":" IDENT arguments {
+  formalArgumentsNode *n = new formalArgumentsNode;
+  n->name=$1;
+  n->type=$3;
+  n->arguments=$4;
+  $$=n; 
+  msg("Formal_Args: IDENT : IDENT Idents");
+}
+;
+
+arguments
+: { $$ = new argumentsNode; }
+| "," IDENT ":" IDENT arguments {
+  argumentsNode *n = $5;
+  argumentNode *node = new argumentNode;
+  node->name=$2;
+  node->type=$4;
+  n->list.push_back(node);
+  msg("Idents: Idents Ident");
+}
+;
+
+/*
+Formal_Args
 : 
 | IDENT ":" IDENT Idents {msg("Formal_Args: IDENT : IDENT Idents");}
 ;
@@ -192,6 +223,7 @@ Idents
 
 Ident
 : "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
+*/
 
 Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");
    classBodyNode *node = new classBodyNode;
@@ -239,6 +271,7 @@ Statement
 | L_Expr ":" IDENT "=" R_Expr ";" {
    statementNode *node = new statementNode;
    node->str="assignment longer";
+   node->name=$3;
    node->rExpr=$5;
    node->lExpr=$1;
    $$=node;
@@ -276,7 +309,6 @@ elif: ELIF R_Expr Statement_Block {
 	$$=n;	
 	}
 	;
-
 Else
 : {
   $$=new elseNode;
@@ -315,6 +347,7 @@ Method
 : DEF IDENT "(" Formal_Args ")" Method_Opt Statement_Block {
    methodNode *n = new methodNode;
    n->statementBlock=$7;
+   n->name=$2;
    $$=n;
    msg("Method: DEF IDENT ( Formal_args ) Method_Opt Statement_Block");
    }
@@ -329,12 +362,14 @@ L_Expr
 : IDENT {
    lExprNode *node=new lExprNode;
    node->str=$1;
+   node->name=$1;
    $$=node;
    msg("L_Expr: IDENT");
    }
 | R_Expr "." IDENT {
    lExprNode *node=new lExprNode;
    node->str=$3;
+   node->name=$3;
    node->rExpr=$1;
    $$=node;
    msg("L_Expr: R_Expr . IDENT");
