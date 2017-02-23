@@ -13,7 +13,8 @@ static int CHECKCLASSHIERARCHY=7;
 static int PRINT=11;
 
 class symbol {
-public: 
+public:
+ symbol(): name(""),type(""),scope(""),tag(""){}
    std::string name="";
    std::string type=""; 
    std::string scope=""; 
