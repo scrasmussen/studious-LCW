@@ -191,5 +191,15 @@ void checkClassHierarchy ( std::vector<classNode> l ) {
  return;
 }
 
+void traverse(int act) {
+  if (act==CHECKCONSTRUCTORCALLS)
+    checkConstructorCalls(root);
+  if (act==CHECKCLASSHIERARCHY)
+    checkClassHierarchy(root->classes.list);
+  if (act==BUILDSYMBOLTABLE)
+    buildSymbolTable(root);
 
+   
+
+}
 
