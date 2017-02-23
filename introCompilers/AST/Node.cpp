@@ -135,8 +135,15 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
 void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
 {
   if (act==PRINT) std::cout<<"classNode"<<std::endl;
-  if (n->sig != NULL)
+  if (n->sig != NULL) {
+    if (act=BUILDSYMBOLTABLE) {
+       n->sTable->prev->print();
+       symTable* st1= new symTable;
+       st1=n->sTable;
+       //n->sTable=st1;
+    }
     checkSignature(n->sig, classNames, act);
+  }
   if (n->classBody != NULL)
     checkClassBody(n->classBody, classNames, act);
 
@@ -148,43 +155,32 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
   if (act==PRINT) std::cout<<"\nProgramNode"<<std::endl;
 
   if (act=BUILDSYMBOLTABLE) {
-  //n->sTable= new symTable;
-  symTable* st= new symTable;
-  symbol a;
-
-  a.name="OBJ";
-  a.type="OBJ";
-  a.scope="GLOBAL";
-  a.tag="CLASS";
-  st->insert(st->table, a);
-  
-  a.name="INT";
-  a.type="INT";
-  a.scope="GLOBAL";
-  a.tag="CLASS";
-  st->insert(st->table, a);
-
-  a.name="STRING";
-  a.type="STRINg";
-  a.scope="GLOBAL";
-  a.tag="CLASS";
-  st->insert(st->table, a);
-
-  a.name="BOOLEAN";
-  a.type="BOOLEAN";
-  a.scope="GLOBAL";
-  a.tag="CLASS";
-  st->insert(st->table, a);
-  n->sTable=st;
-  n->sTable->prev=st; 
-  n->sTable->current=st; 
+  	//n->sTable= new symTable;
+  	symTable* st= new symTable;
+  	symbol a;
+  	a.name="OBJ"; a.type="OBJ"; a.scope="GLOBAL";  a.tag="CLASS";
+  	st->insert(a);
+  	
+	a.name="INT";  a.type="INT";  a.scope="GLOBAL";  a.tag="CLASS";
+  	st->insert(a);
+  	
+	a.name="STRING";  a.type="STRING";  a.scope="GLOBAL";  a.tag="CLASS";
+  	st->insert(a);
+  	
+	a.name="BOOLEAN";  a.type="BOOLEAN";  a.scope="GLOBAL";  a.tag="CLASS";
+	st->insert(a);
+  	st->setPrev(st); 
+  	st->setCurrent(st); 
+  	n->sTable=st;
+        n->sTable->print();
   }
   for (auto &c : n->classes.list)
     classNames->push_back(c.sig->name);
   for (auto &c : n->classes.list) {
     if (act=BUILDSYMBOLTABLE) {
       symTable* st1= new symTable;
-      st1->prev=n->sTable;
+      st1->setPrev(n->sTable);
+      st1->setCurrent(n->sTable);
       c.sTable=st1;
     }
     checkClass(&c, classNames, act);
