@@ -14,40 +14,77 @@ static int PRINT=11;
 
 class symbol {
 public: 
-   std::string name;
-   std::string type; 
-   std::string scope; 
-   std::string tag; 
- };
+   std::string name="";
+   std::string type=""; 
+   std::string scope=""; 
+   std::string tag=""; 
+};
 
-class symTable { 
-  public: 
-     std::vector<symbol> table; 
-     void insert(std:: vector<symbol> sTable, symbol sym)  { 
-	sTable.push_back(sym);
-     } 
-     void update(std:: vector<symbol> sTable, symbol sym)  { 
-		for (auto &c : sTable) {
-    			if(c.name.compare(sym.name)==0) {
-				c.name=sym.name;
-				c.type=sym.type;
-				c.scope	=sym.scope;
-				c.tag=sym.tag;	
-			}
-		}
-     }
-     symbol lookup(std:: vector<symbol> sTable, symbol sym)  { 
-		for (auto &c : sTable) {
-    			if(c.name.compare(sym.name)==0) {
-				return c;
-			}
-		}
-	sym.name="";
-	sym.type="";
-	sym.scope="";
-	sym.tag="";	
-	return sym;
-     }
+class symTable {
+ public: 
+  std::vector<symbol> table;
+  symTable* prev;
+  symTable* current;
+
+  /* === METHODS === */
+  void print() {
+    for (symbol s : table) {
+      std::cout << s.name << "|" << s.type << "|" << s.scope << "|" << s.tag << std::endl;
+    }
+  }
+
+  void newInsert(symbol sym) {
+    table.push_back(sym);
+  }
+
+  void newUpdate(symbol sym) {
+    for (symbol s : table)
+      if (s.name.compare(sym.name)==0) {
+	s.name=sym.name;
+	s.type=sym.type;
+	s.scope=sym.scope;
+	s.tag=sym.tag;	
+    }
+  }
+
+  symbol newLookup(symbol sym) {
+    for (symbol s : table) {
+      if(s.name.compare(sym.name)==0)
+	return s;
+    }
+    sym.name="";
+    sym.type="";
+    sym.scope="";
+    sym.tag="";	
+    return sym;
+  }
+
+  
+  void insert(std:: vector<symbol> sTable, symbol sym)  { 
+    sTable.push_back(sym);
+  } 
+  void update(std:: vector<symbol> sTable, symbol sym)  { 
+    for (auto &c : sTable) {
+      if(c.name.compare(sym.name)==0) {
+	c.name=sym.name;
+	c.type=sym.type;
+	c.scope	=sym.scope;
+	c.tag=sym.tag;	
+      }
+    }
+  }
+  symbol lookup(std:: vector<symbol> sTable, symbol sym)  { 
+    for (auto &c : sTable) {
+      if(c.name.compare(sym.name)==0) {
+	return c;
+      }
+    }
+    sym.name="";
+    sym.type="";
+    sym.scope="";
+    sym.tag="";	
+    return sym;
+  }
 };
 
 struct argumentNode {
