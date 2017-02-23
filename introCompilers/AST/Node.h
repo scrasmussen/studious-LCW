@@ -33,6 +33,14 @@ class symTable {
     }
   }
 
+  void setPrev(symTable * p) {
+    prev = p;
+  }
+
+  void setCurrent(symTable * c) {
+    current = c;
+  }
+
   void newInsert(symbol sym) {
     table.push_back(sym);
   }
