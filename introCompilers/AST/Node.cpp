@@ -18,6 +18,7 @@ void checkConstructorClass(const char* name, std::vector<char const*> *className
 
 void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  int act)
 {
+  if (act==PRINT) std::cout<<"actualArgsNode: "<<std::endl;  
   if (n->rExpr!=NULL)
     checkRExpr(n->rExpr, classNames, act);
   if (n->rExprs!=NULL)
@@ -28,10 +29,14 @@ void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  i
 
 void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
 {
-  if ( strcmp(n->str,"const") == 0 && act == CHECKCONSTRUCTORCALLS) {
-    checkConstructorClass(n->name, classNames);
+  if (act==PRINT){
+    std::cout<<"rExprNode: "<<n->name;
+    if (strcmp(n->str,"")!=0) std::cout<<" str: "<<n->str<<std::endl;
+    else std::cout<<std::endl;
   }
-  
+  if ( strcmp(n->str,"const") == 0 && act == CHECKCONSTRUCTORCALLS)
+    checkConstructorClass(n->name, classNames);
+
   if (n->rExprFirst!=NULL)
     checkRExpr(n->rExprFirst, classNames, act);
   if (n->rExprSecond!=NULL)
@@ -44,6 +49,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
 
 void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
 {
+  if (act==PRINT) std::cout<<"lExprNode: "<< n->name << std::endl;  
   if (n->rExpr!=NULL)
     checkRExpr(n->rExpr, classNames, act);
 }
@@ -51,6 +57,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
 
 void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classNames,  int act)
 {
+  if (act==PRINT) std::cout<<"statementBlockNode"<< std::endl;  
   if (n->statements!=NULL)
     for (statementNode s : n->statements->list)
       checkStatement(s, classNames, act);
@@ -58,6 +65,7 @@ void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classN
 
 void checkElif(elifNode *n, std::vector<char const*> *classNames,  int act)
 {
+  if (act==PRINT) std::cout<<"elifNode"<< std::endl;  
   if (n->rExpr!=NULL)
     checkRExpr(n->rExpr, classNames, act);
   if (n->statementBlock!=NULL)
@@ -72,12 +80,14 @@ void checkElifs(elifsNode *n, std::vector<char const*> *classNames,  int act)
 
 void checkElse(elseNode *n, std::vector<char const*> *classNames,  int act)
 {
+  if (act==PRINT) std::cout<<"elseNode"<< std::endl;
   if (n->statementBlock!=NULL)
     checkStatementBlock(n->statementBlock, classNames, act);
 }
 
 void checkStatement(statementNode n, std::vector<char const*> *classNames,  int act=-1)
 {
+  if (act==PRINT) std::cout<<"statementNode: "<< std::endl;
   if (n.rExpr!=NULL)
     checkRExpr(n.rExpr, classNames, act);
   if (n.lExpr!=NULL)
@@ -91,14 +101,24 @@ void checkStatement(statementNode n, std::vector<char const*> *classNames,  int 
 }
 
 void checkMethod(methodNode  n, std::vector<char const*> *classNames,  int act=-1)
-{  
+{
+  if (act==PRINT) std::cout<<"methodNode: "<< n.name << std::endl;
   if (n.statementBlock!=NULL)
     checkStatementBlock(n.statementBlock, classNames, act);
 }
 
+void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,  int act=-1)
+{
+  if (act==PRINT) std::cout<<"classSignatureNode: "<<n->name<<" extends: "<<n->extends<<std::endl;
+}
 
 void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int act=-1)
 {
+  if (act==PRINT) std::cout<<"classBodyNode"<<std::endl;
+  // symTable *s = new symTable;
+  // n->sTable=s;
+  // checkSignature(n, classNames, 
+
   if (n->statements != NULL)
     for (statementNode s : n->statements->list)
       {
@@ -112,42 +132,46 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
 
 }
 
+void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
+{
+  if (act==PRINT) std::cout<<"classNode"<<std::endl;
+  if (n->sig != NULL)
+    checkSignature(n->sig, classNames, act);
+  if (n->classBody != NULL)
+    checkClassBody(n->classBody, classNames, act);
 
-// void call(ACTION, node)
-//    if (action=BUILDSYMBOLTABLE)
-//           node.insert(name, type, scope)
-//
+}
 
 
-// void checkProgramNode( ProgramNode *n, int a={EMPTY})
-// {
-//     for action in actionVec
-//         call(action)
-// }
+void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act=-1)
+{
+  if (act==PRINT) std::cout<<"\nProgramNode"<<std::endl;
+  for (auto &c : n->classes.list)
+    checkClass(&c, classNames, act);
+  for (statementNode &s : n->statements.list)
+    checkStatement(s, classNames, act);
+}
+
 void buildSymbolTable(ProgramNode *rootNode)
 {
-  int action;
   std::vector<char const*> emptyClassNames;
-  action=BUILDSYMBOLTABLE;
-
-  // checkProgramNode(rootNode, emptyClassNames, actionVec);
+  checkProgram(rootNode, &emptyClassNames, BUILDSYMBOLTABLE);
 }
 
 void checkConstructorCalls ( ProgramNode *rootNode ) {
   std::vector<char const*> classNames;
   classNames.push_back("Obj");
-  int action=CHECKCONSTRUCTORCALLS;
+  int actList=CHECKCONSTRUCTORCALLS;
 
   for (auto &c : rootNode->classes.list)
     classNames.push_back(c.sig->name);
 
   for (auto &c : rootNode->classes.list) 
     if (c.classBody != NULL) 
-      checkClassBody(c.classBody, &classNames);
-
+      checkClassBody(c.classBody, &classNames, actList);
 
   for (statementNode &s : rootNode->statements.list)
-    checkStatement(s, &classNames, action);
+    checkStatement(s, &classNames, actList);
 }
 
 void checkClassHierarchy ( std::vector<classNode> l ) {
@@ -192,14 +216,17 @@ void checkClassHierarchy ( std::vector<classNode> l ) {
 }
 
 void traverse(int act) {
+
+  
   if (act==CHECKCONSTRUCTORCALLS)
     checkConstructorCalls(root);
   if (act==CHECKCLASSHIERARCHY)
     checkClassHierarchy(root->classes.list);
   if (act==BUILDSYMBOLTABLE)
     buildSymbolTable(root);
-
-   
-
+  if (act==PRINT) {
+    std::vector<char const*> emptyClassNames;
+    checkProgram(root, &emptyClassNames, PRINT);
+  }
 }
 
