@@ -139,7 +139,7 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
     if (act=BUILDSYMBOLTABLE) {
        n->sTable->prev->print();
        symTable* st1= new symTable;
-       st1=n->sTable;
+       //st1=n->sTable;
        //n->sTable=st1;
     }
     checkSignature(n->sig, classNames, act);
