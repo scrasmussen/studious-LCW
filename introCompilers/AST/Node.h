@@ -9,6 +9,8 @@
 static int BUILDSYMBOLTABLE=2;
 static int EMPTY=3;
 static int CHECKCONSTRUCTORCALLS=5;
+static int CHECKCLASSHIERARCHY=7;
+static int PRINT=11;
 
 class symbol {
 public: 
@@ -49,7 +51,7 @@ class symTable {
 };
 
 struct argumentNode {
-  char const* name;
+  char const* name="";
   char const* type;
   symTable *sTable;
 };
@@ -61,7 +63,7 @@ struct argumentsNode {
 };
 
 struct formalArgumentsNode {
-  char const* name;
+  char const* name="";
   char const* type;
   argumentsNode* arguments;
   symTable *sTable; 
@@ -70,7 +72,7 @@ struct formalArgumentsNode {
 
 
 struct classSignatureNode {
-  char const* name;
+  char const* name="";
   char const* extends;
   symTable *sTable; 
 };
@@ -118,7 +120,7 @@ struct actualArgsNode{
 struct lExprNode {
   lExprNode(): rExpr(NULL), strtest(NULL) {}
   const char* str;
-  const char* name;
+  const char* name="";
   std::string *strtest;
   rExprNode *rExpr;
   symTable *sTable; 
@@ -150,14 +152,14 @@ struct elifsNode {
 
 struct methodReturnNode {
   symTable *sTable;
-  const char* name;
+  const char* name="";
 };
 
 struct methodNode {
   methodNode() : statementBlock(NULL) {}
   statementBlockNode  *statementBlock;
   symTable *sTable; 
-  const char* name;
+  const char* name="";
   methodReturnNode* methodReturn;
 };
 
@@ -177,7 +179,7 @@ struct statementNode {
 statementNode():rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL) {}
   int value;
   const char* str;
-  const char* name;
+  const char* name="";
   rExprNode* rExpr;
   lExprNode* lExpr;
   statementBlockNode* stblock;
@@ -202,7 +204,6 @@ classBodyNode(): statements(NULL), methods(NULL){}
 
 struct classNode {
 classNode(): sig(NULL), classBody(NULL){}
-  const char* name;
   classSignatureNode* sig;
   classBodyNode* classBody;
   symTable *sTable; 
@@ -220,7 +221,7 @@ struct ProgramNode {
   symTable *sTable; 
 };
 
-
+void traverse(int);
 void checkRExpr(rExprNode *, std::vector<char const*> *, int);
 void checkLExpr(lExprNode *, std::vector<char const*> *,  int);
 void checkStatement(statementNode , std::vector<char const*> *, int);
