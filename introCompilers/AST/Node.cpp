@@ -141,13 +141,6 @@ void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int
     n->sTable->print();
 }
 
-void checkArgument(argumentNode *n, std::vector<char const*> *classNames,  int act){
-  if (act==PRINT) std::cout<<"ArgumentsNode: "<<std::endl;
-  
-  //if (act==PRINTST)
-    //n->sTable->print();
-}
-
 void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"formalArgumentsNode: "<<n->name<<std::endl;
@@ -158,16 +151,13 @@ void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *clas
   	n->sTable->insert(a);
   }
   if (n->arguments != NULL) {
-    if (act=BUILDSYMBOLTABLE) {
-       //symTable* st1= new symTable;
-       //st1=n->sTable;
-       n->arguments->sTable=n->sTable;
-       //std::cout<<n->arguments->list.size()<<" size of the list"<<std::endl;
-       //n->arguments->sTable->print();;
-       //n->sTable=st1;
-    }
+    if (act==BUILDSYMBOLTABLE)
+      n->arguments->sTable=n->sTable;
+    if (act==PRINTST)
+      n->arguments->sTable->print();;
+    
     //for (argumentNode *e : n->arguments->list)
-    //	checkArgument(e, classNames, act);
+    //	checkArguments(e, classNames, act);
     
     checkArguments(n->arguments, classNames, act);
   }
@@ -188,7 +178,7 @@ void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,
   	n->sTable->insert(a);
   }
   if (n->fArguments != NULL) {
-    if (act=BUILDSYMBOLTABLE) {
+    if (act==BUILDSYMBOLTABLE) {
        //symTable* st1= new symTable;
        //st1=n->sTable;
        n->fArguments->sTable=n->sTable;
@@ -207,7 +197,7 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
   if (n->methods != NULL)
     for (methodNode m : n->methods->list)
       {
-	if (act=BUILDSYMBOLTABLE) {
+	if (act==BUILDSYMBOLTABLE) {
 	  m.sTable=n->sTable;
 	}
 	checkMethod(m, classNames, act);
@@ -223,7 +213,7 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
 {
   if (act==PRINT) std::cout<<"classNode"<<std::endl;
   if (n->sig != NULL) {
-    if (act=BUILDSYMBOLTABLE) {
+    if (act==BUILDSYMBOLTABLE) {
        //n->sTable->prev->print();
        //symTable* st1= new symTable;
        //st1=n->sTable;
@@ -235,7 +225,7 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
     checkSignature(n->sig, classNames, act);
   }
   if (n->classBody != NULL) {
-    if (act=BUILDSYMBOLTABLE){
+    if (act==BUILDSYMBOLTABLE){
       n->classBody->sTable=n->sTable;
     }
     checkClassBody(n->classBody, classNames, act);
@@ -248,7 +238,7 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
 {
   if (act==PRINT) std::cout<<"\nProgramNode"<<std::endl;
 
-  if (act=BUILDSYMBOLTABLE) {
+  if (act==BUILDSYMBOLTABLE) {
   	//n->sTable= new symTable;
   	symTable* st= new symTable;
   	symbol a;
@@ -269,10 +259,11 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
   }
   if (act==PRINTST)
     n->sTable->print();
+
   for (auto &c : n->classes.list)
     classNames->push_back(c.sig->name);
   for (auto &c : n->classes.list) {
-    if (act=BUILDSYMBOLTABLE) {
+    if (act==BUILDSYMBOLTABLE) {
       symTable* st1= new symTable;
       st1->setPrev(n->sTable);
       st1->setCurrent(n->sTable);
@@ -288,6 +279,12 @@ void buildSymbolTable(ProgramNode *rootNode)
 {
   std::vector<char const*> emptyClassNames;
   checkProgram(rootNode, &emptyClassNames, BUILDSYMBOLTABLE);
+}
+
+void printSymbolTable(ProgramNode *rootNode)
+{
+  std::vector<char const*> emptyClassNames;
+  checkProgram(rootNode, &emptyClassNames, PRINTST);
 }
 
 void checkConstructorCalls ( ProgramNode *rootNode ) {
@@ -349,13 +346,14 @@ void checkClassHierarchy ( std::vector<classNode> l ) {
 
 void traverse(int act) {
 
-  
   if (act==CHECKCONSTRUCTORCALLS)
     checkConstructorCalls(root);
   if (act==CHECKCLASSHIERARCHY)
     checkClassHierarchy(root->classes.list);
   if (act==BUILDSYMBOLTABLE)
     buildSymbolTable(root);
+  if (act==PRINTST)
+    printSymbolTable(root);
   if (act==PRINT) {
     std::vector<char const*> emptyClassNames;
     checkProgram(root, &emptyClassNames, PRINT);
