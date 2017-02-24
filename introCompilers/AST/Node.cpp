@@ -100,11 +100,32 @@ void checkStatement(statementNode n, std::vector<char const*> *classNames,  int 
     checkElse(n.elseN, classNames, act);
 }
 
+void checkMethodReturn(methodReturnNode *n, std::vector<char const*> *classNames,  int act)
+{
+  if (act==BUILDSYMBOLTABLE) {
+    symbol s; s.name=n->name; s.type="STR"; s.scope="[NULL]"; s.tag="METHODRETURN";
+    n->sTable->insert(s);
+  }
+}
+
 void checkMethod(methodNode  n, std::vector<char const*> *classNames,  int act=-1)
 {
   if (act==PRINT) std::cout<<"methodNode: "<< n.name << std::endl;
+  if (act==BUILDSYMBOLTABLE) {
+    symbol s; s.name=n.name; s.type="method"; s.scope="[NULL]"; s.tag="METHOD";
+    n.sTable->insert(s);
+
+    if (n.fArguments!=NULL)
+      n.fArguments->sTable=n.sTable;
+    if (n.methodReturn!=NULL)
+      n.methodReturn->sTable=n.sTable;
+  }
+  if (n.fArguments!=NULL)
+    checkFormalArguments(n.fArguments, classNames, act);
   if (n.statementBlock!=NULL)
     checkStatementBlock(n.statementBlock, classNames, act);
+  if (n.methodReturn!=NULL)
+    checkMethodReturn(n.methodReturn, classNames, act);
 }
 
 void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int act){
@@ -116,21 +137,22 @@ void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int
      	n->sTable->insert(a);
      }
   }
-  n->sTable->print();
+  if (act==PRINTST)
+    n->sTable->print();
 }
 
 void checkArgument(argumentNode *n, std::vector<char const*> *classNames,  int act){
   if (act==PRINT) std::cout<<"ArgumentsNode: "<<std::endl;
   
-
-  //n->sTable->print();
+  //if (act==PRINTST)
+    //n->sTable->print();
 }
 
 void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"formalArgumentsNode: "<<n->name<<std::endl;
 
-  if (n->name != NULL) {
+  if (n->name != NULL && act==BUILDSYMBOLTABLE) {
   	symbol a;
   	a.name=n->name; a.type=n->type; a.scope="class";  a.tag="class Arguments";
   	n->sTable->insert(a);
@@ -182,17 +204,19 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
   // symTable *s = new symTable;
   // n->sTable=s; // checkSignature(n, classNames, 
 
+  if (n->methods != NULL)
+    for (methodNode m : n->methods->list)
+      {
+	if (act=BUILDSYMBOLTABLE) {
+	  m.sTable=n->sTable;
+	}
+	checkMethod(m, classNames, act);
+      }
   if (n->statements != NULL)
     for (statementNode s : n->statements->list)
       {
 	checkStatement(s, classNames, act);
       }
-  if (n->methods != NULL)
-    for (methodNode m : n->methods->list)
-      {
-	checkMethod(m, classNames, act);
-      }
-
 }
 
 void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
@@ -204,13 +228,18 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
        //symTable* st1= new symTable;
        //st1=n->sTable;
        n->sig->sTable=n->sTable;
-       n->sig->sTable->print();
        //n->sTable=st1;
     }
+    if (act==PRINTST)
+      n->sig->sTable->print();
     checkSignature(n->sig, classNames, act);
   }
-  if (n->classBody != NULL)
+  if (n->classBody != NULL) {
+    if (act=BUILDSYMBOLTABLE){
+      n->classBody->sTable=n->sTable;
+    }
     checkClassBody(n->classBody, classNames, act);
+  }
 
 }
 
@@ -237,8 +266,9 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
   	st->setPrev(st); 
   	st->setCurrent(st); 
   	n->sTable=st;
-        n->sTable->print();
   }
+  if (act==PRINTST)
+    n->sTable->print();
   for (auto &c : n->classes.list)
     classNames->push_back(c.sig->name);
   for (auto &c : n->classes.list) {
