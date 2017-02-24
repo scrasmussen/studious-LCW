@@ -107,17 +107,80 @@ void checkMethod(methodNode  n, std::vector<char const*> *classNames,  int act=-
     checkStatementBlock(n.statementBlock, classNames, act);
 }
 
-void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,  int act=-1)
+void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int act){
+  if (act==PRINT) std::cout<<"ArgumentsNode: "<<std::endl;
+  for (argumentNode *c : n->list){
+     if (act=BUILDSYMBOLTABLE) {
+     	symbol a;
+     	a.name=c->name; a.type=c->type; a.scope="class";  a.tag="class Arguments";
+     	n->sTable->insert(a);
+     }
+  }
+  n->sTable->print();
+}
+
+void checkArgument(argumentNode *n, std::vector<char const*> *classNames,  int act){
+  if (act==PRINT) std::cout<<"ArgumentsNode: "<<std::endl;
+  
+
+  //n->sTable->print();
+}
+
+void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *classNames,  int act)
+{
+  if (act==PRINT) std::cout<<"formalArgumentsNode: "<<n->name<<std::endl;
+
+  if (n->name != NULL) {
+  	symbol a;
+  	a.name=n->name; a.type=n->type; a.scope="class";  a.tag="class Arguments";
+  	n->sTable->insert(a);
+  }
+  if (n->arguments != NULL) {
+    if (act=BUILDSYMBOLTABLE) {
+       //symTable* st1= new symTable;
+       //st1=n->sTable;
+       n->arguments->sTable=n->sTable;
+       //std::cout<<n->arguments->list.size()<<" size of the list"<<std::endl;
+       //n->arguments->sTable->print();;
+       //n->sTable=st1;
+    }
+    //for (argumentNode *e : n->arguments->list)
+    //	checkArgument(e, classNames, act);
+    
+    checkArguments(n->arguments, classNames, act);
+  }
+}
+
+void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"classSignatureNode: "<<n->name<<" extends: "<<n->extends<<std::endl;
+
+  if (n->name != NULL) {
+  	symbol a;
+  	a.name=n->name; a.type=n->name; a.scope="class";  a.tag="CLASS";
+  	n->sTable->insert(a);
+  }
+  if (n->extends != NULL) {
+  	symbol a;
+  	a.name=n->extends; a.type=n->extends; a.scope="class";  a.tag="EXTENDS";
+  	n->sTable->insert(a);
+  }
+  if (n->fArguments != NULL) {
+    if (act=BUILDSYMBOLTABLE) {
+       //symTable* st1= new symTable;
+       //st1=n->sTable;
+       n->fArguments->sTable=n->sTable;
+       //n->sTable=st1;
+    }
+    checkFormalArguments(n->fArguments, classNames, act);
+  }
 }
 
 void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int act=-1)
 {
   if (act==PRINT) std::cout<<"classBodyNode"<<std::endl;
   // symTable *s = new symTable;
-  // n->sTable=s;
-  // checkSignature(n, classNames, 
+  // n->sTable=s; // checkSignature(n, classNames, 
 
   if (n->statements != NULL)
     for (statementNode s : n->statements->list)
@@ -137,9 +200,11 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
   if (act==PRINT) std::cout<<"classNode"<<std::endl;
   if (n->sig != NULL) {
     if (act=BUILDSYMBOLTABLE) {
-       n->sTable->prev->print();
-       symTable* st1= new symTable;
+       //n->sTable->prev->print();
+       //symTable* st1= new symTable;
        //st1=n->sTable;
+       n->sig->sTable=n->sTable;
+       n->sig->sTable->print();
        //n->sTable=st1;
     }
     checkSignature(n->sig, classNames, act);

@@ -49,10 +49,7 @@
   struct actualArgsNode* ActArgs;
   struct formalArgumentsNode* fArgs;
   struct argumentsNode* Args;
-  struct argumentNode* Arg;
-}
-
-// define the "terminal symbol" token types I'm going to use (in CAPS
+  struct argumentNode* Arg; } // define the "terminal symbol" token types I'm going to use (in CAPS
 // by convention), and associate each with a field of the union:
 
 // KEYWORDS
@@ -178,6 +175,7 @@ Class_Signature
   { msg("Class_Signature: class IDENT ( Formal_Args )");
     classSignatureNode *n = new classSignatureNode;
     n->name=$2; //cout<<$2<<endl;
+    n->fArguments=$4; //cout<<$2<<endl;
     n->extends=$6;
     $$ = n;
   }
@@ -207,7 +205,9 @@ arguments
   argumentNode *node = new argumentNode;
   node->name=$2;
   node->type=$4;
+  std::cout<< node->name<<" "<<node->type<< " "<<n->list.size()<< std::endl;
   n->list.push_back(node);
+  $$=n;
   msg("Idents: Idents Ident");
 }
 ;
@@ -349,6 +349,7 @@ Method
 : DEF IDENT "(" Formal_Args ")" Method_Opt Statement_Block {
    methodNode *n = new methodNode;
    n->statementBlock=$7;
+   n->fArguments=$4;
    n->methodReturn=$6;
    n->name=$2;
    $$=n;

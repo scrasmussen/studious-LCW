@@ -29,6 +29,7 @@ class symTable {
 
   /* === METHODS === */
   void print() {
+    std::cout<<std::endl;
     for (symbol s : table) {
       std::cout << s.name << "|" << s.type << "|" << s.scope << "|" << s.tag << std::endl;
     }
@@ -70,6 +71,7 @@ class symTable {
 };
 
 struct argumentNode {
+  argumentNode(): name(NULL), type(NULL), sTable(NULL){}
   char const* name="";
   char const* type;
   symTable *sTable;
@@ -77,11 +79,13 @@ struct argumentNode {
 
 
 struct argumentsNode {
-  std::vector<argumentNode*> list;
+  argumentsNode(): sTable(NULL){}
+  std::vector<argumentNode *> list;
   symTable *sTable;
 };
 
 struct formalArgumentsNode {
+  formalArgumentsNode(): name(NULL), type(NULL), arguments(NULL), sTable(NULL) {}
   char const* name="";
   char const* type;
   argumentsNode* arguments;
@@ -93,6 +97,7 @@ struct formalArgumentsNode {
 struct classSignatureNode {
   char const* name="";
   char const* extends;
+  formalArgumentsNode *fArguments; 
   symTable *sTable; 
 };
 
@@ -177,6 +182,7 @@ struct methodReturnNode {
 struct methodNode {
   methodNode() : statementBlock(NULL) {}
   statementBlockNode  *statementBlock;
+  formalArgumentsNode* fArguments;
   symTable *sTable; 
   const char* name="";
   methodReturnNode* methodReturn;
