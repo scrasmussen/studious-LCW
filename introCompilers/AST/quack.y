@@ -205,7 +205,6 @@ arguments
   argumentNode *node = new argumentNode;
   node->name=$2;
   node->type=$4;
-  std::cout<< node->name<<" "<<node->type<< " "<<n->list.size()<< std::endl;
   n->list.push_back(node);
   $$=n;
   msg("Idents: Idents Ident");
