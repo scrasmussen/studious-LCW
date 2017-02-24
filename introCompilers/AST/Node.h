@@ -11,6 +11,7 @@ static int EMPTY=3;
 static int CHECKCONSTRUCTORCALLS=5;
 static int CHECKCLASSHIERARCHY=7;
 static int PRINT=11;
+static int PRINTST=13;
 
 class symbol {
 public:
@@ -35,6 +36,8 @@ class symTable {
     }
   }
 
+  void size() { std::cout<<table.size()<<std::endl; }
+  
   void setPrev(symTable * p) {
     prev = p;
   }
@@ -183,9 +186,9 @@ struct methodNode {
   methodNode() : statementBlock(NULL) {}
   statementBlockNode  *statementBlock;
   formalArgumentsNode* fArguments;
+  methodReturnNode* methodReturn;
   symTable *sTable; 
   const char* name="";
-  methodReturnNode* methodReturn;
 };
 
 struct methodsNode {
@@ -250,6 +253,7 @@ void traverse(int);
 void checkRExpr(rExprNode *, std::vector<char const*> *, int);
 void checkLExpr(lExprNode *, std::vector<char const*> *,  int);
 void checkStatement(statementNode , std::vector<char const*> *, int);
+void checkFormalArguments(formalArgumentsNode *, std::vector<char const*> *, int);
 void buildSymbolTable( ProgramNode*);
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
