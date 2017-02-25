@@ -193,7 +193,6 @@ methodNode() : statementBlock(NULL), fArguments(NULL), methodReturn(NULL), sTabl
   methodReturnNode* methodReturn;
   symTable *sTable; 
   const char* name="";
-  std::string type;
 };
 
 struct methodsNode {
