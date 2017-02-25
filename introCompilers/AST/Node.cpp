@@ -111,18 +111,32 @@ void checkMethodReturn(methodReturnNode *n, std::vector<char const*> *classNames
 void checkMethod(methodNode  n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"methodNode: "<< n.name << std::endl;
+  if (act==PRINTST) if (n.sTable!=NULL) n.sTable->print();
   if (act==BUILDSYMBOLTABLE) {
-    symbol s; s.name=n.name; s.scope="[NULL]"; s.tag="METHOD";
-      // for (argumentsNode *a : n.fArguments->arguments) {
-      // 	std::cout<<"hi\n";
-      // 	  }
-    // s.type=getMethodType();
-    n.sTable->insert(s);
+    std::string type = "(";
+    if (n.fArguments!=NULL) {
+      int arity=0;
+      // Get input arguments
+      for (argumentNode *arg : n.fArguments->list) {
+	arity = 1;
+	type.append(arg->type);
+	type.append(",");	
+      }
+      if (arity==1)
+	type.replace(type.end()-1,type.end(),"");
+      type.append(")->(");
+      // get return type
+      type.append(n.methodReturn->name);
+      type.append(")");
+
+      symbol s; s.name=n.name; s.type=type.c_str(); s.scope="[NULL]"; s.tag="METHOD";
+      n.sTable->insert(s);
+    }
 
     if (n.fArguments!=NULL)
       n.fArguments->sTable=n.sTable;
     if (n.methodReturn!=NULL)
-      n.methodReturn->sTable=n.sTable;
+      n.methodReturn->sTable=n.sTable; 
   }
   if (n.fArguments!=NULL)
     checkFormalArguments(n.fArguments, classNames, act);
@@ -147,23 +161,25 @@ void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int
 
 void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *classNames,  int act)
 {
-  if (act==PRINT) std::cout<<"formalArgumentsNode: "<<std::endl;
+  if (act==PRINT) std::cout<<"formalArgumentsNode"<<std::endl;
+  // if (act==PRINTST && n->sTable!=NULL) n->sTable->print();
+  if (act==BUILDSYMBOLTABLE) {
+    for (argumentNode* arg : n->list) {
+      symbol a;
+      a.name=arg->name; a.type=arg->type;
+      // ===TODO=== Need to check whether class or method arguments
+      a.scope="class/method";  a.tag="class/method Arguments";
+      n->sTable->insert(a);
+    }
+  }
 
-  if (n->name != NULL && act==BUILDSYMBOLTABLE) {
-  	symbol a;
-  	a.name=n->name; a.type=n->type; a.scope="class";  a.tag="class Arguments";
-  	n->sTable->insert(a);
-  }
-  if (n->arguments != NULL) {
-    if (act==BUILDSYMBOLTABLE)
-      n->arguments->sTable=n->sTable;
-    if (act==PRINTST)
-      n->arguments->sTable->print();;
-    
-    //for (argumentNode *e : n->arguments->list)
-    //	checkArguments(e, classNames, act);
-    checkArguments(n->arguments, classNames, act);
-  }
+  // checkArguments(n->arguments, classNames, act);
+  /*if (n->arguments != NULL) {
+    // arguments has been changed to list of arguments within a formalArgumentsNode, no need for
+    // sTable, no need for sTable in argumentNode?
+    // if (act==BUILDSYMBOLTABLE)
+    //   n->arguments->sTable=n->sTable; 
+    }*/
 }
 
 void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,  int act)
