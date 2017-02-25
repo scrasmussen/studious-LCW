@@ -190,9 +190,14 @@ Formal_Args
 :  { $$ = new formalArgumentsNode; }
 | IDENT ":" IDENT arguments {
   formalArgumentsNode *n = new formalArgumentsNode;
-  n->name=$1;
-  n->type=$3;
-  n->arguments=$4;
+  argumentNode *argNode = new argumentNode;
+  argNode->name=$1;
+  argNode->type=$3;
+
+  argumentsNode *tmpList = $4;
+  std::vector<argumentNode*> argList = tmpList->list;
+  argList.push_back(argNode);
+  n->list=argList;
   $$=n; 
   msg("Formal_Args: IDENT : IDENT Idents");
 }
