@@ -87,6 +87,7 @@ void checkElse(elseNode *n, std::vector<char const*> *classNames,  int act)
 
 void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int act)
 {
+  // statement: rExpr, lExpr, stblock, elifs, elseN
   if (act==PRINT) std::cout<<"statementNode: "<< std::endl;
   if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
@@ -254,17 +255,15 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
 
 void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
 {
-  if (act==PRINT) std::cout<<"classNode"<<std::endl;
+  if (act==PRINT) std::cout<<"classNode:"<<std::endl;
+  if (act==PRINTST) {
+    n->sTable->print();
+  }
+
   if (n->sig != NULL) {
     if (act==BUILDSYMBOLTABLE) {
-       //n->sTable->prev->print();
-       //symTable* st1= new symTable;
-       //st1=n->sTable;
        n->sig->sTable=n->sTable;
-       //n->sTable=st1;
     }
-    if (act==PRINTST)
-      n->sig->sTable->print();
     checkSignature(n->sig, classNames, act);
   }
   if (n->classBody != NULL) {
@@ -279,10 +278,9 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
 
 void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
 {
+  // ProgramNode: classes, statements
   if (act==PRINT) std::cout<<"\nProgramNode"<<std::endl;
-
   if (act==BUILDSYMBOLTABLE) {
-  	//n->sTable= new symTable;
   	symTable* st= new symTable;
   	symbol a;
   	a.name="OBJ"; a.type="OBJ"; a.scope="GLOBAL";  a.tag="CLASS";
@@ -296,25 +294,44 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
   	
 	a.name="BOOLEAN";  a.type="BOOLEAN";  a.scope="GLOBAL";  a.tag="CLASS";
 	st->insert(a);
+
+	a.name="NOTHING";  a.type="NOTHING";  a.scope="NOTHING";  a.tag="NOTHING";
+	st->insert(a);
+
   	st->setPrev(st); 
-  	st->setCurrent(st); 
   	n->sTable=st;
   }
   if (act==PRINTST)
     n->sTable->print();
 
+  // Classes
   for (auto &c : n->classes.list)
     classNames->push_back(c.sig->name);
-  for (auto &c : n->classes.list) {
-    if (act==BUILDSYMBOLTABLE) {
-      symTable* st1= new symTable;
-      st1->setPrev(n->sTable);
-      st1->setCurrent(n->sTable);
-      c.sTable=st1;
-    }
-    checkClass(&c, classNames, act);
-  }
 
+  // Add symbol tables and then order them to represent hierarchy
+  for (auto &c : n->classes.list)
+    if (act==BUILDSYMBOLTABLE) {
+      symTable* newScope = new symTable;
+      c.sTable = newScope;
+    }
+  for (auto &c : n->classes.list)
+    if (act==BUILDSYMBOLTABLE) {
+      std::string extends = c.sig->extends;
+      if (extends=="Obj")
+      	c.sTable->setPrev(n->sTable);
+      else {
+      	for (auto &superClass : n->classes.list) {
+	  std::string name = superClass.sig->name;
+	  if (extends==name)
+	    c.sTable->setPrev(superClass.sTable);
+	}
+      }
+    }
+
+  for (auto &c : n->classes.list)
+    checkClass(&c, classNames, act);
+
+  // Statements
   symTable* st= new symTable;
   st->setPrev(n->sTable);
   symTable* current=st;
@@ -346,17 +363,17 @@ void printSymbolTable(ProgramNode *rootNode)
 void checkConstructorCalls ( ProgramNode *rootNode ) {
   std::vector<char const*> classNames;
   classNames.push_back("Obj");
-  int actList=CHECKCONSTRUCTORCALLS;
+  int act=CHECKCONSTRUCTORCALLS;
 
   for (auto &c : rootNode->classes.list)
     classNames.push_back(c.sig->name);
 
   for (auto &c : rootNode->classes.list) 
     if (c.classBody != NULL) 
-      checkClassBody(c.classBody, &classNames, actList);
+      checkClassBody(c.classBody, &classNames, act);
 
   for (statementNode &s : rootNode->statements.list)
-    checkStatement(&s, &classNames, actList);
+    checkStatement(&s, &classNames, act);
 }
 
 void checkClassHierarchy ( std::vector<classNode> l ) {
