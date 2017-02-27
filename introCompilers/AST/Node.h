@@ -15,7 +15,7 @@ static int PRINTST=13;
 
 class symbol {
 public:
- symbol(): name(""),type(""),scope(""),tag(""){}
+ symbol(): name(""),type(""),scope(""),tag("") {}
    std::string name="";
    std::string type=""; 
    std::string scope=""; 
@@ -23,10 +23,10 @@ public:
 };
 
 class symTable {
- public: 
+ public:
+ symTable() : prev(NULL){}
   std::vector<symbol> table;
   symTable* prev;
-  symTable* current;
 
   /* === METHODS === */
   void print() {
@@ -40,10 +40,6 @@ class symTable {
   
   void setPrev(symTable * p) {
     prev = p;
-  }
-
-  void setCurrent(symTable * c) {
-    current = c;
   }
 
   void insert(symbol sym) {
