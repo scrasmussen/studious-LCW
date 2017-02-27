@@ -260,7 +260,7 @@ ProgramNode() : sTable(NULL) {}
 void traverse(int);
 void checkRExpr(rExprNode *, std::vector<char const*> *, int);
 void checkLExpr(lExprNode *, std::vector<char const*> *,  int);
-void checkStatement(statementNode , std::vector<char const*> *, int);
+void checkStatement(statementNode *, std::vector<char const*> *, int);
 void checkFormalArguments(formalArgumentsNode *, std::vector<char const*> *, int);
 void buildSymbolTable( ProgramNode*);
 void checkClassHierarchy ( std::vector<classNode> );
