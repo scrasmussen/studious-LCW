@@ -95,16 +95,28 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     checkRExpr(n->rExpr, classNames, act);
   }
   if (n->lExpr!=NULL) {
+     if (act==BUILDSYMBOLTABLE) {
+      n->lExpr->sTable=n->sTable;
+    }
     checkLExpr(n->lExpr, classNames, act); 
   }
   if (n->stblock!=NULL) {
+     if (act==BUILDSYMBOLTABLE) {
+      n->lExpr->sTable=n->sTable;
+    }
     checkStatementBlock(n->stblock, classNames, act);
   }
   if (n->elifs!=NULL) {
+      if (act==BUILDSYMBOLTABLE) {
+      n->lExpr->sTable=n->sTable;
+    }
     checkElifs(n->elifs, classNames, act);
   }
   if (n->elseN!=NULL) {
-    checkElse(n->elseN, classNames, act);
+       if (act==BUILDSYMBOLTABLE) {
+      n->lExpr->sTable=n->sTable;
+    }
+   checkElse(n->elseN, classNames, act);
   }
 }
 
