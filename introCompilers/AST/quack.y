@@ -241,7 +241,7 @@ Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }
 Statement
 : WHILE R_Expr Statement_Block {
    statementNode *node = new statementNode;
-   //node->str="assignment";
+   node->str="WHILE";
    node->rExpr=$2;
    node->stblock=$3;
    $$=node;
@@ -250,6 +250,7 @@ Statement
 }
 | IF R_Expr Statement_Block Elifs Else {
    statementNode *node = new statementNode;
+   node->str="IF";
    node->rExpr=$2;
    node->stblock=$3;
    node->elifs=$4;
