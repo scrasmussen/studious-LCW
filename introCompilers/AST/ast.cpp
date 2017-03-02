@@ -39,7 +39,8 @@ int main(int argc, char*argv[]) {
   // traverse(CHECKCLASSHIERARCHY);
   // traverse(CHECKCONSTRUCTORCALLS);
   traverse(BUILDSYMBOLTABLE);
-  traverse(PRINTST);
-  // traverse(PRINT);
-  
+  traverse(TYPEUPDATE);
+  traverse(CHECKREDEF);
+  //traverse(PRINT);
+  //traverse(PRINTST);
 }
