@@ -6,20 +6,26 @@
 #ifndef NODE_H
 #define NODE_H
 
+extern int errornum;
+
 static int BUILDSYMBOLTABLE=2;
 static int EMPTY=3;
 static int CHECKCONSTRUCTORCALLS=5;
 static int CHECKCLASSHIERARCHY=7;
 static int PRINT=11;
 static int PRINTST=13;
+static int CHECKREDEF=17;
+static int CHECKMETHODREDEF=19;
+static int BUILDLCA=23;
 
 class symbol {
 public:
- symbol(): name(""),type(""),scope(""),tag("") {}
+ symbol(): name(""),type(""),scope(""),tag("") {linenum=0;}
    std::string name="";
    std::string type=""; 
    std::string scope=""; 
-   std::string tag=""; 
+   std::string tag="";
+   int linenum;
 };
 
 class symTable {
@@ -75,20 +81,24 @@ struct lca {
 
 struct argumentNode {
 argumentNode(): name(NULL), type(NULL), sTable(NULL){}
+  ~argumentNode(){if (sTable) delete sTable;}
   char const* name="";
   char const* type;
+  int linenum;
   symTable *sTable;
 };
 
 
 struct argumentsNode {
 argumentsNode(): sTable(NULL) {}
+  ~argumentsNode(){if (sTable) delete sTable;}
   std::vector<argumentNode *> list;
   symTable *sTable;
 };
 
 struct formalArgumentsNode {
 formalArgumentsNode(): name(NULL), type(NULL), sTable(NULL) {}
+  ~formalArgumentsNode(){if (sTable) delete sTable;}
   char const* name="";
   char const* type;
   std::vector<argumentNode *> list;
@@ -99,6 +109,7 @@ formalArgumentsNode(): name(NULL), type(NULL), sTable(NULL) {}
 
 struct classSignatureNode {
 classSignatureNode(): extends(NULL), fArguments(NULL), sTable(NULL) {}
+  ~classSignatureNode(){if (sTable) delete sTable;}
   char const* name;
   char const* extends;
   formalArgumentsNode *fArguments; 
@@ -107,22 +118,17 @@ classSignatureNode(): extends(NULL), fArguments(NULL), sTable(NULL) {}
 
 struct classSigExtendsNode {
 classSigExtendsNode(): extends(NULL), sTable(NULL) {}
+  ~classSigExtendsNode(){if (sTable) delete sTable;}
   char const* extends;
   symTable *sTable; 
 };
-
-
-struct returnNode {
-  
-};
-
-
 
 class actualArgsNode;
 class lExprNode;
 
 struct rExprNode {
 rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL), sTable(NULL) {}
+  ~rExprNode(){if (sTable) delete sTable;}
   int val;
   const char* str = "";
   const char* name = "";
@@ -135,12 +141,14 @@ rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL)
 
 struct rExprsNode {
 rExprsNode() : sTable(NULL) {}
+  ~rExprsNode(){if (sTable) delete sTable;}
   std::vector<rExprNode*> list;
   symTable *sTable; 
 };
 
 struct actualArgsNode{
 actualArgsNode() : rExprs(NULL), rExpr(NULL), sTable(NULL){}
+  ~actualArgsNode(){if (sTable) delete sTable;}
   rExprsNode *rExprs ;
   rExprNode *rExpr ;
   symTable *sTable; 
@@ -149,59 +157,63 @@ actualArgsNode() : rExprs(NULL), rExpr(NULL), sTable(NULL){}
 
 struct lExprNode {
 lExprNode(): rExpr(NULL), sTable(NULL) {}
+  ~lExprNode(){if (sTable) delete sTable;}
   const char* str;
   const char* name;
   rExprNode *rExpr;
   symTable *sTable; 
 };
 
-
-struct whileNode {
-  
-};
-
 class statementsNode;
 struct statementBlockNode {
 statementBlockNode() : statements(NULL), sTable(NULL) {}
+  ~statementBlockNode(){if (sTable) delete sTable;}
   statementsNode *statements;
   symTable *sTable; 
 };
 
 struct elifNode {
 elifNode() : rExpr(NULL), statementBlock(NULL), sTable(NULL) {}
+  ~elifNode(){if (sTable) delete sTable;}
   rExprNode* rExpr;
   statementBlockNode  *statementBlock;
   symTable *sTable; 
 };
 
 struct elifsNode {
+  ~elifsNode(){if (sTable) delete sTable;}
   std::vector<elifNode*> list;
   symTable *sTable; 
 };
 
 struct methodReturnNode {
 methodReturnNode() : sTable(NULL) {}
+  ~methodReturnNode(){if (sTable) delete sTable;}
   symTable *sTable;
   const char* name="";
 };
 
 struct methodNode {
 methodNode() : statementBlock(NULL), fArguments(NULL), methodReturn(NULL), sTable(NULL) {}
+  ~methodNode(){if (sTable) delete sTable;}
   statementBlockNode  *statementBlock;
   formalArgumentsNode* fArguments;
   methodReturnNode* methodReturn;
   symTable *sTable; 
   const char* name="";
+  int linenum;
 };
 
 struct methodsNode {
 methodsNode() : sTable(NULL) {}
+  ~methodsNode(){if (sTable) delete sTable;}
   std::vector<methodNode> list;
   symTable *sTable; 
 };
 
 struct elseNode {
 elseNode() : statementBlock(NULL), sTable(NULL) {}
+  ~elseNode(){if (sTable) delete sTable;}
   statementBlockNode  *statementBlock;
   symTable *sTable; 
 };
@@ -209,6 +221,7 @@ elseNode() : statementBlock(NULL), sTable(NULL) {}
 
 struct statementNode {
 statementNode() : rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {}
+  ~statementNode(){if (sTable) delete sTable;}
   int value;
   const char* str;
   const char* name;
@@ -223,12 +236,14 @@ statementNode() : rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NU
 
 struct statementsNode {
 statementsNode() : sTable(NULL) {}
+  ~statementsNode(){if (sTable) delete sTable;}
   std::vector<statementNode> list;
   symTable *sTable; 
 };
 
 struct classBodyNode {
 classBodyNode() : statements(NULL), methods(NULL), sTable(NULL) {}
+  ~classBodyNode(){if (sTable) delete sTable;}
   const char* name="classBodyNode";
   statementsNode* statements;
   methodsNode* methods;
@@ -237,13 +252,16 @@ classBodyNode() : statements(NULL), methods(NULL), sTable(NULL) {}
 
 struct classNode {
 classNode() : sig(NULL), classBody(NULL), sTable(NULL) {}
+  ~classNode(){if (sTable) delete sTable;}
   classSignatureNode* sig;
   classBodyNode* classBody;
-  symTable *sTable; 
+  symTable *sTable;
+  int linenum;
 };
 
 struct classesNode {
 classesNode() : sTable(NULL) {}
+  ~classesNode(){if (sTable) delete sTable;}
   std::vector<classNode> list;
   symTable *sTable; 
 };
@@ -251,6 +269,7 @@ classesNode() : sTable(NULL) {}
 
 struct ProgramNode {
 ProgramNode() : sTable(NULL) {}
+  ~ProgramNode(){if (sTable) delete sTable;}
   classesNode classes;
   statementsNode statements;
   symTable *sTable; 
@@ -259,11 +278,14 @@ ProgramNode() : sTable(NULL) {}
 void traverse(int);
 void checkRExpr(rExprNode *, std::vector<char const*> *, int);
 void checkLExpr(lExprNode *, std::vector<char const*> *,  int);
+void checkClass(classNode *, std::vector<char const*> *, int);
 void checkStatement(statementNode *, std::vector<char const*> *, int);
 void checkFormalArguments(formalArgumentsNode *, std::vector<char const*> *, int);
 void buildSymbolTable( ProgramNode*);
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
+void buildLCA();
+void checkRedef();
 
 extern ProgramNode *root;
 #endif
