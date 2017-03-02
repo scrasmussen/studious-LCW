@@ -258,13 +258,6 @@ Statement
    $$=node;
    msg("Statement: IF R_Expr quack");
 } 
-| Statement_Block {
-   statementNode *node = new statementNode;
-   node->stblock=$1;
-   $$=node;
-   msg("Statement: Statement_Block");
-
-}
 | L_Expr "="  R_Expr ";" {
 
    statementNode *node = new statementNode;
@@ -393,11 +386,19 @@ L_Expr
 ;
 
 R_Expr
-: STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; rN->str=$1; $$ = rN;} 
-| INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; rN->val=std::stoi($1); $$ = rN;}
+: STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; 
+rN->name=$1; $$ = rN;
+rN->str="string";
+} 
+| INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; 
+rN->val=std::stoi($1); $$ = rN;
+rN->name=$1;
+rN->str="int";
+}
 | L_Expr {
    rExprNode *rN = new rExprNode;
    rN->lExpr=$1; 
+   //rN->str="string";
    $$=rN;
    msg("R_Expr: L_Expr");
    }
@@ -407,6 +408,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="PLUS";
    $$=rN;
    msg("R_Expr: R_Expr + R_Expr");
    }
@@ -414,6 +416,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="MINUS";
    $$=rN;
    msg("R_Expr: R_Expr - R_Expr");
    }
@@ -421,6 +424,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="TIMES";
    $$=rN;
    msg("R_Expr: R_Expr * R_Expr");
    }
@@ -428,12 +432,14 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="DIVIDE";
    $$=rN;
    msg("R_Expr: R_Expr / R_Expr");
    }
 | MINUS R_Expr %prec NEG {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
+  rN->str="NEG";
    $$=rN;
    msg("R_Expr: - R_Expr");
    } 
@@ -441,6 +447,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="EQUALS";
    $$=rN;
    msg("R_Expr: R_Expr == R_Expr");
    }
@@ -448,6 +455,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="ATMOST";
    $$=rN;
    msg("R_Expr: R_Expr <= R_Expr");
    }
@@ -455,6 +463,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="LESS";
    $$=rN;
    msg("R_Expr: R_Expr < R_Expr");
    }
@@ -462,6 +471,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="ATLEAST";
    $$=rN;
    msg("R_Expr: R_Expr >= R_Expr");
    }
@@ -469,6 +479,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="MORE";
    $$=rN;
    msg("R_Expr: R_Expr > R_Expr");
    }
@@ -476,6 +487,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="AND";
    $$=rN;
    msg("R_Expr: R_Expr AND R_Expr");
    }
@@ -484,12 +496,14 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->str="OR";
    $$=rN;
    msg("R_Expr: R_Expr OR R_Expr");
    }
 | NOT R_Expr {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
+   rN->str="NOT";
    $$=rN;
    msg("R_Expr: NOT R_Expr");
    } 
@@ -521,6 +535,7 @@ R_Expr
   rExprNode *rN = new rExprNode;
   rN->rExprFirst=$2; 
   rN->rExprSecond=NULL; 
+  rN->str="FIRTBRACE";
   //rN->str="const"; 
   $$=rN;
   msg("R_Expr: ( R_Expr )");}
