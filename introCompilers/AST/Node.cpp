@@ -4,6 +4,58 @@
 #include "Node.h"
 int marker=0;
 const char* flag="";
+
+std::string leastCommonAnc(std::string lType, std::string rType) {
+  std::vector<lca> lcaList;
+  lca Obj, String, Int, Boolean, Nothing;
+  for (auto &i : root->classes.list) {
+    lca a;
+    a.name=i.sig->name;
+    a.extends=i.sig->extends;
+    lcaList.push_back(a);
+  }
+  Obj.name="Obj"; Obj.extends="Obj";
+  String.name="String"; String.extends="Obj";
+  Int.name="Int"; Int.extends="Obj";
+  Boolean.name="Boolean"; Boolean.extends="Obj";
+  Nothing.name="Nothing"; Nothing.extends="Obj";
+  lcaList.push_back(Obj);
+  lcaList.push_back(String);
+  lcaList.push_back(Int);
+  lcaList.push_back(Boolean);
+  lcaList.push_back(Nothing);
+  std::string rTypeOriginal=rType;
+
+  int ifPrint=0;
+
+  while (lType != rType) {
+    if (ifPrint)
+      std::cout<<lType<<"|"<<rType<<std::endl;
+    for (lca i : lcaList)
+      {
+	if (rType==i.name) {
+	  rType=i.extends;
+	  break;
+	}
+      }
+    if (rType=="Obj" && lType!="Obj") {
+      if (ifPrint)
+	std::cout<<lType<<"|"<<rType<<std::endl;
+      rType=rTypeOriginal;
+      for (lca i : lcaList)
+      {
+	if (lType==i.name) {
+	  lType=i.extends;
+	  break;
+	}
+      }
+    }
+  }
+  if (ifPrint)
+    std::cout<<"Returning "<<lType<<std::endl;
+  return lType;
+}
+
 void checkConstructorClass(const char* name, std::vector<char const*> *classNames)
 {
   int found = 0;
@@ -19,7 +71,7 @@ void checkConstructorClass(const char* name, std::vector<char const*> *className
 
 void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  int act)
 {
-  if (act==PRINT) std::cout<<"actualArgsNode: "<<std::endl;  
+  if (act==PRINT) std::cout<<"actualArgsNode: "<<std::endl;
   if (n->rExpr!=NULL) {
      if(act==BUILDSYMBOLTABLE) {
         n->rExpr->sTable=n->sTable;  
@@ -147,9 +199,9 @@ void checkElifs(elifsNode *n, std::vector<char const*> *classNames,  int act)
 {
   for (elifNode *e : n->list) {
     if (act==BUILDSYMBOLTABLE) {
-       symTable *st1= new symTable;  
-       st1->setPrev(n->sTable);
-       n->sTable=st1;
+      symTable *st1= new symTable;  
+      st1->setPrev(n->sTable);
+      n->sTable=st1;
     }
     checkElif(e, classNames, act);
   }
@@ -161,11 +213,11 @@ void checkElse(elseNode *n, std::vector<char const*> *classNames,  int act)
 
   //if (act==PRINTST) n->sTable->print();
   if (n->statementBlock!=NULL) {
-     if (act==BUILDSYMBOLTABLE) {
-       symTable *st1= new symTable;  
-       st1->setPrev(n->sTable);
-       n->sTable=st1;
-     }
+    if (act==BUILDSYMBOLTABLE) {
+      symTable *st1= new symTable;  
+      st1->setPrev(n->sTable);
+      n->sTable=st1;
+    }
     checkStatementBlock(n->statementBlock, classNames, act);
   }
 }
@@ -202,17 +254,17 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   }
   if (n->stblock!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
-      n->stblock->sTable=n->sTable;
+       n->stblock->sTable=n->sTable;
     }
-    checkStatementBlock(n->stblock, classNames, act);
+     checkStatementBlock(n->stblock, classNames, act);
   }
 
- 
+  
   if (n->lExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
       n->lExpr->sTable=n->sTable;
     }
-    checkLExpr(n->lExpr, classNames, act); 
+     checkLExpr(n->lExpr, classNames, act);
   }
   if (n->elifs!=NULL) {
     if (act==BUILDSYMBOLTABLE) {
@@ -262,9 +314,9 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
 
       symbol s; s.name=n->name; s.type=type.c_str(); s.scope="[NULL]"; s.tag="METHOD";
       n->sTable->prev->insert(s);
-
+      // n->sTable->insert(s);
     }
-  
+
     if (n->fArguments!=NULL)
       n->fArguments->sTable=n->sTable;
     if (n->statementBlock!=NULL)
@@ -289,8 +341,8 @@ void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int
      	n->sTable->insert(a);
      }
   }
-//  if (act==PRINTST)
-    //n->sTable->print();
+  // if (act==PRINTST)
+  //   n->sTable->print();
 }
 
 void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *classNames,  int act)
@@ -355,9 +407,9 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
     for (methodNode &m : n->methods->list)
       {
 	if (act==BUILDSYMBOLTABLE) {
-	    symTable* st= new symTable;
-            st->setPrev(n->sTable);
-            m.sTable=st;
+	  symTable* st= new symTable;
+	  st->setPrev(n->sTable);
+	  m.sTable=st;
 	}
 	checkMethod(&m, classNames, act);
       }
@@ -366,10 +418,10 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
     symTable * st=new symTable;
     st->setPrev(n->sTable); 
     for (statementNode &s : n->statements->list) {
-       if (act==BUILDSYMBOLTABLE) {
-         s.sTable=st;
-       }
-    checkStatement(&s, classNames, act);
+      if (act==BUILDSYMBOLTABLE) {
+	s.sTable=st;
+      }
+      checkStatement(&s, classNames, act);
     }
   }
 }
@@ -377,11 +429,11 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
 void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
 {
   if (act==PRINT) std::cout<<"classNode:"<<std::endl;
-  if (act==PRINTST){
+  if (act==PRINTST) {
     std::cout<<std::endl<<"printing class: "; 
     n->sTable->print();
   }
- 
+
   if (n->sig != NULL) {
     if (act==BUILDSYMBOLTABLE) {
        n->sig->sTable=n->sTable;
