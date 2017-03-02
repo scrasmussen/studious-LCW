@@ -166,6 +166,7 @@ Class
   classNode *n = new classNode;
   n->sig=$1;
   n->classBody=$2;
+  n->linenum=yylineno;
   $$=n;
 }
 ;
@@ -193,6 +194,7 @@ Formal_Args
   argumentNode *argNode = new argumentNode;
   argNode->name=$1;
   argNode->type=$3;
+  argNode->linenum=yylineno;
 
   argumentsNode *tmpList = $4;
   std::vector<argumentNode*> argList = tmpList->list;
@@ -215,21 +217,6 @@ arguments
   msg("Idents: Idents Ident");
 }
 ;
-/*
-
-Formal_Args
-: 
-| IDENT ":" IDENT Idents {msg("Formal_Args: IDENT : IDENT Idents");}
-;
-
-Idents
-: 
-| Idents Ident {msg("Idents: Idents Ident");}
-;
-
-Ident
-: "," IDENT ":" IDENT {msg("Ident: , IDENT : IDENT");}
-*/
 
 Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }");
    classBodyNode *node = new classBodyNode;
@@ -350,6 +337,7 @@ Method
    n->fArguments=$4;
    n->methodReturn=$6;
    n->name=$2;
+   n->linenum=yylineno;
    $$=n;
    msg("Method: DEF IDENT ( Formal_args ) Method_Opt Statement_Block");
    }
@@ -372,6 +360,7 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str=$1;
    node->name=$1;
+
    $$=node;
    msg("L_Expr: IDENT");
    }
