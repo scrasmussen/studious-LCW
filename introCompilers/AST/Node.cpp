@@ -3,10 +3,41 @@
 #include <vector>
 #include "Node.h"
 int marker=0;
+int errornum=0;
 const char* flag="";
+std::vector<lca> lcaList;
 
-std::string leastCommonAnc(std::string lType, std::string rType) {
-  std::vector<lca> lcaList;
+
+void error(std::string error, int linenum)
+{
+  std::cout<<"Error("<<linenum<<"): "<<error<<std::endl;
+  ++errornum;
+  if (errornum >= 10) {
+    std::cout<<"Too many errors! Exiting early\n";
+    std::exit(1);
+  }
+}
+
+void checkRedef()
+{
+  // check redefinition of classes
+  for (auto &i : root->classes.list) {
+    for (auto &j : root->classes.list) {
+      if (strcmp(i.sig->name,j.sig->name)==0)
+	if (i.linenum!=j.linenum)
+	  if (i.linenum<j.linenum) {	    
+	    error("Class Redefinition", j.linenum);
+	  }
+    }
+  }
+
+  // check redefinition of methods
+  std::vector<char const*> *classNames=NULL;  
+  for (auto &i : root->classes.list)
+    checkClass(&i, classNames, CHECKMETHODREDEF);
+}
+
+void buildLCA() {
   lca Obj, String, Int, Boolean, Nothing;
   for (auto &i : root->classes.list) {
     lca a;
@@ -24,6 +55,9 @@ std::string leastCommonAnc(std::string lType, std::string rType) {
   lcaList.push_back(Int);
   lcaList.push_back(Boolean);
   lcaList.push_back(Nothing);
+}
+
+std::string leastCommonAnc(std::string lType, std::string rType) {
   std::string rTypeOriginal=rType;
 
   int ifPrint=0;
@@ -312,7 +346,7 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
       type.append(n->methodReturn->name);
       type.append(")");
 
-      symbol s; s.name=n->name; s.type=type.c_str(); s.scope="[NULL]"; s.tag="METHOD";
+      symbol s; s.name=n->name; s.type=type.c_str(); s.scope="[NULL]"; s.tag="METHOD"; s.linenum=n->linenum;
       n->sTable->prev->insert(s);
       // n->sTable->insert(s);
     }
@@ -446,6 +480,13 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
     }
     checkClassBody(n->classBody, classNames, act);
   }
+  if (act==CHECKMETHODREDEF) {
+    for (symbol i : n->sTable->table)
+      for (symbol j : n->sTable->table)
+	if (i.name==j.name && i.linenum<j.linenum)
+	  error("Method Redefinition In Class", j.linenum);
+  }
+    
 
 }
 
@@ -595,12 +636,16 @@ void checkClassHierarchy ( std::vector<classNode> l ) {
 }
 
 void traverse(int act) {
+  if (act==BUILDLCA)
+    buildLCA();
   if (act==CHECKCONSTRUCTORCALLS)
     checkConstructorCalls(root);
   if (act==CHECKCLASSHIERARCHY)
     checkClassHierarchy(root->classes.list);
   if (act==BUILDSYMBOLTABLE)
     buildSymbolTable(root);
+  if (act==CHECKREDEF)
+    checkRedef();
   if (act==PRINTST)
     printSymbolTable(root);
   if (act==PRINT) {
