@@ -69,6 +69,10 @@ class symTable {
   }
 };
 
+struct lca {
+  std::string name, extends;
+};
+
 struct argumentNode {
 argumentNode(): name(NULL), type(NULL), sTable(NULL){}
   char const* name="";
@@ -95,7 +99,7 @@ formalArgumentsNode(): name(NULL), type(NULL), sTable(NULL) {}
 
 struct classSignatureNode {
 classSignatureNode(): extends(NULL), fArguments(NULL), sTable(NULL) {}
-  char const* name="";
+  char const* name;
   char const* extends;
   formalArgumentsNode *fArguments; 
   symTable *sTable; 
@@ -144,10 +148,9 @@ actualArgsNode() : rExprs(NULL), rExpr(NULL), sTable(NULL){}
 
 
 struct lExprNode {
-lExprNode(): rExpr(NULL), strtest(NULL), sTable(NULL) {}
+lExprNode(): rExpr(NULL), sTable(NULL) {}
   const char* str;
-  const char* name="";
-  std::string *strtest;
+  const char* name;
   rExprNode *rExpr;
   symTable *sTable; 
 };
@@ -208,7 +211,7 @@ struct statementNode {
 statementNode() : rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {}
   int value;
   const char* str;
-  const char* name="";
+  const char* name;
   rExprNode* rExpr;
   lExprNode* lExpr;
   statementBlockNode* stblock;
