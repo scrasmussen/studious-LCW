@@ -360,7 +360,6 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str=$1;
    node->name=$1;
-
    $$=node;
    msg("L_Expr: IDENT");
    }
@@ -376,13 +375,15 @@ L_Expr
 
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; 
-rN->name=$1; $$ = rN;
-rN->str="string";
+   rN->str="string_lit";
+   rN->name=$1;
+   $$ = rN;
 } 
 | INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; 
-rN->val=std::stoi($1); $$ = rN;
-rN->name=$1;
-rN->str="int";
+   rN->name=$1;
+   rN->str="int_lit";
+   rN->val=std::stoi($1);
+   $$ = rN;
 }
 | L_Expr {
    rExprNode *rN = new rExprNode;

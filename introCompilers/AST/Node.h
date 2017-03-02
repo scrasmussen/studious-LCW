@@ -6,8 +6,6 @@
 #ifndef NODE_H
 #define NODE_H
 
-extern int errornum;
-
 static int BUILDSYMBOLTABLE=2;
 static int EMPTY=3;
 static int CHECKCONSTRUCTORCALLS=5;
@@ -17,6 +15,9 @@ static int PRINTST=13;
 static int CHECKREDEF=17;
 static int CHECKMETHODREDEF=19;
 static int BUILDLCA=23;
+static int TYPEUPDATE=27;
+
+extern int errornum;
 
 class symbol {
 public:
@@ -35,6 +36,7 @@ class symTable {
   symTable* prev;
 
   /* === METHODS === */
+
   void print() {
     std::cout<<std::endl;
     for (symbol s : table) {
@@ -52,20 +54,22 @@ class symTable {
     table.push_back(sym);
   }
 
-  void update(symbol sym) {
-    for (symbol s : table)
+  void update(symbol sym,std::string newtype) {
+    for (symbol &s : this->table)
       if (s.name.compare(sym.name)==0) {
-	s.name=sym.name;
-	s.type=sym.type;
-	s.scope=sym.scope;
-	s.tag=sym.tag;	
-    }
+	//s.name=sym.name
+	s.type=newtype;
+	//s.scope=sym.scope;
+	//s.tag=sym.tag;
+      }
   }
 
   symbol lookup(symbol sym) {
-    for (symbol s : table) {
-      if(s.name.compare(sym.name)==0)
-	return s;
+    if (this->table.size()>0) {
+      for (symbol s : this->table) {
+	if(s.name.compare(sym.name)==0)
+	  return s;
+      }
     }
     sym.name="";
     sym.type="";
@@ -104,8 +108,6 @@ formalArgumentsNode(): name(NULL), type(NULL), sTable(NULL) {}
   std::vector<argumentNode *> list;
   symTable *sTable; 
 };
-
-
 
 struct classSignatureNode {
 classSignatureNode(): extends(NULL), fArguments(NULL), sTable(NULL) {}
@@ -153,7 +155,6 @@ actualArgsNode() : rExprs(NULL), rExpr(NULL), sTable(NULL){}
   rExprNode *rExpr ;
   symTable *sTable; 
 };
-
 
 struct lExprNode {
 lExprNode(): rExpr(NULL), sTable(NULL) {}
@@ -284,6 +285,8 @@ void checkFormalArguments(formalArgumentsNode *, std::vector<char const*> *, int
 void buildSymbolTable( ProgramNode*);
 void checkClassHierarchy ( std::vector<classNode> );
 void checkConstructorCalls ( ProgramNode* );
+void goToRoot(symTable *);
+void fetchType(symTable *,symbol,symTable *);
 void buildLCA();
 void checkRedef();
 
