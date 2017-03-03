@@ -7,13 +7,77 @@ int errornum=0;
 std::string flag="";
 std::vector<lca> lcaList;
 
+std::string getType(std::string name, symTable *st)
+{
+  for (symbol s : st->table) {
+    std::string searchString = name+(std::string)" ";
+    std::size_t hasMethodName = s.tag.find(searchString);
+    if (hasMethodName!=std::string::npos) {
+      std::size_t isArg = s.tag.find(" arg");
+      if (isArg!=std::string::npos) {
+	std::cout<<"FOUND!\n";
+	return s.type;
+      }
+    }
+  }
+  return "Empty";
+}
+
+std::string getArgType(std::string name, std::string str, symTable *st){
+  if (str=="PLUS")
+    return "INT";
+  // ARTLESS TODO: add all types
+  for (symbol s : st->table){
+    if (s.name==name)
+      return s.type;
+  }
+  return name;
+}
+
+std::string getReturnType(std::string type) {
+  std::string res = type.substr(type.find("->(")+3);
+  res = res.substr(0,res.length()-1);
+  return res;
+}
+
+std::string getArgTypes(std::string type) {
+  std::string res = type.substr(0,type.find("->("));
+  return res;
+}
+
+void checkArgTypes(rExprNode *n) {
+  // std::cout<<n->str<<" "<<n->name<<": ";
+  std::string argString="(";
+  int arity=0;
+  int linenum=-1;
+  for (rExprNode *r : n->actualArgs->list) {
+    arity=1;
+    std::string t = getArgType((std::string) r->name,(std::string)r->str,n->sTable);
+    argString+=t;
+    argString+=",";
+  }
+  if (arity==1)
+    argString.replace(argString.end()-1,argString.end(),"");
+  argString+=")";
+
+  // get line number
+  linenum=n->linenum;
+  std::string type = n->sTable->getType(n->name);
+  std::string argTypes = getArgTypes(type);
+  if (argTypes!=argString) {
+    //std::cout<<argTypes<<" does not match "<<argString<<" at "<<linenum<<std::endl;
+    //ARTLESS: ADD ERROR MESSAGE
+    // error("Argument types do not match function or method", linenum);
+  }
+  return;
+}
 
 void error(std::string error, int linenum)
 {
-  std::cout<<"Error("<<linenum<<"): "<<error<<std::endl;
+  std::cerr<<"Error("<<linenum<<"): "<<error<<std::endl;
   ++errornum;
   if (errornum >= 10) {
-    std::cout<<"Too many errors! Exiting early\n";
+    std::cerr<<"Too many errors! Exiting early\n";
     std::exit(1);
   }
 }
@@ -157,6 +221,13 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       n->sTable->insert(s);
     }
   }
+  
+  if (act==CHECKARGTYPE) {
+    if(strcmp(n->str,"method")==0 || strcmp(n->str,"const")==0) {
+      checkArgTypes(n);
+    }
+  }
+  
   if (n->lExpr!=NULL){
     if(act==BUILDSYMBOLTABLE) {
       n->lExpr->sTable=n->sTable;  
@@ -273,9 +344,8 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     n->sTable->print();
   }
   if (act==TYPEUPDATE){goToRoot(n->sTable);}
-  //if (act==DECLARATION){std::cout<<n->str<<" afafasf"<<std::endl;}
- 
-  if (n->str!=NULL) {//std::cout<<"adfasdf"<<std::endl;
+
+  if (n->str!=NULL) {
   if (strcmp(n->str, "WHILE")==0) {
      if (act==BUILDSYMBOLTABLE) {
        symTable *st1= new symTable;  
@@ -283,37 +353,39 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
        n->sTable=st1;
     }
   }
+
   if (strcmp(n->str,"IF")==0) {
-     if (act==BUILDSYMBOLTABLE) {
-       symTable *st1= new symTable;  
-       st1->setPrev(n->sTable);
-       n->sTable=st1;
+    if (act==BUILDSYMBOLTABLE) {
+      symTable *st1= new symTable;
+      st1->setPrev(n->sTable);
+      n->sTable=st1;
     }
   }
+
   if (strcmp(n->str,"ASSIGN")==0) {
     if (act==DECLARATION) {
-       symbol a,b,newSym;
-       a.name=n->lExpr->name;
-       b.name=n->rExpr->name;
-       if (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0) {
-          std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
-          newSym=n->sTable->lookup(b);
-          n->sTable->update(a,newSym.type);
-       } 
-       else if(strcmp(n->rExpr->name,"method")==0){
-            if (strcmp(n->rExpr->rExprFirst->str,"const")==0) {
-               for (auto &c : root->classes.list)
-                  if (strcmp(c.sig->name,n->rExpr->rExprFirst->str)==0) {
-	             //c.sTable->setPrev(superClass.sTable);
-                     newSym=c.sTable->lookup(b);
-                     n->sTable->update(a,newSym.type);
-                  }
-               }
-            }
-       } 
-    }
- 
+      symbol a,b,newSym;
+      a.name=n->lExpr->name;
+      b.name=n->rExpr->name;
+      if (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0) {
+	std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
+	newSym=n->sTable->lookup(b);
+	n->sTable->update(a,newSym.type);
+      } 
+      else if(strcmp(n->rExpr->name,"method")==0){
+	if (strcmp(n->rExpr->rExprFirst->str,"const")==0) {
+	  for (auto &c : root->classes.list)
+	    if (strcmp(c.sig->name,n->rExpr->rExprFirst->str)==0) {
+	      //c.sTable->setPrev(superClass.sTable);
+	      newSym=c.sTable->lookup(b);
+	      n->sTable->update(a,newSym.type);
+	    }
+	}
+      }
+    } 
   }
+  }
+
   if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
        n->rExpr->sTable=n->sTable;
@@ -347,14 +419,6 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   }
 }
 
-void checkMethodReturn(methodReturnNode *n, std::vector<char const*> *classNames,  int act)
-{
-  if (act==BUILDSYMBOLTABLE) {
-    // symbol s; s.name=n->name; s.type="STR"; s.scope="[NULL]"; s.tag="METHODRETURN";
-    // n->sTable->insert(s);
-  }
-}
-
 void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"methodNode: "<< n->name << std::endl;
@@ -377,7 +441,7 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
 	type.replace(type.end()-1,type.end(),"");
       type.append(")->(");
       // get return type
-      type.append(n->methodReturn->name);
+      type.append(n->returnType);
       type.append(")");
 
       symbol s; s.name=n->name; s.type=type.c_str(); s.scope="[NULL]"; s.tag="METHOD"; s.linenum=n->linenum;
@@ -389,15 +453,15 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
       n->fArguments->sTable=n->sTable;
     if (n->statementBlock!=NULL)
       n->statementBlock->sTable=n->sTable; 
-    if (n->methodReturn!=NULL)
-      n->methodReturn->sTable=n->sTable; 
   }
   if (n->fArguments!=NULL)
     checkFormalArguments(n->fArguments, classNames, act);
   if (n->statementBlock!=NULL)
     checkStatementBlock(n->statementBlock, classNames, act);
-  if (n->methodReturn!=NULL)
-    checkMethodReturn(n->methodReturn, classNames, act);
+
+  if (act==CHECKRETURNTYPE) {
+    // std::cout<<n->returnType<<std::endl;
+  }
 }
 
 void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int act){
@@ -426,14 +490,6 @@ void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *clas
       n->sTable->insert(a);
     }
   }
-
-  // checkArguments(n->arguments, classNames, act);
-  /*if (n->arguments != NULL) {
-    // arguments has been changed to list of arguments within a formalArgumentsNode, no need for
-    // sTable, no need for sTable in argumentNode?
-    // if (act==BUILDSYMBOLTABLE)
-    //   n->arguments->sTable=n->sTable; 
-    }*/
 }
 
 void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,  int act)
@@ -675,7 +731,7 @@ void goToRoot(symTable *sTable) {
   if(sTable==NULL) return;
   
   for (symbol s : sTable->table) {
-     fetchType(sTable,s,sTable);  
+    fetchType(sTable,s,sTable);
   } 
   //sTable->print();
 }
@@ -702,22 +758,25 @@ void traverse(int act) {
   std::vector<char const*> emptyClassNames;
   if (act==BUILDLCA)
     buildLCA();
+  if (act==BUILDSYMBOLTABLE)
+    buildSymbolTable(root);
+  if (act==CHECKARGTYPE)
+    checkProgram(root, &emptyClassNames, CHECKARGTYPE);
   if (act==CHECKCONSTRUCTORCALLS)
     checkConstructorCalls(root);
   if (act==CHECKCLASSHIERARCHY)
     checkClassHierarchy(root->classes.list);
-  if (act==BUILDSYMBOLTABLE)
-    buildSymbolTable(root);
   if (act==CHECKREDEF)
     checkRedef();
-  if (act==PRINTST)
-    printSymbolTable(root);
-  if (act==PRINT)
-    checkProgram(root, &emptyClassNames, PRINT);
-  if (act==TYPEUPDATE) 
-    checkProgram(root, &emptyClassNames, TYPEUPDATE);
+  if (act==CHECKRETURNTYPE)
+    checkProgram(root, &emptyClassNames, CHECKRETURNTYPE);
   if (act==DECLARATION) 
     checkProgram(root, &emptyClassNames, DECLARATION);
-
+  if (act==PRINT)
+    checkProgram(root, &emptyClassNames, PRINT);
+  if (act==PRINTST)
+    printSymbolTable(root);
+  if (act==TYPEUPDATE) 
+    checkProgram(root, &emptyClassNames, TYPEUPDATE);
 }
 
