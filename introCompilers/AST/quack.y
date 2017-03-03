@@ -272,12 +272,14 @@ Statement
    }
 | RETURN ";" {
    statementNode *node = new statementNode;
+   node->name="RETURN";
    $$=node;
    msg("Statement: RETURN ;");
    }
 | RETURN R_Expr ";" {
    statementNode *node = new statementNode;
    node->rExpr=$2;
+   node->name="RETURN";
    $$=node;
    msg("Statement: RETURN R_Expr ;");
 }
@@ -335,7 +337,7 @@ Method
    methodNode *n = new methodNode;
    n->statementBlock=$7;
    n->fArguments=$4;
-   n->methodReturn=$6;
+   n->returnType=$6->name;
    n->name=$2;
    n->linenum=yylineno;
    $$=n;
@@ -345,7 +347,9 @@ Method
 
 Method_Opt
 :  {
-   $$=new methodReturnNode;
+  methodReturnNode *n = new methodReturnNode;
+  n->name="Nothing";
+  $$=n;
    } 
 | ":" IDENT {
    methodReturnNode *n = new methodReturnNode;
@@ -507,6 +511,7 @@ R_Expr
   rN->name=$3;
   rN->actualArgs=$5;
   rN->str="method";
+  rN->linenum=yylineno;
   $$=rN;
   msg("R_Expr: R_Expr . IDENT ( Actual_Args )");}
 | IDENT "(" Actual_Args ")"{ 
@@ -518,6 +523,7 @@ R_Expr
   rN->name=$1; 
   rN->str="const";
   rN->actualArgs=$3;
+  rN->linenum=yylineno;
   $$=rN;
   msg("R_Expr: IDENT ( Actual_Args )");
 }
@@ -537,8 +543,9 @@ Actual_Args
   }
 | R_Expr R_Exprs {
   actualArgsNode *rN = new actualArgsNode;
-  rN->rExpr=$1;
-  rN->rExprs=$2;
+  rExprNode *n=$1;
+  rN->list=$2->list;
+  rN->list.push_back(n);
   $$=rN;
   msg("Actual_Args: R_Expr R_Exprs");
   }
