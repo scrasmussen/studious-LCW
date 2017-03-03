@@ -4,7 +4,7 @@
 #include "Node.h"
 int marker=0;
 int errornum=0;
-const char* flag="";
+std::string flag="";
 std::vector<lca> lcaList;
 
 
@@ -124,7 +124,7 @@ void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  i
 
 void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
 {
-  flag=n->str;  //std::cout<<flag<<std::endl;
+  //flag=n->str;  //std::cout<<flag<<std::endl;
   //if (act==TYPEUPDATE){goToRoot(n->sTable);}
   if (act==PRINT){
     std::cout<<"rExprNode: "<<n->name;
@@ -132,22 +132,28 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
     else std::cout<<std::endl;
   }
   if ( strcmp(n->str,"string_lit") == 0 && act == BUILDSYMBOLTABLE) {
-    symbol s; s.name=n->name; s.type="STRING"; s.scope="[NULL]"; s.tag="STRING_LIT";
+    symbol s; s.name=n->name; s.type="STRING"; s.scope="[NULL]"; 
+    if (flag=="") s.tag="STRING_LIT";
+    else {s.tag=flag; }
     n->sTable->insert(s);
   }
 
   if ( strcmp(n->str,"int_lit") == 0 && act == BUILDSYMBOLTABLE) {
-    symbol s; s.name=n->name; s.type="INT"; s.scope="[NULL]"; s.tag="INT_LIT";
+    symbol s; s.name=n->name; s.type="INT"; s.scope="[NULL]"; //s.tag="INT_LIT";
+    if (flag=="") s.tag="INT_LIT";
+    else { s.tag=flag; }
     n->sTable->insert(s);
   }
   
   if(act==BUILDSYMBOLTABLE) {
-    if(strcmp(flag,"method")==0) {
-      symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="Method call";
+    if(strcmp(n->str,"method")==0) {
+      symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag=s.name+" method call";
+      flag=s.name+" arg";
       n->sTable->insert(s);
     }
-    if(strcmp(flag,"const")==0) {
-      symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="const call";
+    if(strcmp(n->str,"const")==0) {
+      symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag=s.name+" const call";
+      flag=s.name+" arg";
       n->sTable->insert(s);
     }
   }
@@ -177,6 +183,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       n->actualArgs->sTable=n->sTable;  
     } 
     checkActualArgs(n->actualArgs, classNames, act);
+    flag="";
   }
 }
 
@@ -643,7 +650,7 @@ void goToRoot(symTable *sTable) {
   if(sTable==NULL) return;
   
   for (symbol s : sTable->table) {
-     fetchType(sTable,s,sTable->prev);  
+     fetchType(sTable,s,sTable);  
   } 
   //sTable->print();
 }
