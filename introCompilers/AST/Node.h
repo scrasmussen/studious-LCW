@@ -15,8 +15,8 @@ static int PRINTST=13;
 static int CHECKREDEF=17;
 static int CHECKMETHODREDEF=19;
 static int BUILDLCA=23;
-static int TYPEUPDATE=27;
-
+static int TYPEUPDATE=29;
+static int DECLARATION=37;
 extern int errornum;
 
 class symbol {
@@ -55,13 +55,15 @@ class symTable {
   }
 
   void update(symbol sym,std::string newtype) {
-    for (symbol &s : this->table)
+    for (symbol &s : this->table) {
       if (s.name.compare(sym.name)==0) {
 	//s.name=sym.name
 	s.type=newtype;
 	//s.scope=sym.scope;
 	//s.tag=sym.tag;
       }
+   //this->print();
+   } 
   }
 
   symbol lookup(symbol sym) {
@@ -221,7 +223,7 @@ elseNode() : statementBlock(NULL), sTable(NULL) {}
 
 
 struct statementNode {
-statementNode() : rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {}
+statementNode() : str(NULL),name(NULL),rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {}
   ~statementNode(){if (sTable) delete sTable;}
   int value;
   const char* str;

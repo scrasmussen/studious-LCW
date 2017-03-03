@@ -248,7 +248,7 @@ Statement
 | L_Expr "="  R_Expr ";" {
 
    statementNode *node = new statementNode;
-   node->str="assignment";
+   node->str="ASSIGN";
    node->rExpr=$3;
    node->lExpr=$1;
    $$=node;

@@ -152,7 +152,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       n->sTable->insert(s);
     }
     if(strcmp(n->str,"const")==0) {
-      symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag=s.name+" const call";
+      symbol s; s.name=n->name; s.type=n->name; s.scope="[NULL]"; s.tag=s.name+" const call";
       flag=s.name+" arg";
       n->sTable->insert(s);
     }
@@ -273,22 +273,47 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     n->sTable->print();
   }
   if (act==TYPEUPDATE){goToRoot(n->sTable);}
-  if (n->str=="WHILE") {
-     if (act==BUILDSYMBOLTABLE) {
-       symTable *st1= new symTable;  
-       st1->setPrev(n->sTable);
-       n->sTable=st1;
-    }
-  }
-
-  if (n->str=="IF") {
-     if (act==BUILDSYMBOLTABLE) {
-       symTable *st1= new symTable;  
-       st1->setPrev(n->sTable);
-       n->sTable=st1;
-    }
-  }
+  //if (act==DECLARATION){std::cout<<n->str<<" afafasf"<<std::endl;}
  
+  if (n->str!=NULL) {//std::cout<<"adfasdf"<<std::endl;
+  if (strcmp(n->str, "WHILE")==0) {
+     if (act==BUILDSYMBOLTABLE) {
+       symTable *st1= new symTable;  
+       st1->setPrev(n->sTable);
+       n->sTable=st1;
+    }
+  }
+  if (strcmp(n->str,"IF")==0) {
+     if (act==BUILDSYMBOLTABLE) {
+       symTable *st1= new symTable;  
+       st1->setPrev(n->sTable);
+       n->sTable=st1;
+    }
+  }
+  if (strcmp(n->str,"ASSIGN")==0) {
+    if (act==DECLARATION) {
+       symbol a,b,newSym;
+       a.name=n->lExpr->name;
+       b.name=n->rExpr->name;
+       if (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0) {
+          std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
+          newSym=n->sTable->lookup(b);
+          n->sTable->update(a,newSym.type);
+       } 
+       else if(strcmp(n->rExpr->name,"method")==0){
+            if (strcmp(n->rExpr->rExprFirst->str,"const")==0) {
+               for (auto &c : root->classes.list)
+                  if (strcmp(c.sig->name,n->rExpr->rExprFirst->str)==0) {
+	             //c.sTable->setPrev(superClass.sTable);
+                     newSym=c.sTable->lookup(b);
+                     n->sTable->update(a,newSym.type);
+                  }
+               }
+            }
+       } 
+    }
+ 
+  }
   if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
        n->rExpr->sTable=n->sTable;
@@ -691,5 +716,8 @@ void traverse(int act) {
     checkProgram(root, &emptyClassNames, PRINT);
   if (act==TYPEUPDATE) 
     checkProgram(root, &emptyClassNames, TYPEUPDATE);
+  if (act==DECLARATION) 
+    checkProgram(root, &emptyClassNames, DECLARATION);
+
 }
 
