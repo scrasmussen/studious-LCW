@@ -16,7 +16,9 @@ static int CHECKREDEF=17;
 static int CHECKMETHODREDEF=19;
 static int BUILDLCA=23;
 static int TYPEUPDATE=29;
+static int CHECKARGTYPE=31;
 static int DECLARATION=37;
+static int CHECKRETURNTYPE=41;
 extern int errornum;
 
 class symbol {
@@ -57,13 +59,12 @@ class symTable {
   void update(symbol sym,std::string newtype) {
     for (symbol &s : this->table) {
       if (s.name.compare(sym.name)==0) {
-	//s.name=sym.name
 	s.type=newtype;
 	//s.scope=sym.scope;
 	//s.tag=sym.tag;
       }
-   //this->print();
-   } 
+      //this->print();
+    }
   }
 
   symbol lookup(symbol sym) {
@@ -78,6 +79,17 @@ class symTable {
     sym.scope="";
     sym.tag="";	
     return sym;
+  }
+  
+  // Artless: Remove??
+  std::string getType(std::string name) {
+    if (this->table.size()>0) {
+      for (symbol s : this->table) {
+	if(s.name.compare(name)==0)
+	  return s.type;
+      }
+    }
+    return "(JK)->(JK)";
   }
 };
 
@@ -131,11 +143,12 @@ class actualArgsNode;
 class lExprNode;
 
 struct rExprNode {
-rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL), sTable(NULL) {}
+rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL), sTable(NULL) {linenum=-1;}
   ~rExprNode(){if (sTable) delete sTable;}
   int val;
   const char* str = "";
   const char* name = "";
+  int linenum;
   rExprNode *rExprFirst ;
   rExprNode *rExprSecond ;
   lExprNode *lExpr ;
@@ -151,10 +164,9 @@ rExprsNode() : sTable(NULL) {}
 };
 
 struct actualArgsNode{
-actualArgsNode() : rExprs(NULL), rExpr(NULL), sTable(NULL){}
+actualArgsNode() : sTable(NULL){}
   ~actualArgsNode(){if (sTable) delete sTable;}
-  rExprsNode *rExprs ;
-  rExprNode *rExpr ;
+  std::vector<rExprNode*> list;
   symTable *sTable; 
 };
 
@@ -197,13 +209,13 @@ methodReturnNode() : sTable(NULL) {}
 };
 
 struct methodNode {
-methodNode() : statementBlock(NULL), fArguments(NULL), methodReturn(NULL), sTable(NULL) {}
+methodNode() : statementBlock(NULL), fArguments(NULL), sTable(NULL) {}
   ~methodNode(){if (sTable) delete sTable;}
   statementBlockNode  *statementBlock;
   formalArgumentsNode* fArguments;
-  methodReturnNode* methodReturn;
   symTable *sTable; 
-  const char* name="";
+  const char* name;
+  const char* returnType;
   int linenum;
 };
 
@@ -291,6 +303,7 @@ void goToRoot(symTable *);
 void fetchType(symTable *,symbol,symTable *);
 void buildLCA();
 void checkRedef();
+void error(std::string,int);
 
 extern ProgramNode *root;
 #endif
