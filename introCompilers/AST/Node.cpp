@@ -170,20 +170,12 @@ void checkConstructorClass(const char* name, std::vector<char const*> *className
 void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"actualArgsNode: "<<std::endl;
-  if (n->rExpr!=NULL) {
+  for (rExprNode *e : n->list) {
     if(act==BUILDSYMBOLTABLE) {
-      n->rExpr->sTable=n->sTable;  
+      e->sTable=n->sTable;  
     } 
-    checkRExpr(n->rExpr, classNames, act);
-  } 
-  if (n->rExprs!=NULL) {
-    for (rExprNode *e : n->rExprs->list) {
-      if(act==BUILDSYMBOLTABLE) {
-	e->sTable=n->sTable;  
-      } 
-      checkRExpr(e, classNames, act);
-    }
-  } 
+    checkRExpr(e, classNames, act);
+  }
 }
 
 void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
