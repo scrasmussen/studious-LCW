@@ -360,7 +360,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       a.name=n->lExpr->name;
       b.name=n->rExpr->name;
       if (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0) {
-	std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
+	// std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
 	newSym=n->sTable->lookup(b);
 	n->sTable->update(a,newSym.type);
       } 
