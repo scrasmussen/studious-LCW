@@ -207,12 +207,31 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       flag=s.name+" arg";
       n->sTable->insert(s);
     }
+
     if(strcmp(n->str,"const")==0) {
       symbol s; s.name=n->name; s.type=n->name; s.scope="[NULL]"; s.tag=s.name+" const call";
       flag=s.name+" arg";
       n->sTable->insert(s);
     }
   }
+  if(act==CHECKMETHOD) {
+    if(strcmp(n->str,"method")==0) {
+       symbol a,b,newSym;
+       a.name=n->name;
+       b=root->sTable->lookup(a);
+       if (b.name!="")  newSym=b;
+       for (auto &c : root->classes.list) {
+          b=c.sTable->lookup(a);
+          if (b.name!="")  newSym=b;
+       } 
+       if (newSym.name!="") n->sTable->update(newSym,newSym.type);
+       else {
+          std::cout<<n->name<<std::endl;
+          std::string total = "Method: \""+std::string(n->str)+"\" does not exist";
+          error(total.c_str(),n->linenum);      
+       }
+    }
+  } 
   
   if (act==CHECKARGTYPE) {
     if(strcmp(n->str,"method")==0 || strcmp(n->str,"const")==0) {
@@ -355,28 +374,50 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   }
 
   if (strcmp(n->str,"ASSIGN")==0) {
-    if (act==DECLARATION) {
-      symbol a,b,newSym;
+    if (act==DECLARATION||act==CHECKLCA) {
+      symbol a,b,newSym,temp,newSym1;
       a.name=n->lExpr->name;
       b.name=n->rExpr->name;
-      if (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0) {
-	// std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
+      b=n->sTable->lookup(b); 
+      a=n->sTable->lookup(a); 
+      if (act==DECLARATION && (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0)) {
+	//std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
 	newSym=n->sTable->lookup(b);
 	n->sTable->update(a,newSym.type);
       } 
-      else if(strcmp(n->rExpr->name,"method")==0){
-	if (strcmp(n->rExpr->rExprFirst->str,"const")==0) {
-	  for (auto &c : root->classes.list)
-	    if (strcmp(c.sig->name,n->rExpr->rExprFirst->str)==0) {
-	      //c.sTable->setPrev(superClass.sTable);
-	      newSym=c.sTable->lookup(b);
-	      n->sTable->update(a,newSym.type);
-	    }
-	}
+     else if(strcmp(n->rExpr->str,"method")==0 && (act==CHECKLCA||act==DECLARATION)){
+          //std::cout<<std::endl<<"-----------"<<a.type<<" "<<b.type<<std::endl;
+          temp.name=n->rExpr->rExprFirst->lExpr->name;
+          newSym=n->sTable->lookup(temp);
+          newSym1=searchTillRoot(root->sTable,b);
+          //std::cout<<std::endl<<"-----------"<<newSym.type<<std::endl;
+          for (auto &c : root->classes.list) {
+            if (newSym.type.compare(c.sig->name)==0) {
+               newSym1=searchTillRoot(c.sTable,b);
+               break;
+            }
+          }
+          //std::cout<<std::endl<<newSym.name<<newSym.type<<"--------- "<<std::endl;
+          if (newSym1.type==""&& b.type!="") {
+             std::string total = "Method: \""+b.name+"\" is not valid member of this object: " + a.name;
+             error(total.c_str(), n->linenum);
+          }
+          else {
+             std::string ret =getReturnType(b.type);
+             //n->sTable->print();
+             //std::cout<<"--------------"<<a.type<<" "<< ret<<std::endl;
+             if (ret!=a.type){
+                std::string lca=leastCommonAnc(ret,a.type);
+                //std::cout<<lca<<"  "<<std::endl;
+                n->sTable->update(a,lca);
+                //std::string total = "Method: \""+b.name+"\" has a different return type and hence type mismatch";
+                //error(total.c_str(), n->linenum);
+             }
+          }
       }
-    } 
+   }
   }
-  }
+  } 
 
   if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
@@ -592,6 +633,9 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
 	a.name="BOOLEAN";  a.type="BOOLEAN";  a.scope="GLOBAL";  a.tag="CLASS";
 	st->insert(a);
 
+	a.name="PRINT";  a.type="()->NOTHING";  a.scope="GLOBAL";  a.tag="PRINT";
+	st->insert(a);
+
 	a.name="NOTHING";  a.type="NOTHING";  a.scope="NOTHING";  a.tag="NOTHING";
 	st->insert(a);
 
@@ -719,6 +763,21 @@ void checkClassHierarchy ( std::vector<classNode> l ) {
  return;
 }
 
+symbol searchTillRoot(symTable *sTable,symbol b) {
+ symbol a;
+ a.type="";
+ //sTable->print();
+ if(sTable==NULL) return a;
+ a=sTable->lookup(b);
+// std::cout<<a.type<<a.name<<"  adf  "<<std::endl;
+ if (a.type!="") {
+   // std::cout<<a.type<<a.name<<"  adf  "<<std::endl; 
+    return a; 
+    }
+ else  a=searchTillRoot(sTable->prev,b);
+return a;
+}
+
 void goToRoot(symTable *sTable) {
   if(sTable==NULL) return;
   
@@ -770,5 +829,9 @@ void traverse(int act) {
     printSymbolTable(root);
   if (act==TYPEUPDATE) 
     checkProgram(root, &emptyClassNames, TYPEUPDATE);
+  if (act==CHECKMETHOD) 
+    checkProgram(root, &emptyClassNames, CHECKMETHOD);
+  if (act==CHECKLCA) 
+    checkProgram(root, &emptyClassNames, CHECKLCA);
 }
 

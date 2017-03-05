@@ -19,17 +19,25 @@ static int TYPEUPDATE=29;
 static int CHECKARGTYPE=31;
 static int DECLARATION=37;
 static int CHECKRETURNTYPE=41;
+static int CHECKMETHOD=43;
+static int CHECKLCA=47;
 extern int errornum;
 
 class symbol {
 public:
  symbol(): name(""),type(""),scope(""),tag("") {linenum=0;}
+   //char const * name="";
    std::string name="";
    std::string type=""; 
+   //char const * type="";           
    std::string scope=""; 
+   //char const * scope=""; 
    std::string tag="";
+   //char const * tag="";
    int linenum;
 };
+
+
 
 class symTable {
  public:
@@ -246,6 +254,7 @@ statementNode() : str(NULL),name(NULL),rExpr(NULL), lExpr(NULL), stblock(NULL), 
   elifsNode* elifs;
   elseNode* elseN;
   symTable *sTable; 
+  int linenum;
 };
 
 
@@ -304,7 +313,7 @@ void fetchType(symTable *,symbol,symTable *);
 void buildLCA();
 void checkRedef();
 void error(std::string,int);
-
+symbol searchTillRoot(symTable *,symbol);
 extern ProgramNode *root;
 #endif
 	

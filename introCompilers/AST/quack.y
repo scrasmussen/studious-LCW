@@ -251,6 +251,7 @@ Statement
    node->str="ASSIGN";
    node->rExpr=$3;
    node->lExpr=$1;
+   node->linenum=yylineno;
    $$=node;
    msg("Statement: L_Expr = R_Expr ;");
 }
@@ -392,7 +393,7 @@ R_Expr
 | L_Expr {
    rExprNode *rN = new rExprNode;
    rN->lExpr=$1; 
-   //rN->str="string";
+   rN->str="lexpr";
    $$=rN;
    msg("R_Expr: L_Expr");
    }
@@ -433,7 +434,7 @@ R_Expr
 | MINUS R_Expr %prec NEG {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
-  rN->str="NEG";
+   rN->str="NEG";
    $$=rN;
    msg("R_Expr: - R_Expr");
    } 

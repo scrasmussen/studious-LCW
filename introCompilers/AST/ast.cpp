@@ -38,13 +38,18 @@ int main(int argc, char*argv[]) {
   /* === TRAVERSAL ACTIONS === */
   traverse(CHECKCLASSHIERARCHY);
   traverse(CHECKCONSTRUCTORCALLS);
+  traverse(BUILDLCA);
   traverse(BUILDSYMBOLTABLE);
   traverse(TYPEUPDATE);
   traverse(CHECKREDEF);
+  traverse(CHECKMETHOD);
   traverse(DECLARATION);
+  traverse(CHECKLCA);
+  //traverse(CHECKLCA);
+  //traverse(CHECKLCA);
   //traverse(PRINT);
   //traverse(PRINTST);
   traverse(CHECKARGTYPE);
   traverse(CHECKRETURNTYPE);
-  //traverse(PRINTST);
+  traverse(PRINTST);
 }
