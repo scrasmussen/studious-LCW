@@ -6,6 +6,70 @@ int marker=0;
 int errornum=0;
 std::string flag="";
 std::vector<lca> lcaList;
+std::vector<returnInfo> methodReturnOptions;
+
+std::string getRExprType(rExprNode *n){
+  std::string r1="", r2="", r3="";
+  if (n->rExprFirst!=NULL && n->rExprFirst->name!=NULL)
+    if (strcmp(n->rExprFirst->name,"")==0)
+      getRExprType(n->rExprFirst);
+    else {
+      r1=n->rExprFirst->name;
+    }
+  if (n->rExprSecond!=NULL && n->rExprSecond->name!=NULL)
+    if (strcmp(n->rExprSecond->name,"")==0)
+      getRExprType(n->rExprSecond);
+    else {
+      r2=n->rExprSecond->name;
+    }
+  if (n->lExpr!=NULL && n->lExpr->name!=NULL)
+    if (strcmp(n->lExpr->name,"")==0)
+      getRExprType(n->lExpr->rExpr);
+    else 
+      r3=n->lExpr->name;
+  r3 = n->sTable->typeLookup(r3);
+
+  std::string r;
+  if (r1.length()>0)
+    r=r1;
+  if (r2.length()>0)
+    r=r2;
+  if (r3.length()>0)
+    r=r3;
+  
+  if (strcmp(n->name,"")!=0 && r.length()==0)
+    r=n->name;
+
+  if (strcmp(n->str,"string_lit")==0)
+    r="STR";
+  // std::cout<<"["<<r1<<","<<r2<<","<<r3<<","<<r<<"]"<<n->name<<"|"<<n->str<<std::endl;
+
+  return r;
+}
+
+std::string getConstType(std::string name, symTable *st) {
+  int count=0, found=0;
+  while (!found && count<10) {
+    ++count;
+    for (symbol s : st->table) {
+      if (s.name == name)
+	;
+	  // std::cout<<"||"<<name<<" "<<s.type<<" "<<s.tag<<std::endl;
+	if (s.tag=="CLASS") {
+	  // std::cout<<"||"<<name<<" "<<s.type<<" "<<s.tag<<std::endl;
+	  found=1;
+	}
+    }
+    if (!found) {
+      ;// std::cout<<"checking prev\n";
+      if (st->prev!=NULL)
+	st=st->prev;
+      else
+	;// std::cout<<"NO PREV\n"; found=1;
+    }
+  }
+  return "ARTLESS";
+}
 
 std::string getType(std::string name, symTable *st)
 {
@@ -62,11 +126,12 @@ void checkArgTypes(rExprNode *n) {
 
   // get line number
   linenum=n->linenum;
-  std::string type = n->sTable->getType(n->name);
+  std::string type = getConstType(n->name, n->sTable);
+  // std::string type = n->sTable->getType(n->name);
   std::string argTypes = getArgTypes(type);
   if (argTypes!=argString) {
-    //std::cout<<argTypes<<" does not match "<<argString<<" at "<<linenum<<std::endl;
-    //ARTLESS: ADD ERROR MESSAGE
+    // std::cout<<argTypes<<" does not match "<<argString<<" at "<<linenum<<std::endl;
+    // ARTLESS: ADD ERROR MESSAGE
     // error("Argument types do not match function or method", linenum);
   }
   return;
@@ -207,13 +272,14 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       flag=s.name+" arg";
       n->sTable->insert(s);
     }
-
+    
     if(strcmp(n->str,"const")==0) {
       symbol s; s.name=n->name; s.type=n->name; s.scope="[NULL]"; s.tag=s.name+" const call";
       flag=s.name+" arg";
       n->sTable->insert(s);
     }
   }
+  
   if(act==CHECKMETHOD) {
     if(strcmp(n->str,"method")==0) {
        symbol a,b,newSym;
@@ -415,10 +481,20 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
              }
           }
       }
-   }
+    }
   }
-  } 
+  }
 
+  if (act==CHECKRETURNTYPE) {
+    if(strcmp(n->name,"RETURN")==0) {
+      returnInfo info;
+      std::string type=getRExprType(n->rExpr);
+      info.type=type;
+      info.linenum=n->linenum;
+      methodReturnOptions.push_back(info);
+    }
+  }
+  
   if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
        n->rExpr->sTable=n->sTable;
@@ -493,7 +569,7 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
     checkStatementBlock(n->statementBlock, classNames, act);
 
   if (act==CHECKRETURNTYPE) {
-    // std::cout<<n->returnType<<std::endl;
+    // std::cout<<getReturnType(n)<<std::endl;
   }
 }
 
@@ -531,8 +607,22 @@ void checkSignature(classSignatureNode *n, std::vector<char const*> *classNames,
 
   if (n->name != NULL) {
         if (act==BUILDSYMBOLTABLE) {
+	  std::string type = "(";
+	  int arity=0;
+	  for (auto a : n->fArguments->list) {
+	    type.append(a->type);
+	    type.append(",");
+	    arity=1;
+	  }
+	  if (arity==1)
+	    type.replace(type.end()-1,type.end(),"");
+	  
+	  type.append(")->(");
+	  type.append(n->name);
+	  type.append(")");
+
 	  symbol a;
-	  a.name=n->name; a.type=n->name; a.scope="class";  a.tag="CLASS";
+	  a.name=n->name; a.type=type; a.scope="class";  a.tag="CLASS";
 	  n->sTable->insert(a);
 	}
   }
@@ -563,14 +653,33 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
   if (n->methods != NULL)
     for (methodNode &m : n->methods->list)
       {
+	if (act==CHECKRETURNTYPE) {
+	  methodReturnOptions.clear();
+	}
+
 	if (act==BUILDSYMBOLTABLE) {
 	  symTable* st= new symTable;
 	  st->setPrev(n->sTable);
 	  m.sTable=st;
 	}
 	checkMethod(&m, classNames, act);
-      }
 
+	// Check types in array
+	if (act==CHECKRETURNTYPE) {
+	  std::string returnType;
+	  int first=1;
+	  for (returnInfo s : methodReturnOptions) {
+	    if (first) {
+	      returnType=s.type;
+	      first=0;
+	    }
+	    else
+	      if (returnType!=s.type)
+		error("Method returning multiple types",s.linenum);
+	  }
+	}
+      }
+  
   if (n->statements != NULL) {
     symTable * st=new symTable;
     st->setPrev(n->sTable); 
@@ -760,22 +869,22 @@ void checkClassHierarchy ( std::vector<classNode> l ) {
   if (failed == 1)
     std::cerr << "Class Hierarchy Not Well Formed\n";
   /* ==== END CHECK FOR HEIRARCHY WELL FORMEDNESS ==== */
- return;
+  return;
 }
 
 symbol searchTillRoot(symTable *sTable,symbol b) {
- symbol a;
- a.type="";
- //sTable->print();
- if(sTable==NULL) return a;
- a=sTable->lookup(b);
-// std::cout<<a.type<<a.name<<"  adf  "<<std::endl;
- if (a.type!="") {
-   // std::cout<<a.type<<a.name<<"  adf  "<<std::endl; 
+  symbol a;
+  a.type="";
+  //sTable->print();
+  if(sTable==NULL) return a;
+  a=sTable->lookup(b);
+  // std::cout<<a.type<<a.name<<"  adf  "<<std::endl;
+  if (a.type!="") {
+    // std::cout<<a.type<<a.name<<"  adf  "<<std::endl; 
     return a; 
-    }
- else  a=searchTillRoot(sTable->prev,b);
-return a;
+  }
+  else  a=searchTillRoot(sTable->prev,b);
+  return a;
 }
 
 void goToRoot(symTable *sTable) {
@@ -817,6 +926,10 @@ void traverse(int act) {
     checkConstructorCalls(root);
   if (act==CHECKCLASSHIERARCHY)
     checkClassHierarchy(root->classes.list);
+  if (act==CHECKLCA) 
+    checkProgram(root, &emptyClassNames, CHECKLCA);
+  if (act==CHECKMETHOD) 
+    checkProgram(root, &emptyClassNames, CHECKMETHOD);
   if (act==CHECKREDEF)
     checkRedef();
   if (act==CHECKRETURNTYPE)
@@ -829,9 +942,5 @@ void traverse(int act) {
     printSymbolTable(root);
   if (act==TYPEUPDATE) 
     checkProgram(root, &emptyClassNames, TYPEUPDATE);
-  if (act==CHECKMETHOD) 
-    checkProgram(root, &emptyClassNames, CHECKMETHOD);
-  if (act==CHECKLCA) 
-    checkProgram(root, &emptyClassNames, CHECKLCA);
 }
 

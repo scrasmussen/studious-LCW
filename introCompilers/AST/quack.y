@@ -228,6 +228,7 @@ Class_Body : "{" Statements Methods "}" {msg("Class_Body: { Statements Methods }
 Statement
 : WHILE R_Expr Statement_Block {
    statementNode *node = new statementNode;
+   node->name="";
    node->str="WHILE";
    node->rExpr=$2;
    node->stblock=$3;
@@ -237,6 +238,7 @@ Statement
 }
 | IF R_Expr Statement_Block Elifs Else {
    statementNode *node = new statementNode;
+   node->name="";
    node->str="IF";
    node->rExpr=$2;
    node->stblock=$3;
@@ -248,6 +250,7 @@ Statement
 | L_Expr "="  R_Expr ";" {
 
    statementNode *node = new statementNode;
+   node->name="";
    node->str="ASSIGN";
    node->rExpr=$3;
    node->lExpr=$1;
@@ -268,12 +271,14 @@ Statement
 | R_Expr ";" {
    statementNode *node = new statementNode;
    node->rExpr=$1;
+   node->name="";
    $$=node;
    msg("Statement: R_Expr ;");
    }
 | RETURN ";" {
    statementNode *node = new statementNode;
    node->name="RETURN";
+   node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN ;");
    }
@@ -281,6 +286,7 @@ Statement
    statementNode *node = new statementNode;
    node->rExpr=$2;
    node->name="RETURN";
+   node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN R_Expr ;");
 }
@@ -392,7 +398,8 @@ R_Expr
 }
 | L_Expr {
    rExprNode *rN = new rExprNode;
-   rN->lExpr=$1; 
+   rN->lExpr=$1;
+   rN->name="";
    rN->str="lexpr";
    $$=rN;
    msg("R_Expr: L_Expr");
@@ -403,6 +410,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="PLUS";
    $$=rN;
    msg("R_Expr: R_Expr + R_Expr");
@@ -411,6 +419,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="MINUS";
    $$=rN;
    msg("R_Expr: R_Expr - R_Expr");
@@ -419,6 +428,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="TIMES";
    $$=rN;
    msg("R_Expr: R_Expr * R_Expr");
@@ -427,6 +437,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="DIVIDE";
    $$=rN;
    msg("R_Expr: R_Expr / R_Expr");
@@ -434,6 +445,7 @@ R_Expr
 | MINUS R_Expr %prec NEG {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
+   rN->name="";
    rN->str="NEG";
    $$=rN;
    msg("R_Expr: - R_Expr");
@@ -442,6 +454,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="EQUALS";
    $$=rN;
    msg("R_Expr: R_Expr == R_Expr");
@@ -450,6 +463,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="ATMOST";
    $$=rN;
    msg("R_Expr: R_Expr <= R_Expr");
@@ -458,6 +472,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="LESS";
    $$=rN;
    msg("R_Expr: R_Expr < R_Expr");
@@ -466,6 +481,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="ATLEAST";
    $$=rN;
    msg("R_Expr: R_Expr >= R_Expr");
@@ -474,6 +490,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="MORE";
    $$=rN;
    msg("R_Expr: R_Expr > R_Expr");
@@ -482,6 +499,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="AND";
    $$=rN;
    msg("R_Expr: R_Expr AND R_Expr");
@@ -491,6 +509,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->name="";
    rN->str="OR";
    $$=rN;
    msg("R_Expr: R_Expr OR R_Expr");
@@ -498,6 +517,7 @@ R_Expr
 | NOT R_Expr {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
+   rN->name="";
    rN->str="NOT";
    $$=rN;
    msg("R_Expr: NOT R_Expr");
@@ -531,7 +551,8 @@ R_Expr
 | "(" R_Expr ")" {
   rExprNode *rN = new rExprNode;
   rN->rExprFirst=$2; 
-  rN->rExprSecond=NULL; 
+  rN->rExprSecond=NULL;
+  rN->name="";
   rN->str="FIRTBRACE";
   //rN->str="const"; 
   $$=rN;

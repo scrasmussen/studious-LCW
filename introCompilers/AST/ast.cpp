@@ -45,11 +45,9 @@ int main(int argc, char*argv[]) {
   traverse(CHECKMETHOD);
   traverse(DECLARATION);
   traverse(CHECKLCA);
-  //traverse(CHECKLCA);
-  //traverse(CHECKLCA);
-  //traverse(PRINT);
-  //traverse(PRINTST);
+  // traverse(PRINT);
+  // traverse(PRINTST);
   traverse(CHECKARGTYPE);
   traverse(CHECKRETURNTYPE);
-  traverse(PRINTST);
+  // traverse(PRINTST);
 }

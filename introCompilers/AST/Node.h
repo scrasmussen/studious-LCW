@@ -26,18 +26,12 @@ extern int errornum;
 class symbol {
 public:
  symbol(): name(""),type(""),scope(""),tag("") {linenum=0;}
-   //char const * name="";
    std::string name="";
    std::string type=""; 
-   //char const * type="";           
    std::string scope=""; 
-   //char const * scope=""; 
    std::string tag="";
-   //char const * tag="";
    int linenum;
 };
-
-
 
 class symTable {
  public:
@@ -88,6 +82,16 @@ class symTable {
     sym.tag="";	
     return sym;
   }
+
+  std::string typeLookup(std::string name) {
+    if (this->table.size()>0) {
+      for (symbol s : this->table) {
+	if(s.name.compare(name)==0)
+	  return s.type;
+      }
+    }
+    return "";
+  }
   
   // Artless: Remove??
   std::string getType(std::string name) {
@@ -103,6 +107,11 @@ class symTable {
 
 struct lca {
   std::string name, extends;
+};
+
+struct returnInfo {
+  std::string type;
+  int linenum;
 };
 
 struct argumentNode {
@@ -151,7 +160,7 @@ class actualArgsNode;
 class lExprNode;
 
 struct rExprNode {
-rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL), sTable(NULL) {linenum=-1;}
+rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL), sTable(NULL), name(NULL) {linenum=-1;}
   ~rExprNode(){if (sTable) delete sTable;}
   int val;
   const char* str = "";
@@ -243,18 +252,18 @@ elseNode() : statementBlock(NULL), sTable(NULL) {}
 
 
 struct statementNode {
-statementNode() : str(NULL),name(NULL),rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {}
+statementNode() : str(NULL),name(NULL),rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {linenum=-1;}
   ~statementNode(){if (sTable) delete sTable;}
   int value;
   const char* str;
   const char* name;
+  int linenum;
   rExprNode* rExpr;
   lExprNode* lExpr;
   statementBlockNode* stblock;
   elifsNode* elifs;
   elseNode* elseN;
   symTable *sTable; 
-  int linenum;
 };
 
 
