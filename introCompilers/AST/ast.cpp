@@ -40,14 +40,15 @@ int main(int argc, char*argv[]) {
   traverse(CHECKCONSTRUCTORCALLS);
   traverse(BUILDLCA);
   traverse(BUILDSYMBOLTABLE);
+  traverse(DECLARATION);
   traverse(TYPEUPDATE);
   traverse(CHECKREDEF);
   traverse(CHECKMETHOD);
-  traverse(DECLARATION);
-  traverse(CHECKLCA);
+  for(int i=0;i<10;i++)   traverse(CHECKLCA); 
+  traverse(CHECKOBJECT);
   // traverse(PRINT);
   // traverse(PRINTST);
   traverse(CHECKARGTYPE);
   traverse(CHECKRETURNTYPE);
-  // traverse(PRINTST);
+  traverse(PRINTST);
 }

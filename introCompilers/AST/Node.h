@@ -21,6 +21,7 @@ static int DECLARATION=37;
 static int CHECKRETURNTYPE=41;
 static int CHECKMETHOD=43;
 static int CHECKLCA=47;
+static int CHECKOBJECT=49;
 extern int errornum;
 
 class symbol {

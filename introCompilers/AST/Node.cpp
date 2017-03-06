@@ -279,7 +279,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       n->sTable->insert(s);
     }
   }
-  
+
   if(act==CHECKMETHOD) {
     if(strcmp(n->str,"method")==0) {
        symbol a,b,newSym;
@@ -292,13 +292,42 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
        } 
        if (newSym.name!="") n->sTable->update(newSym,newSym.type);
        else {
-          std::cout<<n->name<<std::endl;
+          //std::cout<<n->name<<std::endl;
           std::string total = "Method: \""+std::string(n->str)+"\" does not exist";
           error(total.c_str(),n->linenum);      
        }
     }
+  }  
+/* 
+  if(act==CHECKMETHOD||act==CHECKLCA) {
+    if(strcmp(n->str,"method")==0) {
+       symbol a,b,newSym,newSym1;
+       a.name=n->name;
+       b=root->sTable->lookup(a);
+       if (b.name!="")  newSym=b;
+       else {
+       newSym1.name=n->rExprFirst->lExpr->name;
+       newSym1=n->sTable->lookup(newSym1);
+          for (auto &c : root->classes.list) {
+            b=c.sTable->lookup(a);
+            if (b.name!="" && newSym1.type==c.sig->name)  newSym=b;
+          } 
+       }
+       if (newSym.name!="") n->sTable->update(newSym,newSym.type);
+       else if(act==CHECKMETHOD){
+          if (newSym1.name =="") {
+              std::string total = "Method: \""+ std::string(n->name) +"\" is not valid member of this object: " + newSym1.name +"  which is of type : "+newSym1.type;
+              error(total.c_str(), n->linenum);
+          }         
+          else { 
+          //std::cout<<n->name<<std::endl;
+          std::string total = "Method: \""+std::string(n->name)+"\" does not exist";
+          error(total.c_str(),n->linenum);   
+          }   
+       }
+    }
   } 
-  
+ */ 
   if (act==CHECKARGTYPE) {
     if(strcmp(n->str,"method")==0 || strcmp(n->str,"const")==0) {
       checkArgTypes(n);
@@ -358,6 +387,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
 void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"statementBlockNode"<< std::endl;  
+  if (act==TYPEUPDATE){goToRoot(n->sTable);}
   if (n->statements!=NULL) {
     for (statementNode &s : n->statements->list) {
         if(act==BUILDSYMBOLTABLE) {
@@ -419,14 +449,19 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   if (act==PRINTST){
     std::cout<<std::endl<<"printing statement"; 
     n->sTable->print();
+    //n->sTable->prev->print();
   }
+  
   if (act==TYPEUPDATE){goToRoot(n->sTable);}
+  if (act==TYPEUPDATE){goToRoot(n->sTable->prev);}
 
   if (n->str!=NULL) {
   if (strcmp(n->str, "WHILE")==0) {
+     //std::cout<<n->str<<std::endl;
      if (act==BUILDSYMBOLTABLE) {
        symTable *st1= new symTable;  
        st1->setPrev(n->sTable);
+       //n->sTable->next=st1;
        n->sTable=st1;
     }
   }
@@ -438,9 +473,27 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       n->sTable=st1;
     }
   }
+  /*if (strcmp(n->str, "WHILE")==0) {
+     if (act==TYPEUPDATE){goToRoot(n->sTable->next);}
+     if (act==BUILDSYMBOLTABLE) {
+       symTable *st1= new symTable;  
+       st1->setPrev(n->sTable);
+       n->sTable->next=st1;
+    }
+  }
 
-  if (strcmp(n->str,"ASSIGN")==0) {
-    if (act==DECLARATION||act==CHECKLCA) {
+  if (strcmp(n->str,"IF")==0) {
+    if (act==TYPEUPDATE){goToRoot(n->sTable->next);}
+    if (act==BUILDSYMBOLTABLE) {
+      symTable *st1= new symTable;
+      st1->setPrev(n->sTable);
+      n->sTable->next=st1;
+      //n->sTable=st1;
+    }
+  }*/ 
+
+ if (strcmp(n->str,"ASSIGN")==0) {
+    if (act==DECLARATION||act==CHECKLCA||act==CHECKOBJECT) {
       symbol a,b,newSym,temp,newSym1;
       a.name=n->lExpr->name;
       b.name=n->rExpr->name;
@@ -451,7 +504,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
 	newSym=n->sTable->lookup(b);
 	n->sTable->update(a,newSym.type);
       } 
-     else if(strcmp(n->rExpr->str,"method")==0 && (act==CHECKLCA||act==DECLARATION)){
+     else if(strcmp(n->rExpr->str,"method")==0 && (act==CHECKLCA||act==DECLARATION||act==CHECKOBJECT)){
           //std::cout<<std::endl<<"-----------"<<a.type<<" "<<b.type<<std::endl;
           temp.name=n->rExpr->rExprFirst->lExpr->name;
           newSym=n->sTable->lookup(temp);
@@ -464,12 +517,13 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
             }
           }
           //std::cout<<std::endl<<newSym.name<<newSym.type<<"--------- "<<std::endl;
-          if (newSym1.type==""&& b.type!="") {
+          if (newSym1.type==""&& b.type!=""&&act==CHECKOBJECT) {
              std::string total = "Method: \""+b.name+"\" is not valid member of this object: " + a.name;
              error(total.c_str(), n->linenum);
           }
-          else {
-             std::string ret =getReturnType(b.type);
+          else if(newSym1.type!="") {
+             //std::cout<<newSym1.type<<std::endl;
+             std::string ret =getReturnType(newSym1.type);
              //n->sTable->print();
              //std::cout<<"--------------"<<a.type<<" "<< ret<<std::endl;
              if (ret!=a.type){
@@ -493,9 +547,11 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       info.linenum=n->linenum;
       methodReturnOptions.push_back(info);
     }
-  }
-  
-  if (n->rExpr!=NULL) {
+  } 
+       /*if (strcmp(n->str, "WHILE")==0||strcmp(n->str, "IF")==0)  n->rExpr->sTable=n->sTable->next;
+       else n->stblock->sTable=n->sTable; */
+ 
+ if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
        n->rExpr->sTable=n->sTable;
     }
@@ -503,7 +559,8 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   }
   if (n->stblock!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
-       n->stblock->sTable=n->sTable;
+        n->stblock->sTable=n->sTable; 
+      // n->stblock->sTable=n->sTable;
     }
      checkStatementBlock(n->stblock, classNames, act);
   }
@@ -526,6 +583,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     }
    checkElse(n->elseN, classNames, act);
   }
+
 }
 
 void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
@@ -730,16 +788,16 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
   if (act==BUILDSYMBOLTABLE) {
   	symTable* st= new symTable;
   	symbol a;
-  	a.name="OBJ"; a.type="OBJ"; a.scope="GLOBAL";  a.tag="CLASS";
+  	a.name="Obj"; a.type="Obj"; a.scope="GLOBAL";  a.tag="CLASS";
   	st->insert(a);
   	
-	a.name="INT";  a.type="INT";  a.scope="GLOBAL";  a.tag="CLASS";
+	a.name="Int";  a.type="Int";  a.scope="GLOBAL";  a.tag="CLASS";
   	st->insert(a);
   	
-	a.name="STRING";  a.type="STRING";  a.scope="GLOBAL";  a.tag="CLASS";
+	a.name="String";  a.type="String";  a.scope="GLOBAL";  a.tag="CLASS";
   	st->insert(a);
   	
-	a.name="BOOLEAN";  a.type="BOOLEAN";  a.scope="GLOBAL";  a.tag="CLASS";
+	a.name="Boolean";  a.type="Boolean";  a.scope="GLOBAL";  a.tag="CLASS";
 	st->insert(a);
 
 	a.name="PRINT";  a.type="()->NOTHING";  a.scope="GLOBAL";  a.tag="PRINT";
@@ -942,5 +1000,7 @@ void traverse(int act) {
     printSymbolTable(root);
   if (act==TYPEUPDATE) 
     checkProgram(root, &emptyClassNames, TYPEUPDATE);
+  if (act==CHECKOBJECT) 
+    checkProgram(root, &emptyClassNames, CHECKOBJECT);
 }
 
