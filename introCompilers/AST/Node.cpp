@@ -253,17 +253,21 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
     else std::cout<<std::endl;
   }
   if ( strcmp(n->str,"string_lit") == 0 && act == BUILDSYMBOLTABLE) {
-    symbol s; s.name=n->name; s.type="STRING"; s.scope="[NULL]"; 
+    symbol s; s.name=std::string(n->name); s.type="STRING"; s.scope="[NULL]"; 
     if (flag=="") s.tag="STRING_LIT";
     else {s.tag=flag; }
+     // std::cout<<"E "<<n->str<<n->name<<std::endl;
+    //n->sTable->print();
     n->sTable->insert(s);
   }
 
   if ( strcmp(n->str,"int_lit") == 0 && act == BUILDSYMBOLTABLE) {
+    //n->sTable->print();
     symbol s; s.name=n->name; s.type="INT"; s.scope="[NULL]"; //s.tag="INT_LIT";
     if (flag=="") s.tag="INT_LIT";
     else { s.tag=flag; }
     n->sTable->insert(s);
+    //n->sTable->print();
   }
   
   if(act==BUILDSYMBOLTABLE) {
@@ -379,6 +383,10 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
     if(act==BUILDSYMBOLTABLE) {
       symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="[NULL]";
       n->sTable->insert(s);
+       //n->sTable->print();
+     
+ 
+      //std::cout<<"D"<<std::endl;
     } 
   } 
 }
@@ -391,7 +399,9 @@ void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classN
   if (n->statements!=NULL) {
     for (statementNode &s : n->statements->list) {
         if(act==BUILDSYMBOLTABLE) {
-           s.sTable=n->sTable;  
+           s.sTable=n->sTable; 
+           //n->sTable->print();
+           //std::cout<<"C"<<std::endl;
         } 
         checkStatement(&s, classNames, act);
      }
@@ -430,13 +440,18 @@ void checkElifs(elifsNode *n, std::vector<char const*> *classNames,  int act)
 void checkElse(elseNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"elseNode"<< std::endl;
-
-  // if (act==PRINTST) n->sTable->print();
+  
+    //if (act==PRINTST) n->sTable->print();
   if (n->statementBlock!=NULL) {
     if (act==BUILDSYMBOLTABLE) {
       symTable *st1= new symTable;  
       st1->setPrev(n->sTable);
-      n->sTable=st1;
+      n->statementBlock->sTable=st1;
+      
+      //n->sTable->print();
+      //std::cout<<"A"<<std::endl;
+      //n->sTable->prev->print();
+      //std::cout<<"B"<<std::endl;
     }
     checkStatementBlock(n->statementBlock, classNames, act);
   }
@@ -444,7 +459,9 @@ void checkElse(elseNode *n, std::vector<char const*> *classNames,  int act)
 
 void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int act)
 {
-  // statement: rExpr, lExpr, stblock, elifs, elseN
+  // statement: rExpr, lExpr, stblock, elifs, elseNf
+  //if(n->rExpr!=NULL && n->lExpr!=NULL)
+  //std::cout<<n->str<<"----------statement"<<n->rExpr->name<<n->lExpr->name<<std::endl;
   if (act==PRINT) std::cout<<"statementNode: "<< std::endl;
   if (act==PRINTST){
     std::cout<<std::endl<<"printing statement"; 
@@ -553,7 +570,9 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
  
  if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
+      //std::cout<<"DE"<<std::endl;
        n->rExpr->sTable=n->sTable;
+       //n->sTable->print();
     }
     checkRExpr(n->rExpr, classNames, act);
   }
@@ -567,6 +586,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
 
   if (n->lExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
+      //std::cout<<"DD"<<std::endl;
       n->lExpr->sTable=n->sTable;
     }
      checkLExpr(n->lExpr, classNames, act);
