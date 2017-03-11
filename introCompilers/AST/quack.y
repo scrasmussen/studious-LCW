@@ -272,12 +272,14 @@ Statement
    statementNode *node = new statementNode;
    node->rExpr=$1;
    node->name="";
+   node->str="";
    $$=node;
    msg("Statement: R_Expr ;");
    }
 | RETURN ";" {
    statementNode *node = new statementNode;
    node->name="RETURN";
+   node->str="";
    node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN ;");
@@ -286,6 +288,7 @@ Statement
    statementNode *node = new statementNode;
    node->rExpr=$2;
    node->name="RETURN";
+   node->str="";
    node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN R_Expr ;");
