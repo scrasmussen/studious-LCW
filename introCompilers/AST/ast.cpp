@@ -6,6 +6,7 @@
 #include "quack.tab.h"
 #include "lex.yy.h"
 #include "Node.h"
+#include "Generate.h"
 
 extern int yyparse();
 extern void yyrestart(FILE *f);
@@ -47,9 +48,10 @@ int main(int argc, char*argv[]) {
   traverse(CHECKMETHOD);
   for(int i=0;i<10;i++)   traverse(CHECKLCA); 
   traverse(CHECKOBJECT);
-  // traverse(PRINT);
+  traverse(PRINT);
   // traverse(PRINTST);
   traverse(CHECKARGTYPE);
   traverse(CHECKRETURNTYPE);
-  traverse(PRINTST);
+  // traverse(PRINTST);
+  generate();
 }
