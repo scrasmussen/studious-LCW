@@ -576,7 +576,8 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     }
     checkRExpr(n->rExpr, classNames, act);
   }
-  if (n->stblock!=NULL) {
+
+ if (n->stblock!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
         n->stblock->sTable=n->sTable; 
       // n->stblock->sTable=n->sTable;
@@ -584,25 +585,27 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
      checkStatementBlock(n->stblock, classNames, act);
   }
 
-  if (n->lExpr!=NULL) {
-     if (act==BUILDSYMBOLTABLE) {
-      //std::cout<<"DD"<<std::endl;
-      n->lExpr->sTable=n->sTable;
-    }
-     checkLExpr(n->lExpr, classNames, act);
-  }
-  if (n->elifs!=NULL) {
-    if (act==BUILDSYMBOLTABLE) {
-      n->elifs->sTable=n->sTable->prev;
-    }
-    checkElifs(n->elifs, classNames, act);
-  }
-  if (n->elseN!=NULL) {
-    if (act==BUILDSYMBOLTABLE) {
-      n->elseN->sTable=n->sTable->prev;
-    }
+ if (n->lExpr!=NULL) {
+   if (act==BUILDSYMBOLTABLE) {
+     //std::cout<<"DD"<<std::endl;
+     n->lExpr->sTable=n->sTable;
+   }
+   checkLExpr(n->lExpr, classNames, act);
+ }
+
+ if (n->elifs!=NULL) {
+   if (act==BUILDSYMBOLTABLE) {
+     n->elifs->sTable=n->sTable->prev;
+   }
+   checkElifs(n->elifs, classNames, act);
+ }
+
+ if (n->elseN!=NULL) {
+   if (act==BUILDSYMBOLTABLE) {
+     n->elseN->sTable=n->sTable->prev;
+   }
    checkElse(n->elseN, classNames, act);
-  }
+ }
 
 }
 
