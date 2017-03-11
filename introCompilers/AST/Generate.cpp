@@ -21,8 +21,6 @@ void genStatement(statementNode *n, std::ofstream &f, int act)
   if (act==GENSTATEMENT)
     if (strcmp(n->str,"ASSIGN")==0)
       f<<"=";
-    else
-      std::cout<<"NOT EQU\n";
   
   /*
   if (n->rExpr!=NULL) {
@@ -58,12 +56,14 @@ void genStatement(statementNode *n, std::ofstream &f, int act)
   */
 }
 
-void genProgram(ProgramNode *n, std::ofstream &f, int act) //std::vector<char const*> *classNames ,int act)
+void genProgram(ProgramNode *n, std::ofstream &f, int act)
 {
   if (act==GENSTART) {
     f<<"#include <iostream>\n";
   }
 
+  // TODO CLASS NODES
+  
   if (act==GENSTATEMENT) {
     f<<"void main()\n{\n";
     for (statementNode &s : n->statements.list) {
@@ -76,7 +76,6 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act) //std::vector<char co
 }
 
 void generate(){
-  //std::vector<char const*> emptyClassNames;
   std::ofstream f;
   f.open("output.c");
   if (!f.is_open())
