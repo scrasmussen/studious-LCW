@@ -7,7 +7,8 @@
 #define GENERATE_H
 
 static int GENSTART=2;
-static int GENSTATEMENT=3;
+static int GENSTATEMENTS=3;
+static int GENCLASSES=5;
 
 void generate();
 

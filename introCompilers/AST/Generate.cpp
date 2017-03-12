@@ -5,23 +5,30 @@
 #include "Node.h"
 #include "Generate.h"
 
+void writeType(std::ofstream &f,char const* type)
+{
+  if (strcmp(type,"Int")==0)
+    f<<"int";
+}
+
 void genLExpr(lExprNode *n, std::ofstream &f, int act)
 {
-  if (act==GENSTATEMENT)
+  if (act==GENSTATEMENTS)
     f<<n->name;
-  //   std::cout<<n->str<<" "<<n->name<<std::endl;
 }
 
 void genStatement(statementNode *n, std::ofstream &f, int act)
 {
   if (n->lExpr!=NULL)
-    if (act==GENSTATEMENT)
+    if (act==GENSTATEMENTS)
       genLExpr(n->lExpr, f, act);
 
-  if (act==GENSTATEMENT)
+  if (act==GENSTATEMENTS)
     if (strcmp(n->str,"ASSIGN")==0)
       f<<"=";
-  
+
+
+  // NEED TO FIGURE OUT CORRECT ORDER TO TRAVERSE THESE NODES
   /*
   if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
@@ -56,15 +63,63 @@ void genStatement(statementNode *n, std::ofstream &f, int act)
   */
 }
 
+
+void genSignature(classSignatureNode *n, std::ofstream &f, int act)
+{
+  // name, extends, fArguments
+  f<<n->name<<"(";
+  int arity=0;
+
+  for (int i = n->fArguments->list.size(); i --> 0; ) {
+    auto a = n->fArguments->list[i];
+    if (arity==0)
+      arity=1;
+    else
+      f<<",";
+    writeType(f,a->type);
+    f<<" ";
+    f<<a->name;
+  }
+  f<<"){}\n";
+}
+
+void genClassBody(classBodyNode *n, std::ofstream &f, int act)
+{
+  if (n->statements!=NULL) {
+    // for (statementNode &s : n->statements.list) {
+    //   genStatement(&s,f,act);
+    //   f<<";"<<std::endl;
+    // }
+  }
+  if (n->methods!=NULL) {
+    // for (methodNode &s : n->statements.list) {
+    //   genMethod(&s,f,act);
+    //   f<<";"<<std::endl;
+    // }
+  }
+
+}
+
+void genClass(classNode *n, std::ofstream &f, int act)
+{
+  if (n->sig != NULL)
+    genSignature(n->sig, f, act);
+  if (n->classBody != NULL)
+    genClassBody(n->classBody, f, act);
+}
+
 void genProgram(ProgramNode *n, std::ofstream &f, int act)
 {
   if (act==GENSTART) {
-    f<<"#include <iostream>\n";
+    f<<"#include <stdio.h>\n";
   }
 
-  // TODO CLASS NODES
+  if (act==GENCLASSES)
+  for (auto &c : n->classes.list)
+    genClass(&c, f, act);
+
   
-  if (act==GENSTATEMENT) {
+  if (act==GENSTATEMENTS) {
     f<<"void main()\n{\n";
     for (statementNode &s : n->statements.list) {
       genStatement(&s,f,act);
@@ -81,7 +136,8 @@ void generate(){
   if (!f.is_open())
     std::cerr<<"Error opening output.c to generate code\n";
   genProgram(root, f, GENSTART);
-  genProgram(root, f, GENSTATEMENT);
+  genProgram(root, f, GENCLASSES);
+  genProgram(root, f, GENSTATEMENTS);
 
   f.close();
   std::cout<<"Fin Generate"<<std::endl;
