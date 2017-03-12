@@ -27,39 +27,19 @@ void genStatement(statementNode *n, std::ofstream &f, int act)
     if (strcmp(n->str,"ASSIGN")==0)
       f<<"=";
 
-
   // NEED TO FIGURE OUT CORRECT ORDER TO TRAVERSE THESE NODES
   /*
-  if (n->rExpr!=NULL) {
-     if (act==BUILDSYMBOLTABLE) {
-      //std::cout<<"DE"<<std::endl;
-       n->rExpr->sTable=n->sTable;
-       //n->sTable->print();
-    }
-    checkRExpr(n->rExpr, classNames, act);
-  }
+    if (n->rExpr!=NULL)
+      checkRExpr(n->rExpr, classNames, act);
 
- if (n->stblock!=NULL) {
-     if (act==BUILDSYMBOLTABLE) {
-        n->stblock->sTable=n->sTable; 
-      // n->stblock->sTable=n->sTable;
-    }
-     checkStatementBlock(n->stblock, classNames, act);
-  }
+    if (n->stblock!=NULL)
+      checkStatementBlock(n->stblock, classNames, act);
 
-  if (n->elifs!=NULL) {
-    if (act==BUILDSYMBOLTABLE) {
-      n->elifs->sTable=n->sTable->prev;
-    }
-    checkElifs(n->elifs, classNames, act);
-  }
+    if (n->elifs!=NULL)
+      checkElifs(n->elifs, classNames, act);
 
-  if (n->elseN!=NULL) {
-    if (act==BUILDSYMBOLTABLE) {
-      n->elseN->sTable=n->sTable->prev;
-    }
-   checkElse(n->elseN, classNames, act);
-  }
+    if (n->elseN!=NULL)
+      checkElse(n->elseN, classNames, act);
   */
 }
 
@@ -83,14 +63,22 @@ void genSignature(classSignatureNode *n, std::ofstream &f, int act)
   f<<"){}\n";
 }
 
+void genClassStructVar(statementNode *n, std::ofstream &f, int act)
+{
+  // str, name, rExpr, lExpr, stblock, elifs, elseN
+}
+		  
 void genClassBody(classBodyNode *n, std::ofstream &f, int act)
 {
+  // THIS WILL BE THE STRUCT
   if (n->statements!=NULL) {
-    // for (statementNode &s : n->statements.list) {
-    //   genStatement(&s,f,act);
-    //   f<<";"<<std::endl;
-    // }
+    for (statementNode &s : n->statements->list) {
+      genClassStructVar(&s,f,act);
+      // f<<";"<<std::endl;
+    }
   }
+
+  // THIS WILL BE THE FUNCTION POINTERS
   if (n->methods!=NULL) {
     // for (methodNode &s : n->statements.list) {
     //   genMethod(&s,f,act);
