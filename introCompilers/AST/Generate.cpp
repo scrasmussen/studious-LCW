@@ -14,9 +14,32 @@ void genTypeDefStructLine(std::ofstream &f,char const* name){
   f<<"typedef struct class_"<<name<<"_struct* class_Pt;\n";
 }
 void genClassStructLine(std::ofstream &f,char const* name) {
-  f<<"struct class_"<<name<<"_struct the_class_"<<name<<";\n";
+  f<<"struct class_"<<name<<"_struct the_class_"<<name<<"_struct;\n";
 }
+void genTheClassExternLine(std::ofstream &f,char const* name) {
+  f<<"extern class_"<<name<<" the_class_"<<name<<";\n";
+}
+
 void genClassArgLines(std::ofstream &f, classSignatureNode *n) {
+  f<<"typedef struct obj_"<<n->name<<"_struct {\n";
+  f<<"  class_"<<n->name<<" clazz;\n";
+  for (int i = n->fArguments->list.size(); i --> 0; ) {
+    auto a = n->fArguments->list[i];
+    f<<"  obj_"<<a->type<<" "<<a->name<<";\n";
+  }
+  f<<"} * obj_"<<n->name<<";\n";
+  // int arity=0;
+  // for (int i = n->fArguments->list.size(); i --> 0; ) {
+  //   auto a = n->fArguments->list[i];
+  //   if (arity==0)
+  //     arity=1;
+  //   else
+  //     f<<",";
+  //   writeType(f,a->type);
+  //   f<<" ";
+  //   f<<a->name;
+  // }
+  // f<<"){}\n";
 }
 
 
@@ -67,31 +90,36 @@ void genSignature(classSignatureNode *n, std::ofstream &f, int act)
   genStructLine(f,n->name);
   genTypeDefStructLine(f,n->name);
   genClassStructLine(f,n->name);
-
+  genTheClassExternLine(f,n->name);
+  
+  f<<std::endl;
   genClassArgLines(f,n);
-  // f<<n->name<<"(";
-  // int arity=0;
-
-  // for (int i = n->fArguments->list.size(); i --> 0; ) {
-  //   auto a = n->fArguments->list[i];
-  //   if (arity==0)
-  //     arity=1;
-  //   else
-  //     f<<",";
-  //   writeType(f,a->type);
-  //   f<<" ";
-  //   f<<a->name;
-  // }
-  // f<<"){}\n";
 }
 
 void genClassStructVar(statementNode *n, std::ofstream &f, int act)
 {
+  
   // str, name, rExpr, lExpr, stblock, elifs, elseN
 }
-		  
-void genClassBody(classBodyNode *n, std::ofstream &f, int act)
+
+void genClassMethod(methodsNode *n, std::ofstream &f, char const *name, int act)
 {
+  f<<"struct class_"<<name<<"_struct {\n";
+  for (methodNode m : n->list) {
+    // f<<m.returnType<<" obj_"<<m.name<<";"<<std::endl;
+    f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
+    
+    f<<");\n";
+  }
+  f<<"}\n";
+}
+		  
+void genClassBody(classBodyNode *n, std::ofstream &f, char const *name, int act)
+{
+  // THIS WILL BE THE FUNCTION POINTERS
+  genClassMethod(n->methods,f,name,act);
+
+
   // THIS WILL BE THE STRUCT
   if (n->statements!=NULL) {
     for (statementNode &s : n->statements->list) {
@@ -100,13 +128,6 @@ void genClassBody(classBodyNode *n, std::ofstream &f, int act)
     }
   }
 
-  // THIS WILL BE THE FUNCTION POINTERS
-  if (n->methods!=NULL) {
-    // for (methodNode &s : n->statements.list) {
-    //   genMethod(&s,f,act);
-    //   f<<";"<<std::endl;
-    // }
-  }
 
 }
 
@@ -115,15 +136,16 @@ void genClass(classNode *n, std::ofstream &f, int act)
   // if (PRINT) std::cout<<n->sig->name<<std::endl;
   if (n->sig != NULL)
     genSignature(n->sig, f, act);
+  f<<std::endl;
   if (n->classBody != NULL)
-    genClassBody(n->classBody, f, act);
+    genClassBody(n->classBody, f, n->sig->name, act);
 }
 
 void genProgram(ProgramNode *n, std::ofstream &f, int act)
 {
   if (act==GENSTART) {
     f<<"#include <stdio.h>\n";
-    f<<"#include \"Builtins.h\"\n";
+    f<<"#include \"Builtins.h\"\n\n";
   }
 
   if (act==GENCLASSES)
