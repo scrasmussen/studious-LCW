@@ -83,8 +83,7 @@ std::string getType(std::string name, symTable *st)
 	return s.type;
       }
     }
-  }
-  return "Empty";
+  } return "Empty";
 }
 
 std::string getArgType(std::string name, std::string str, symTable *st){
@@ -190,8 +189,9 @@ std::string leastCommonAnc(std::string lType, std::string rType) {
   std::string rTypeOriginal=rType;
 
   int ifPrint=0;
-
-  while (lType != rType) {
+  int counter=0;
+  while (lType != rType && counter<10000) {
+    counter+=counter;
     if (ifPrint)
       std::cout<<lType<<"|"<<rType<<std::endl;
     for (lca i : lcaList)
@@ -246,14 +246,15 @@ void checkActualArgs(actualArgsNode *n, std::vector<char const*> *classNames,  i
 void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
 {
   //flag=n->str;  //std::cout<<flag<<std::endl;
-  //if (act==TYPEUPDATE){goToRoot(n->sTable);}
+  //t if (act==TYPEUPDATE){goToRoot(n->sTable);}
+  if (act==PRINTST) n->sTable->print();
   if (act==PRINT){
     std::cout<<"rExprNode: "<<n->name;
     if (strcmp(n->str,"")!=0) std::cout<<" str: "<<n->str<<std::endl;
     else std::cout<<std::endl;
   }
   if ( strcmp(n->str,"string_lit") == 0 && act == BUILDSYMBOLTABLE) {
-    symbol s; s.name=std::string(n->name); s.type="STRING"; s.scope="[NULL]"; 
+    symbol s; s.name=std::string(n->name); s.type="String"; s.scope="[NULL]"; 
     if (flag=="") s.tag="STRING_LIT";
     else {s.tag=flag; }
      // std::cout<<"E "<<n->str<<n->name<<std::endl;
@@ -263,7 +264,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
 
   if ( strcmp(n->str,"int_lit") == 0 && act == BUILDSYMBOLTABLE) {
     //n->sTable->print();
-    symbol s; s.name=n->name; s.type="INT"; s.scope="[NULL]"; //s.tag="INT_LIT";
+    symbol s; s.name=n->name; s.type="Int"; s.scope="[NULL]"; //s.tag="INT_LIT";
     if (flag=="") s.tag="INT_LIT";
     else { s.tag=flag; }
     n->sTable->insert(s);
@@ -284,6 +285,56 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
     }
   }
 
+ if(act==CHECKLOGIC) {
+    if(strcmp(n->str,"EQUALS")==0||strcmp(n->str,"ATMOST")==0||strcmp(n->str,"LESS")==0||strcmp(n->str,"MORE")==0||strcmp(n->str,"LESS")==0){
+      symbol tempF,tempS;  goToRoot(n->sTable);
+ 
+      //std::cout<<"I am here A"<<std::endl;
+      //std::cout<<n->str<<std::endl;
+      if (n->rExprFirst->lExpr!=NULL) tempF.name=n->rExprFirst->lExpr->name;
+      else tempF.name=n->rExprFirst->name;
+
+      if (n->rExprSecond->lExpr!=NULL) tempS.name=n->rExprSecond->lExpr->name;
+      else tempS.name=n->rExprSecond->name;
+ 
+      //std::cout<<tempF.name<<" "<<tempS.name<<std::endl;
+      //tempF.name=n->rExprFirst->lExpr->name;
+      //tempS.name=n->rExprSecond->lExpr->name;
+      tempF=n->sTable->lookup(tempF); 
+      tempS=n->sTable->lookup(tempS);
+      //std::cout<<tempF.name<<" "<<tempS.name<<std::endl;
+      //std::cout<<"I am here A"<<std::endl;
+      if(tempF.type!="" && tempS.type!=""){
+         if(tempF.type!=tempS.type) {
+          //n->sTable->print();goToRoot(n->sTable);
+          //n->sTable->print();
+          std::string total = "different type \""+tempF.type+"\" and \""+tempS.type+"\" can not be compared";
+          error(total.c_str(),n->linenum);      
+          total=std::string(n->str)+"E"; 
+          n->str=total.c_str();
+         }
+         else {
+            if (tempF.type=="Obj"&&strcmp(n->str,"EQUALS")!=0) {
+               std::string total = "Type \"Obj\" can not be compared using "+std::string(n->str)+" for "+tempF.name+" and "+tempS.name;
+               error(total.c_str(),n->linenum);     
+               total=std::string(n->str)+"E"; 
+               n->str=total.c_str();
+            }  
+            else if (tempF.type=="String"||tempF.type=="Boolean") {
+               if(strcmp(n->str,"ATMOST")==0||strcmp(n->str,"LESS")==0||strcmp(n->str,"MORE")==0||strcmp(n->str,"LESS")==0){
+                   //symbol tempF,tempS;
+                  //n->str=n->str+"e";
+                   std::string total = "Type String is not compatible with this comparison: "+std::string(n->str);
+                   error(total.c_str(),n->linenum);     
+                   total=std::string(n->str)+"E"; 
+                   n->str=total.c_str();
+               }
+            }
+         } 
+      } 
+    }
+  } 
+
   if(act==CHECKMETHOD) {
     if(strcmp(n->str,"method")==0) {
        symbol a,b,newSym;
@@ -302,36 +353,6 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
        }
     }
   }  
-/* 
-  if(act==CHECKMETHOD||act==CHECKLCA) {
-    if(strcmp(n->str,"method")==0) {
-       symbol a,b,newSym,newSym1;
-       a.name=n->name;
-       b=root->sTable->lookup(a);
-       if (b.name!="")  newSym=b;
-       else {
-       newSym1.name=n->rExprFirst->lExpr->name;
-       newSym1=n->sTable->lookup(newSym1);
-          for (auto &c : root->classes.list) {
-            b=c.sTable->lookup(a);
-            if (b.name!="" && newSym1.type==c.sig->name)  newSym=b;
-          } 
-       }
-       if (newSym.name!="") n->sTable->update(newSym,newSym.type);
-       else if(act==CHECKMETHOD){
-          if (newSym1.name =="") {
-              std::string total = "Method: \""+ std::string(n->name) +"\" is not valid member of this object: " + newSym1.name +"  which is of type : "+newSym1.type;
-              error(total.c_str(), n->linenum);
-          }         
-          else { 
-          //std::cout<<n->name<<std::endl;
-          std::string total = "Method: \""+std::string(n->name)+"\" does not exist";
-          error(total.c_str(),n->linenum);   
-          }   
-       }
-    }
-  } 
- */ 
   if (act==CHECKARGTYPE) {
     if(strcmp(n->str,"method")==0 || strcmp(n->str,"const")==0) {
       checkArgTypes(n);
@@ -395,7 +416,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
 void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"statementBlockNode"<< std::endl;  
-  if (act==TYPEUPDATE){goToRoot(n->sTable);}
+  if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable);}
   if (n->statements!=NULL) {
     for (statementNode &s : n->statements->list) {
         if(act==BUILDSYMBOLTABLE) {
@@ -411,6 +432,7 @@ void checkStatementBlock(statementBlockNode *n, std::vector<char const*> *classN
 void checkElif(elifNode *n, std::vector<char const*> *classNames,  int act)
 {
   if (act==PRINT) std::cout<<"elifNode"<< std::endl;  
+  //if (act==PRINTST) n->sTable->print();
   if (n->rExpr!=NULL) {
     if (act==BUILDSYMBOLTABLE) {
        n->rExpr->sTable=n->sTable;
@@ -427,11 +449,13 @@ void checkElif(elifNode *n, std::vector<char const*> *classNames,  int act)
 
 void checkElifs(elifsNode *n, std::vector<char const*> *classNames,  int act)
 {
+  if (act==PRINT) std::cout<<"elifsNode"<< std::endl;  
+  //if (act==PRINTST) n->sTable->print();
   for (elifNode *e : n->list) {
     if (act==BUILDSYMBOLTABLE) {
       symTable *st1= new symTable;  
       st1->setPrev(n->sTable);
-      n->sTable=st1;
+      e->sTable=st1;
     }
     checkElif(e, classNames, act);
   }
@@ -444,9 +468,9 @@ void checkElse(elseNode *n, std::vector<char const*> *classNames,  int act)
     //if (act==PRINTST) n->sTable->print();
   if (n->statementBlock!=NULL) {
     if (act==BUILDSYMBOLTABLE) {
-      symTable *st1= new symTable;  
-      st1->setPrev(n->sTable);
-      n->statementBlock->sTable=st1;
+      //symTable *st1= new symTable;  
+      //st1->setPrev(n->sTable);
+      n->statementBlock->sTable=n->sTable;
       
       //n->sTable->print();
       //std::cout<<"A"<<std::endl;
@@ -469,8 +493,8 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     //n->sTable->prev->print();
   }
   
-  if (act==TYPEUPDATE){goToRoot(n->sTable);}
-  if (act==TYPEUPDATE){goToRoot(n->sTable->prev);}
+  if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable);}
+  if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable->prev);}
 
   if (n->str!=NULL) {
   if (strcmp(n->str, "WHILE")==0) {
@@ -489,25 +513,42 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       st1->setPrev(n->sTable);
       n->sTable=st1;
     }
-  }
-  /*if (strcmp(n->str, "WHILE")==0) {
-     if (act==TYPEUPDATE){goToRoot(n->sTable->next);}
-     if (act==BUILDSYMBOLTABLE) {
-       symTable *st1= new symTable;  
-       st1->setPrev(n->sTable);
-       n->sTable->next=st1;
+    if (act==CHECKLOOPINTERSECTION){
+      for (symbol s : n->sTable->table) {
+         int i=0,j=0;
+         //std::cout<<" for symbol: "<<s.name<<std::endl;
+         symbol temp=n->sTable->prev->lookup(s);
+         //std::cout<<"parent "<<std::endl;
+         //n->sTable->prev->print();
+         //std::cout<<"own "<<std::endl;
+         //n->sTable->print();
+         //std::cout<<s.name<<" temp : "<<temp.name<<std::endl;
+         if (temp.name==""){
+            if (n->elseN !=NULL) {
+               j=2;
+               //std::cout<<"Elsenode "<<std::endl;
+               //n->elseN->sTable->print();
+               symbol temp1=n->elseN->sTable->lookup(s);
+               //std::cout<<s.name<<" temp1= "<<temp1.name<<std::endl;
+               if (temp1.name=="") {j=1;i=1;}
+            }
+            if (n->elifs != NULL){
+               if(j!=1) j=2;
+               for (auto &c : n->elifs->list) {
+                 symbol temp1=c->sTable->lookup(s);
+                 //std::cout<<s.name<<" temp2= "<<temp1.name<<std::endl;
+                 if (temp1.name=="") {j=1;i=1;}
+               }
+             }
+         }
+         else {i=1;j=1; }
+         //std::cout<<s.name<<" i="<<i<<"  j="<<j<<std::endl;
+         if (i==0&&j==2) {
+             n->sTable->prev->insert(s); 
+         }
+      }
     }
   }
-
-  if (strcmp(n->str,"IF")==0) {
-    if (act==TYPEUPDATE){goToRoot(n->sTable->next);}
-    if (act==BUILDSYMBOLTABLE) {
-      symTable *st1= new symTable;
-      st1->setPrev(n->sTable);
-      n->sTable->next=st1;
-      //n->sTable=st1;
-    }
-  }*/ 
 
  if (strcmp(n->str,"ASSIGN")==0) {
     if (act==DECLARATION||act==CHECKLCA||act==CHECKOBJECT) {
@@ -576,8 +617,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     }
     checkRExpr(n->rExpr, classNames, act);
   }
-
- if (n->stblock!=NULL) {
+  if (n->stblock!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
         n->stblock->sTable=n->sTable; 
       // n->stblock->sTable=n->sTable;
@@ -585,27 +625,29 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
      checkStatementBlock(n->stblock, classNames, act);
   }
 
- if (n->lExpr!=NULL) {
-   if (act==BUILDSYMBOLTABLE) {
-     //std::cout<<"DD"<<std::endl;
-     n->lExpr->sTable=n->sTable;
-   }
-   checkLExpr(n->lExpr, classNames, act);
- }
-
- if (n->elifs!=NULL) {
-   if (act==BUILDSYMBOLTABLE) {
-     n->elifs->sTable=n->sTable->prev;
-   }
-   checkElifs(n->elifs, classNames, act);
- }
-
- if (n->elseN!=NULL) {
-   if (act==BUILDSYMBOLTABLE) {
-     n->elseN->sTable=n->sTable->prev;
-   }
+  if (n->lExpr!=NULL) {
+     if (act==BUILDSYMBOLTABLE) {
+      //std::cout<<"DD"<<std::endl;
+      n->lExpr->sTable=n->sTable;
+    }
+     checkLExpr(n->lExpr, classNames, act);
+  }
+  if (n->elifs!=NULL) {
+    if (act==BUILDSYMBOLTABLE) {
+      //symTable *st1= new symTable; 
+      //st1->prev=n->sTable->prev; 
+      n->elifs->sTable=n->sTable->prev;
+    }
+    checkElifs(n->elifs, classNames, act);
+  }
+  if (n->elseN!=NULL) {
+    if (act==BUILDSYMBOLTABLE) {
+      symTable *st1= new symTable; 
+      st1->prev=n->sTable->prev; 
+      n->elseN->sTable=st1;
+    }
    checkElse(n->elseN, classNames, act);
- }
+  }
 
 }
 
@@ -616,7 +658,10 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
     std::cout<<std::endl<<"printing method: "<<n->name; 
     n->sTable->print();
   }
-  if (act==TYPEUPDATE){goToRoot(n->sTable);}
+
+  if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable);}
+
+  //if (act==TYPEUPDATE){goToRoot(n->sTable);}
   if (act==BUILDSYMBOLTABLE) {
     std::string type = "(";
     if (n->fArguments!=NULL) {
@@ -781,7 +826,7 @@ void checkClass(classNode *n, std::vector<char const*> *classNames ,int act)
     n->sTable->print();
   }
   
-  if (act==TYPEUPDATE){goToRoot(n->sTable);}
+  if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable);}
   
   if (n->sig != NULL) {
     if (act==BUILDSYMBOLTABLE) {
@@ -838,7 +883,7 @@ void checkProgram(ProgramNode *n, std::vector<char const*> *classNames ,int act)
     n->sTable->print();
   }
   
-  if (act==TYPEUPDATE){goToRoot(n->sTable);}
+  if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable);}
   // Classes
   for (auto &c : n->classes.list)
     classNames->push_back(c.sig->name);
@@ -980,9 +1025,22 @@ void goToRoot(symTable *sTable) {
 void fetchType(symTable *sTable, symbol sym,symTable *prevTable) {
   if(prevTable==NULL) return;
      symbol a;
-     //prevTable->print();
      a=prevTable->lookup(sym);
+     //std::cout<<sym.type<<" sym.type"<<std::endl; 
+     //std::cout<<a.type<<" a.type"<<std::endl; 
+     //prevTable->print();
      if (sym.type !="[NULL]"){
+         if(sym.type!=a.type && a.type!=""&&sym.tag!="CLASS"&&sym.tag!="METHOD"&&a.tag!="CLASS"&&a.tag!="METHOD"){
+	     //std::cout<<sym.name<<" "<<sym.type<<" "<<a.name<<" "<<a.type<<std::endl; 
+	     //std::cout<<a.type<<" a.type"<<std::endl; 
+	     //std::cout<<"afasfasf"<<std::endl; 
+             //exit(0);            
+             std::string lca=leastCommonAnc(sym.type,a.type);
+	     //std::cout<<lca<<std::endl;             
+             sTable->update(sym,lca);
+             prevTable->update(a,lca);
+             //prevTable->update(a,lca);
+         }
      }
      else{
        if (a.type!=""){
@@ -1025,5 +1083,10 @@ void traverse(int act) {
     checkProgram(root, &emptyClassNames, TYPEUPDATE);
   if (act==CHECKOBJECT) 
     checkProgram(root, &emptyClassNames, CHECKOBJECT);
+  if (act==CHECKLOOPINTERSECTION) 
+    checkProgram(root, &emptyClassNames, CHECKLOOPINTERSECTION);
+  if (act==CHECKLOGIC) 
+    checkProgram(root, &emptyClassNames, CHECKLOGIC);
 }
+
 

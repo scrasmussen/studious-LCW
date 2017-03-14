@@ -4,7 +4,7 @@
 #include <string>
 #include "Node.h"
 #include "quack.tab.h"
-#define PRINTTOKEN 0
+#define PRINTTOKEN 0 
 const char* ERROR_ESC="only \\0, \\b, \\t, \\n, \\r, \\\\ allowed";
 const char* ERROR_NL="newline in quoted string";
 const char* ERROR_SYNTAX="Not caught by lexer";
@@ -27,7 +27,7 @@ void printl(std::string token, std::string s) {
 class            { printl("CLASS", yytext); return CLASS;}
 def              { printl("DEF", yytext); return DEF;}
 extends          { printl("EXTENDS", yytext); return EXTENDS;}
-if               { printl("IF", yytext); return IF;}
+if               { printl("IF", yytext);  return IF;}
 elif             { printl("ELIF", yytext); return ELIF;}
 else             { printl("ELSE", yytext); return ELSE;}
 while            { printl("WHILE", yytext); return WHILE;}
@@ -61,22 +61,22 @@ not              { printl("NOT", yytext); return NOT;}
 
 
 
-["](([\\][0btnrf"\\])|[^"\n\\])*["]  { printl("STRING_LIT", yytext); return STRING_LIT;   
+["](([\\][0btnrf"\\])|[^"\n\\])*["]  { printl("STRING_LIT", yytext); yylval.str=strdup(yytext); return STRING_LIT;   
                                        /* Next few lines based on code from class */ 
                                        /* The code was cleaner and prettier */ }
-["](([\\].)|[^"\n\\])*["]            { yyerror(ERROR_ESC); return STRING_LIT; }
-["](([\\][^\n])|[^\n"])*\n           { yyerror(ERROR_NL);  return STRING_LIT; }
+["](([\\].)|[^"\n\\])*["]            { yyerror(ERROR_ESC); yylval.str=strdup(yytext); return STRING_LIT; }
+["](([\\][^\n])|[^\n"])*\n           { yyerror(ERROR_NL); yylval.str=strdup(yytext); return STRING_LIT; }
 
 
 
 ["]["]["]            { BEGIN(strlit3); printl("start strlit3",yytext);}
 ["]["]               { BEGIN(strlit2); printl("start strlit2",yytext);}
 ["]                  { BEGIN(strlit1); printl("start strlit1",yytext);}
-<strlit3>["]["]["]   {BEGIN(INITIAL);printl("end strlit3",yytext); return STRING_LIT; /*ARTLESS: WHAT'S IN STRING_LIT?*/}
+<strlit3>["]["]["]   {BEGIN(INITIAL);printl("end strlit3",yytext); yylval.str=strdup(yytext); return STRING_LIT; /*ARTLESS: WHAT'S IN STRING_LIT?*/}
 <strlit3>(([^"])|(["][^"])|(["]["][^"])|\n)*  {}
-<strlit2>["]["]     {BEGIN(INITIAL);printl("end strlit2",yytext); return STRING_LIT;}
+<strlit2>["]["]     {BEGIN(INITIAL);printl("end strlit2",yytext); yylval.str=strdup(yytext); return STRING_LIT;}
 <strlit2>(([^"])|(["][^"])|\n)*  {}
-<strlit1>["]       {BEGIN(INITIAL);printl("end strlit1",yytext); return STRING_LIT;}
+<strlit1>["]       {BEGIN(INITIAL);printl("end strlit1",yytext); yylval.str=strdup(yytext); return STRING_LIT;}
 <strlit1>(([^"])|\n)*  {}
 
 
