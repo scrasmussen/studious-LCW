@@ -306,6 +306,8 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
       //std::cout<<"I am here A"<<std::endl;
       if(tempF.type!="" && tempS.type!=""){
          if(tempF.type!=tempS.type) {
+          //n->sTable->print();goToRoot(n->sTable);
+          //n->sTable->print();
           std::string total = "different type \""+tempF.type+"\" and \""+tempS.type+"\" can not be compared";
           error(total.c_str(),n->linenum);      
           total=std::string(n->str)+"E"; 
@@ -1035,7 +1037,7 @@ void fetchType(symTable *sTable, symbol sym,symTable *prevTable) {
              //exit(0);            
              std::string lca=leastCommonAnc(sym.type,a.type);
 	     //std::cout<<lca<<std::endl;             
-             //sTable->update(sym,lca);
+             sTable->update(sym,lca);
              prevTable->update(a,lca);
              //prevTable->update(a,lca);
          }
