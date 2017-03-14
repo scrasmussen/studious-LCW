@@ -230,6 +230,7 @@ Statement
    statementNode *node = new statementNode;
    node->name="";
    node->str="WHILE";
+   node->linenum=yylineno;
    node->rExpr=$2;
    node->stblock=$3;
    $$=node;
@@ -240,6 +241,8 @@ Statement
    statementNode *node = new statementNode;
    node->name="";
    node->str="IF";
+   node->linenum=yylineno;
+   //std::cout<<yylineno<<std::endl;
    node->rExpr=$2;
    node->stblock=$3;
    node->elifs=$4;
@@ -262,6 +265,7 @@ Statement
 | L_Expr ":" IDENT "=" R_Expr ";" {
    statementNode *node = new statementNode;
    node->str="assignment longer";
+   node->linenum=yylineno;
    node->name=$3;
    node->rExpr=$5;
    node->lExpr=$1;
@@ -270,6 +274,7 @@ Statement
    }
 | R_Expr ";" {
    statementNode *node = new statementNode;
+   node->linenum=yylineno;
    node->rExpr=$1;
    node->name="";
    $$=node;
@@ -371,7 +376,7 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str=$1;
    node->name=$1;
-   //std::cout<<node->name<<std::endl;
+   //std::cout<<node->name<<"  lexpr"<<std::endl;
    $$=node;
    msg("L_Expr: IDENT");
    }
@@ -388,12 +393,16 @@ L_Expr
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; 
    rN->str="string_lit";
+   //std::string a=$1; 
    rN->name=$1;
-   //std::cout<<rN->name<<std::endl;
+   rN->linenum=yylineno;
+   //std::cout<<rN->name<<"|"<<std::endl;
+   //std::cout<<a<<"|"<<std::endl;
    $$ = rN;
 } 
 | INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; 
    rN->name=$1;
+   rN->linenum=yylineno;
    rN->str="int_lit";
    rN->val=std::stoi($1);
    $$ = rN;
@@ -402,6 +411,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->lExpr=$1;
    rN->name="";
+   rN->linenum=yylineno;
    rN->str="lexpr";
    $$=rN;
    msg("R_Expr: L_Expr");
@@ -412,6 +422,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="PLUS";
    $$=rN;
@@ -421,6 +432,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="MINUS";
    $$=rN;
@@ -430,6 +442,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="TIMES";
    $$=rN;
@@ -439,6 +452,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="DIVIDE";
    $$=rN;
@@ -447,6 +461,7 @@ R_Expr
 | MINUS R_Expr %prec NEG {
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$2;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="NEG";
    $$=rN;
@@ -456,6 +471,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="EQUALS";
    $$=rN;
@@ -465,6 +481,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="ATMOST";
    $$=rN;
@@ -474,6 +491,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="LESS";
    $$=rN;
@@ -483,6 +501,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="ATLEAST";
    $$=rN;
@@ -492,6 +511,7 @@ R_Expr
    rExprNode *rN = new rExprNode;
    rN->rExprFirst=$1;
    rN->rExprSecond=$3;
+   rN->linenum=yylineno;
    rN->name="";
    rN->str="MORE";
    $$=rN;
@@ -561,8 +581,7 @@ R_Expr
   msg("R_Expr: ( R_Expr )");}
 ;
 
-Actual_Args
-: {
+Actual_Args : {
   $$=new actualArgsNode; 
   }
 | R_Expr R_Exprs {

@@ -22,7 +22,10 @@ static int CHECKRETURNTYPE=41;
 static int CHECKMETHOD=43;
 static int CHECKLCA=47;
 static int CHECKOBJECT=49;
+static int CHECKLOOPINTERSECTION=53;
+static int CHECKLOGIC=53;
 extern int errornum;
+std::string leastCommonAnc(std::string, std::string);
 
 class symbol {
 public:
@@ -62,7 +65,12 @@ class symTable {
   void update(symbol sym,std::string newtype) {
     for (symbol &s : this->table) {
       if (s.name.compare(sym.name)==0) {
-	s.type=newtype;
+        if(s.type!="" && s.type!="[NULL]") {
+           std::string ret=leastCommonAnc(s.type,newtype); 
+	   if (ret!="") s.type=ret;
+	   else s.type=newtype;
+        }
+	else s.type=newtype;
 	//s.scope=sym.scope;
 	//s.tag=sym.tag;
       }
