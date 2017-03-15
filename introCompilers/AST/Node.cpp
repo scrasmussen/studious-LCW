@@ -405,6 +405,12 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
       n->sTable->insert(s);
       n->rExpr->sTable=n->sTable;  
     } 
+    if(act==CHECKUNDEFINEDV) {
+       if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")!=0){
+           std::string total = "Variable: \""+std::string(n->rExpr->lExpr->name)+"\" is not allowed to access class variable from here";
+           error(total.c_str(), n->linenum);
+       }
+    }
     checkRExpr(n->rExpr, classNames, act);
   }
   else{
@@ -420,7 +426,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
     if(act==BUILDSYMBOLTABLE) {
       //n->sTable->print();
       symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="[NULL]";
-      if(s.name!="this") n->sTable->insert(s);
+      if(s.name!="this"&&s.name!="true"&&s.name!="false") n->sTable->insert(s);
       //n->sTable->print();
      
  
@@ -882,7 +888,7 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
               }
               i++;
               lca=leastCommonAnc(prev,current); 
-                 //std::cout<<current<<"|"<<prev<<" " <<i<<std::endl;
+              //std::cout<<lca<<"| lca "<<i<<std::endl;
               if (returnType!=lca) error("Method returning wrong type",s.linenum);
 	  }
 	}

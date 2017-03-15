@@ -55,6 +55,6 @@ int main(int argc, char*argv[]) {
   traverse(CHECKRETURNTYPE);
   traverse(CHECKLOGIC);
   traverse(CHECKUNDEFINEDV);
-  traverse(PRINTST);
+  //traverse(PRINTST);
   //generate();
 }
