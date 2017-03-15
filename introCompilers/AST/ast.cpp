@@ -43,7 +43,6 @@ int main(int argc, char*argv[]) {
   traverse(BUILDLCA);
   traverse(BUILDSYMBOLTABLE);
   traverse(DECLARATION);
-  //traverse(PRINTST);
   traverse(TYPEUPDATE);
   traverse(CHECKLOOPINTERSECTION);
   traverse(CHECKREDEF);
@@ -55,7 +54,7 @@ int main(int argc, char*argv[]) {
   traverse(CHECKARGTYPE);
   traverse(CHECKRETURNTYPE);
   traverse(CHECKLOGIC);
+  traverse(CHECKUNDEFINEDV);
   traverse(PRINTST);
-  // traverse(PRINTST);
   //generate();
 }

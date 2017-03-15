@@ -276,15 +276,15 @@ Statement
    statementNode *node = new statementNode;
    node->linenum=yylineno;
    node->rExpr=$1;
+   node->str="REXPR";
    node->name="";
-   node->str="";
    $$=node;
    msg("Statement: R_Expr ;");
    }
 | RETURN ";" {
    statementNode *node = new statementNode;
    node->name="RETURN";
-   node->str="";
+   node->str="RETURN";
    node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN ;");
@@ -293,7 +293,7 @@ Statement
    statementNode *node = new statementNode;
    node->rExpr=$2;
    node->name="RETURN";
-   node->str="";
+   node->str="RETURN";
    node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN R_Expr ;");
@@ -379,6 +379,7 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str=$1;
    node->name=$1;
+   node->linenum=yylineno;
    //std::cout<<node->name<<"  lexpr"<<std::endl;
    $$=node;
    msg("L_Expr: IDENT");
@@ -387,6 +388,7 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str=$3;
    node->name=$3;
+   node->linenum=yylineno;
    node->rExpr=$1;
    $$=node;
    msg("L_Expr: R_Expr . IDENT");

@@ -5,6 +5,7 @@
 int marker=0;
 int errornum=0;
 std::string flag="";
+symTable *temp;
 std::string flagStmt="";
 std::vector<lca> lcaList;
 std::vector<returnInfo> methodReturnOptions;
@@ -407,6 +408,15 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
     checkRExpr(n->rExpr, classNames, act);
   }
   else{
+    if(act==CHECKUNDEFINEDV) {
+       symbol s;
+       s.name=n->name;
+       s=n->sTable->lookup(s);
+       if (s.type=="" || s.type=="[NULL]"){
+         std::string total = "Variable: \""+std::string(n->name)+"\" is not initialized";
+         error(total.c_str(), n->linenum);
+       } 
+    }
     if(act==BUILDSYMBOLTABLE) {
       //n->sTable->print();
       symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="[NULL]";
@@ -494,6 +504,20 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   //if(n->rExpr!=NULL && n->lExpr!=NULL)
   //std::cout<<n->str<<"----------statement"<<n->rExpr->name<<n->lExpr->name<<std::endl;
   //if (act==BUILDSYMBOLTABLE)  std::cout<<n->str<<"----------statement"<<std::endl;
+  if (act==BUILDSYMBOLTABLE){
+     if(flagStmt=="special"){
+        flagStmt="nSpecial";
+        symTable *st1= new symTable; 
+        st1->prev=n->sTable; 
+        n->sTable=st1;
+        temp=st1;
+     }else if (flagStmt=="nSpecial"){
+        n->sTable=temp;
+        //n->sTable->print();
+        //n->sTable->prev->print();
+        //n->sTable->prev->prev->print();
+     }
+  }     
   if (act==PRINT) std::cout<<"statementNode: "<< std::endl;
   if (act==PRINTST){
     std::cout<<std::endl<<"printing statement"; 
@@ -514,8 +538,8 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
      }
   }
  
-  if (act==BUILDSYMBOLTABLE)  
-  flagStmt=std::string(n->str); //this is for keeping track for If and while
+  //if (act==BUILDSYMBOLTABLE)  
+  //flagStmt=std::string(n->str); //this is for keeping track for If and while
 
   //flagStmt=std::string(n->str); //this is for keeping track for If and while
 
@@ -576,12 +600,16 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
 
 
  if (strcmp(n->str,"ASSIGN")==0) {
+    //std::cout<<n->str<<std::endl;
+    //std::cout<<n->str<<"|"<<act<<std::endl;
     if (act==DECLARATION||act==CHECKLCA||act==CHECKOBJECT) {
+      //std::cout<<n->str<<"|"<<act<<std::endl;
       symbol a,b,newSym,temp,newSym1;
       a.name=n->lExpr->name;
       b.name=n->rExpr->name;
       b=n->sTable->lookup(b); 
       a=n->sTable->lookup(a); 
+      //std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
       if (act==DECLARATION && (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0)) {
 	//std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
 	newSym=n->sTable->lookup(b);
@@ -651,14 +679,6 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     }
     checkRExpr(n->rExpr, classNames, act);
   }
-  if (n->stblock!=NULL) {
-     if (act==BUILDSYMBOLTABLE) {
-        n->stblock->sTable=n->sTable; 
-      // n->stblock->sTable=n->sTable;
-    }
-     checkStatementBlock(n->stblock, classNames, act);
-  }
-
   if (n->lExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
       //std::cout<<"DD"<<std::endl;
@@ -682,6 +702,18 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     }
    checkElse(n->elseN, classNames, act);
   }
+  if (n->stblock!=NULL) {
+     if (act==BUILDSYMBOLTABLE) {
+        n->stblock->sTable=n->sTable; 
+      // n->stblock->sTable=n->sTable;
+    }
+     checkStatementBlock(n->stblock, classNames, act);
+     if (act==BUILDSYMBOLTABLE){     
+      flagStmt="special"; 
+      //std::cout<<"inside stblock"<<n->str<<"|"<<flagStmt<<std::endl;
+     }
+  }
+
 
 }
 
@@ -1137,6 +1169,8 @@ void traverse(int act) {
     checkProgram(root, &emptyClassNames, CHECKLOOPINTERSECTION);
   if (act==CHECKLOGIC) 
     checkProgram(root, &emptyClassNames, CHECKLOGIC);
+  if (act==CHECKUNDEFINEDV) 
+    checkProgram(root, &emptyClassNames, CHECKUNDEFINEDV);
 }
 
 

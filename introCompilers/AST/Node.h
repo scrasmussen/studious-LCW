@@ -23,7 +23,8 @@ static int CHECKMETHOD=43;
 static int CHECKLCA=47;
 static int CHECKOBJECT=49;
 static int CHECKLOOPINTERSECTION=53;
-static int CHECKLOGIC=53;
+static int CHECKLOGIC=57;
+static int CHECKUNDEFINEDV=59;
 extern int errornum;
 std::string leastCommonAnc(std::string, std::string);
 
@@ -201,6 +202,7 @@ lExprNode(): rExpr(NULL), sTable(NULL) {}
   ~lExprNode(){if (sTable) delete sTable;}
   const char* str;
   const char* name;
+  int linenum;
   rExprNode *rExpr;
   symTable *sTable; 
 };
