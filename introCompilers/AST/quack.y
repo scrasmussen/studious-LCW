@@ -377,7 +377,7 @@ Method_Opt
 L_Expr
 : IDENT {
    lExprNode *node=new lExprNode;
-   node->str=$1;
+   node->str="";
    node->name=$1;
    //std::cout<<node->name<<"  lexpr"<<std::endl;
    $$=node;
@@ -385,7 +385,7 @@ L_Expr
    }
 | R_Expr "." IDENT {
    lExprNode *node=new lExprNode;
-   node->str=$3;
+   node->str=".";
    node->name=$3;
    node->rExpr=$1;
    $$=node;
