@@ -28,18 +28,6 @@ void genClassArgLines(std::ofstream &f, classSignatureNode *n) {
     f<<"  obj_"<<a->type<<" "<<a->name<<";\n";
   }
   f<<"} * obj_"<<n->name<<";\n";
-  // int arity=0;
-  // for (int i = n->fArguments->list.size(); i --> 0; ) {
-  //   auto a = n->fArguments->list[i];
-  //   if (arity==0)
-  //     arity=1;
-  //   else
-  //     f<<",";
-  //   writeType(f,a->type);
-  //   f<<" ";
-  //   f<<a->name;
-  // }
-  // f<<"){}\n";
 }
 
 
@@ -96,49 +84,154 @@ void genSignature(classSignatureNode *n, std::ofstream &f, int act)
   genClassArgLines(f,n);
 }
 
-void genClassStructVar(statementNode *n, std::ofstream &f, int act)
+void genMethodArgTypes(formalArgumentsNode *n, std::ofstream &f)
 {
-  
-  // str, name, rExpr, lExpr, stblock, elifs, elseN
+  int arity=0;
+  for (argumentNode *a : n->list) {
+    if (arity==0) {
+      arity=1;
+      f<<"obj_"<<a->type;
+    }
+    else
+      f<<", obj_"<<a->type;
+  }
 }
 
-void genClassMethod(methodsNode *n, std::ofstream &f, char const *name, int act)
+void genMethodArgs(formalArgumentsNode *n, std::ofstream &f)
+{
+  int arity=0;
+  for (int i = n->list.size(); i --> 0; ) {
+    auto a = n->list[i];
+    if (arity==0) {
+      arity=1;
+      f<<"obj_"<<a->type;
+      f<<" "<<a->name;
+    }
+    else {
+      f<<", obj_"<<a->type;
+      f<<" "<<a->name;
+    }
+  }
+}
+
+void genFuncPointerFor(std::string str, std::string returnstr, classNode *n, std::ofstream &f)
+{
+  int found=0;
+  for (symbol s : n->sTable->table) {
+    if (s.name==str)
+      found=1;
+  }
+  if (!found && strcmp(n->sig->extends,"Obj")==0) {
+    f<<"  obj_" <<returnstr;
+    f<<" (*"<<str<<") (obj_Obj);\n";
+  }
+  // ARTLESS TODO: WHAT ABOUT BOOLEAN?
+}
+
+void genBuiltinFuncPointers(classNode *n, std::ofstream &f, char const *name)
+{
+  // Constructor Function Pointer
+  f<<"  obj_"<<name<<" (*constructor) (";
+  genMethodArgTypes(n->sig->fArguments,f);
+  f<<");\n";
+
+  // Builtin Classes
+  genFuncPointerFor("STRING","String",n,f);
+  genFuncPointerFor("PRINT","Obj",n,f);  
+  // genFuncPointerFor("EQUALS","Boolean",n,f);
+
+  // std::string returnType=getReturnType(s.type);
+  // std::string argType=getArgTypes(s.type);
+  // f<<"  obj_"<<returnType<<" (*"<<s.name<< ") (";
+  // if (argType.length()==2)
+  // 	f<<")\n";
+  // else
+  // 	f<<"TODO:"<<argType<<")\n";
+}
+
+void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
 {
   f<<"struct class_"<<name<<"_struct {\n";
-  for (methodNode m : n->list) {
-    // f<<m.returnType<<" obj_"<<m.name<<";"<<std::endl;
+  // Generate guaranteed built in methods
+  genBuiltinFuncPointers(n,f,name);
+  
+  for (methodNode m : n->classBody->methods->list) {
     f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
-    
+    // Generate method arg types
+    genMethodArgTypes(m.fArguments,f);
     f<<");\n";
   }
   f<<"}\n";
 }
-		  
-void genClassBody(classBodyNode *n, std::ofstream &f, char const *name, int act)
+
+void genLExprBit(lExprNode *n, std::ofstream &f, char const *name)
+{
+  if (strcmp(n->str,"")==0)
+    f<<"  "<<n->name;
+  if (strcmp(n->str,".")==0) {
+    genRExprBit(n->rExpr,f,name);
+    f<<"."<<n->name;
+  }
+}
+
+void genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
+{
+  if (strcmp(n->str,"string_lit")==0)
+    f<<n->name;
+  if (strcmp(n->str,"lexpr")==0) {
+    genLExprBit(n->lExpr,f,name);
+  }
+}
+
+void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
+{
+  f<<"obj_"<<name<<" new_"<<name<<"(";
+
+  genMethodArgs(n->sig->fArguments, f);
+  f<<") {\n";
+  f<<"  obj_"<<name<<" item = (obj_"<<name<<")\n";
+  f<<"  malloc(sizeof(struct obj_"<<name<<"_struct));\n";
+  f<<"  item->clazz = the_class_"<<name<<";\n";
+
+  for (statementNode &s : n->classBody->statements->list) {
+  if (s.lExpr!=NULL) {
+  genLExprBit(s.lExpr,f,name);
+  if (strcmp(s.str,"ASSIGN")==0)
+    f<<" = ";
+  genRExprBit(s.rExpr,f,name);
+}
+  f<<";\n";
+}
+
+  f<<"  return item;\n";
+  f<<"}\n";
+}
+
+
+void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
 {
   // THIS WILL BE THE FUNCTION POINTERS
-  genClassMethod(n->methods,f,name,act);
-
+  genClassFuncPointerStruct(n,f,name,act);
 
   // THIS WILL BE THE STRUCT
-  if (n->statements!=NULL) {
-    for (statementNode &s : n->statements->list) {
-      genClassStructVar(&s,f,act);
-      // f<<";"<<std::endl;
+  if (n->classBody!=NULL && n->classBody->statements!=NULL) {
+    f<<"\n";
+    genConstructor(n,f,name,act);
+    for (methodNode &s : n->classBody->methods->list) {
+      // genClassStructVar(&s,f,act);
     }
-  }
 
+  }
 
 }
 
 void genClass(classNode *n, std::ofstream &f, int act)
 {
-  // if (PRINT) std::cout<<n->sig->name<<std::endl;
   if (n->sig != NULL)
     genSignature(n->sig, f, act);
   f<<std::endl;
   if (n->classBody != NULL)
-    genClassBody(n->classBody, f, n->sig->name, act);
+    genStructs(n, f, n->sig->name, act);
 }
 
 void genProgram(ProgramNode *n, std::ofstream &f, int act)
@@ -154,7 +247,7 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 
   
   if (act==GENSTATEMENTS) {
-    f<<"void main()\n{\n";
+    f<<"\nint main()\n{\n";
     for (statementNode &s : n->statements.list) {
       genStatement(&s,f,act);
       f<<";"<<std::endl;
