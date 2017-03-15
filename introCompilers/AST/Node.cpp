@@ -5,6 +5,7 @@
 int marker=0;
 int errornum=0;
 std::string flag="";
+std::string flagStmt="";
 std::vector<lca> lcaList;
 std::vector<returnInfo> methodReturnOptions;
 
@@ -41,7 +42,9 @@ std::string getRExprType(rExprNode *n){
     r=n->name;
 
   if (strcmp(n->str,"string_lit")==0)
-    r="STR";
+    r="String";
+   if (strcmp(n->str,"int_lit")==0)
+    r="Int";
   // std::cout<<"["<<r1<<","<<r2<<","<<r3<<","<<r<<"]"<<n->name<<"|"<<n->str<<std::endl;
 
   return r;
@@ -190,8 +193,8 @@ std::string leastCommonAnc(std::string lType, std::string rType) {
 
   int ifPrint=0;
   int counter=0;
-  while (lType != rType && counter<10000) {
-    counter+=counter;
+  while (lType != rType && counter<50) {
+    counter+=1;
     if (ifPrint)
       std::cout<<lType<<"|"<<rType<<std::endl;
     for (lca i : lcaList)
@@ -247,7 +250,7 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
 {
   //flag=n->str;  //std::cout<<flag<<std::endl;
   //t if (act==TYPEUPDATE){goToRoot(n->sTable);}
-  if (act==PRINTST) n->sTable->print();
+  //if (act==PRINTST) n->sTable->print();
   if (act==PRINT){
     std::cout<<"rExprNode: "<<n->name;
     if (strcmp(n->str,"")!=0) std::cout<<" str: "<<n->str<<std::endl;
@@ -308,6 +311,9 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
          if(tempF.type!=tempS.type) {
           //n->sTable->print();goToRoot(n->sTable);
           //n->sTable->print();
+          //n->sTable->prev->print();
+          //n->sTable->prev->prev->print();
+          //n->sTable->prev->prev->prev->print();
           std::string total = "different type \""+tempF.type+"\" and \""+tempS.type+"\" can not be compared";
           error(total.c_str(),n->linenum);      
           total=std::string(n->str)+"E"; 
@@ -402,12 +408,13 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
   }
   else{
     if(act==BUILDSYMBOLTABLE) {
+      //n->sTable->print();
       symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="[NULL]";
       n->sTable->insert(s);
-       //n->sTable->print();
+      //n->sTable->print();
      
  
-      //std::cout<<"D"<<std::endl;
+      //std::cout<<s.name<<std::endl;
     } 
   } 
 }
@@ -486,6 +493,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   // statement: rExpr, lExpr, stblock, elifs, elseNf
   //if(n->rExpr!=NULL && n->lExpr!=NULL)
   //std::cout<<n->str<<"----------statement"<<n->rExpr->name<<n->lExpr->name<<std::endl;
+  //if (act==BUILDSYMBOLTABLE)  std::cout<<n->str<<"----------statement"<<std::endl;
   if (act==PRINT) std::cout<<"statementNode: "<< std::endl;
   if (act==PRINTST){
     std::cout<<std::endl<<"printing statement"; 
@@ -495,6 +503,22 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
   
   if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable);}
   if (act==TYPEUPDATE||act==CHECKLCA){goToRoot(n->sTable->prev);}
+
+  if (act==BUILDSYMBOLTABLE && (strcmp(flagStmt.c_str(),"IF")==0 || strcmp(flagStmt.c_str(),"WHILE")==0)){
+     //std::cout<<n->str<<"|"<<flagStmt<<std::endl;
+     if (strcmp(n->str,"IF")!=0 && strcmp(n->str,"WHILE")!=0){
+     //std::cout<<n->str<<"|"<<flagStmt<<std::endl;
+      //symTable *st1= new symTable; 
+      //st1->prev=n->sTable; 
+      //n->sTable=st1;
+     }
+  }
+ 
+  if (act==BUILDSYMBOLTABLE)  
+  flagStmt=std::string(n->str); //this is for keeping track for If and while
+
+  //flagStmt=std::string(n->str); //this is for keeping track for If and while
+
 
   if (n->str!=NULL) {
   if (strcmp(n->str, "WHILE")==0) {
@@ -550,6 +574,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     }
   }
 
+
  if (strcmp(n->str,"ASSIGN")==0) {
     if (act==DECLARATION||act==CHECKLCA||act==CHECKOBJECT) {
       symbol a,b,newSym,temp,newSym1;
@@ -601,9 +626,17 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
     if(strcmp(n->name,"RETURN")==0) {
       returnInfo info;
       std::string type=getRExprType(n->rExpr);
-      info.type=type;
-      info.linenum=n->linenum;
-      methodReturnOptions.push_back(info);
+      //symbol s;
+      //s.name=type;
+      //std::cout<<type<<std::endl;
+      //s=n->sTable->lookup(s);
+      //n->sTable->print();
+      if(type!=""){
+        info.type=type;
+        //std::cout<<info.type<<std::endl;
+        info.linenum=n->linenum;
+        methodReturnOptions.push_back(info);
+      }
     }
   } 
        /*if (strcmp(n->str, "WHILE")==0||strcmp(n->str, "IF")==0)  n->rExpr->sTable=n->sTable->next;
@@ -611,9 +644,10 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
  
  if (n->rExpr!=NULL) {
      if (act==BUILDSYMBOLTABLE) {
-      //std::cout<<"DE"<<std::endl;
+     //std::cout<<"inside rexpr "<<n->str<<"|"<<flagStmt<<std::endl;
        n->rExpr->sTable=n->sTable;
        //n->sTable->print();
+     //std::cout<<"inside rexpr "<<n->str<<"|"<<flagStmt<<std::endl;
     }
     checkRExpr(n->rExpr, classNames, act);
   }
@@ -793,15 +827,31 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
 	// Check types in array
 	if (act==CHECKRETURNTYPE) {
 	  std::string returnType;
-	  int first=1;
+          symbol s;
+          s.name=m.name;
+          //std::cout<<s.type<<std::endl;
+          s=m.sTable->prev->lookup(s);
+          //m.sTable->prev->print();
+          //std::cout<<getReturnType(s.type)<<std::endl;
+          returnType=getReturnType(s.type);
+	  std::string current,prev,lca="";
+          int i=0;
 	  for (returnInfo s : methodReturnOptions) {
-	    if (first) {
-	      returnType=s.type;
-	      first=0;
-	    }
-	    else
-	      if (returnType!=s.type)
-		error("Method returning multiple types",s.linenum);
+              if (i==0) {
+                 current=s.type;
+	         prev=s.type;
+                 //std::cout<<current<<"|"<<prev<<" " <<i<<std::endl;
+              }
+              else {
+                 current=s.type;
+                 lca=leastCommonAnc(prev,current); 
+                 prev=lca; 
+                 //std::cout<<current<<"|"<<prev<<" " <<i<<std::endl;
+              }
+              i++;
+              lca=leastCommonAnc(prev,current); 
+                 //std::cout<<current<<"|"<<prev<<" " <<i<<std::endl;
+              if (returnType!=lca) error("Method returning wrong type",s.linenum);
 	  }
 	}
       }
@@ -1030,7 +1080,7 @@ void fetchType(symTable *sTable, symbol sym,symTable *prevTable) {
      //std::cout<<a.type<<" a.type"<<std::endl; 
      //prevTable->print();
      if (sym.type !="[NULL]"){
-         if(sym.type!=a.type && a.type!=""&&sym.tag!="CLASS"&&sym.tag!="METHOD"&&a.tag!="CLASS"&&a.tag!="METHOD"){
+         if(sym.type!=a.type && a.type!=""&&sym.tag!="CLASS"&&sym.tag!="METHOD"&&a.tag!="CLASS"&&a.tag!="METHOD"&& a.type!="[NULL]"){
 	     //std::cout<<sym.name<<" "<<sym.type<<" "<<a.name<<" "<<a.type<<std::endl; 
 	     //std::cout<<a.type<<" a.type"<<std::endl; 
 	     //std::cout<<"afasfasf"<<std::endl; 
