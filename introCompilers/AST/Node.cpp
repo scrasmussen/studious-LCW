@@ -412,7 +412,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
        symbol s;
        s.name=n->name;
        s=n->sTable->lookup(s);
-       if (s.type=="" || s.type=="[NULL]"){
+       if (s.type=="[NULL]"){
          std::string total = "Variable: \""+std::string(n->name)+"\" is not initialized";
          error(total.c_str(), n->linenum);
        } 
@@ -420,7 +420,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
     if(act==BUILDSYMBOLTABLE) {
       //n->sTable->print();
       symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="[NULL]";
-      n->sTable->insert(s);
+      if(s.name!="this") n->sTable->insert(s);
       //n->sTable->print();
      
  
@@ -629,7 +629,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
           }
           //std::cout<<std::endl<<newSym.name<<newSym.type<<"--------- "<<std::endl;
           if (newSym1.type==""&& b.type!=""&&act==CHECKOBJECT) {
-             std::string total = "Method: \""+b.name+"\" is not valid member of this object: " + a.name;
+             std::string total = "Method: \""+b.name+"\" is not valid member of this object: " + newSym.name;
              error(total.c_str(), n->linenum);
           }
           else if(newSym1.type!="") {
