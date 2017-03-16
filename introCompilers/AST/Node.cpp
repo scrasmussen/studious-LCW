@@ -406,10 +406,32 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
       n->rExpr->sTable=n->sTable;  
     } 
     if(act==CHECKUNDEFINEDV) {
-       if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")!=0){
+       /*if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")!=0){
            std::string total = "Variable: \""+std::string(n->rExpr->lExpr->name)+"\" is not allowed to access class variable from here";
            error(total.c_str(), n->linenum);
-       }
+       } */
+       if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")!=0){
+           int i=1,j=1;
+           symTable *s=n->sTable->prev;
+           while(i){
+              symbol sym=s->table.front();
+              //std::cout<<sym.name<<"|"<<sym.scope<<"|"<<n->name<<std::endl; 
+              if (sym.scope=="class"){
+                 i=0;
+                 for (symbol &temp:s->table) {
+                    if(temp.tag=="class/method Arguments" && temp.name==std::string(n->name)){
+                       //std::cout<<temp.name<<"|"<<n->name<<std::endl; 
+                       j=0;
+                    }
+                 } 
+              }
+              s=s->prev;
+           }  
+           std::string total = "Variable: \""+std::string(n->rExpr->lExpr->name)+"\" is not allowed to access class variable from here";
+           if(j!=0) error(total.c_str(), n->linenum);
+       } 
+
+
     }
     checkRExpr(n->rExpr, classNames, act);
   }
@@ -771,6 +793,7 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
   }
 }
 
+/*
 void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int act){
   if (act==PRINT) std::cout<<"ArgumentsNode: "<<std::endl;
   for (argumentNode *c : n->list){
@@ -783,6 +806,7 @@ void checkArguments(argumentsNode *n, std::vector<char const*> *classNames,  int
   // if (act==PRINTST)
   //   n->sTable->print();
 }
+*/
 
 void checkFormalArguments(formalArgumentsNode *n, std::vector<char const*> *classNames,  int act)
 {
