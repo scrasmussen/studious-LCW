@@ -98,9 +98,15 @@ void genMethodArgTypes(formalArgumentsNode *n, std::ofstream &f)
   }
 }
 
-void genMethodArgs(formalArgumentsNode *n, std::ofstream &f)
+void genMethodArgs(formalArgumentsNode *n, std::ofstream &f, char const *name, int isMethodDef)
 {
   int arity=0;
+
+  if (isMethodDef==METHODDEF) {
+    f<<"obj_"<<name<<" this";
+    arity=1;
+  }
+  
   for (int i = n->list.size(); i --> 0; ) {
     auto a = n->list[i];
     if (arity==0) {
@@ -299,7 +305,7 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
 {
   f<<"obj_"<<name<<" new_"<<name<<"(";
     
-  genMethodArgs(n->sig->fArguments, f);
+  genMethodArgs(n->sig->fArguments,f,name,NOTAMETHODDEF);
   f<<") {\n";
   std::string argName="  item";
   f<<"  obj_"<<name<<" "<<argName<<" = (obj_"<<name<<")\n";
@@ -323,11 +329,20 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"};\n";
 }
 
+
+
 void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act) {
+  // methodNode: statementBlock, fArguments
   f<<"obj_"<<n->returnType<<" "<<name<<"_method_"<<n->name<<"(";
-  // ARTESS TODO: add the method arguments
+  genMethodArgs(n->fArguments,f,name,METHODDEF);  
   f<<"){\n";
-  // ARTESS TODO: add the method statements
+
+  // ARTLESS TODO
+  if (n->statementBlock==NULL) return;
+  //  for (statementNode s : n->statementBlock->statements->list) {
+    // genStatement(&s,f,GENSTATEMENTS);
+  //  }
+
   f<<"};\n";
 }
 
