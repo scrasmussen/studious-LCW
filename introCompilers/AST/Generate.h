@@ -9,9 +9,12 @@
 static int GENSTART=2;
 static int GENSTATEMENTS=3;
 static int GENCLASSES=5;
+static int NOTAMETHODDEF=7;
+static int METHODDEF=11;
 
 void generate();
-
+std::string genRExprBit(rExprNode*,std::ofstream&,char const*);
+std::string genLExprBit(lExprNode*,std::ofstream&,char const*);
 
 extern ProgramNode *root;
 #endif

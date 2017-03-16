@@ -264,7 +264,7 @@ elseNode() : statementBlock(NULL), sTable(NULL) {}
 
 struct statementNode {
 statementNode() : str(NULL),name(NULL),rExpr(NULL), lExpr(NULL), stblock(NULL), elifs(NULL), elseN(NULL), sTable(NULL) {linenum=-1;}
-  ~statementNode(){if (sTable) delete sTable;}
+  /* ~statementNode(){if (sTable) delete sTable;} */
   int value;
   const char* str;
   const char* name;
@@ -334,6 +334,8 @@ void buildLCA();
 void checkRedef();
 void error(std::string,int);
 symbol searchTillRoot(symTable *,symbol);
+std::string getReturnType(std::string);
+std::string getArgTypes(std::string);
 extern ProgramNode *root;
 #endif
 	
