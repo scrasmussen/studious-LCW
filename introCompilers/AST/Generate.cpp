@@ -44,30 +44,42 @@ void genLExpr(lExprNode *n, std::ofstream &f, int act)
     f<<n->name;
 }
 
-void genStatement(statementNode *n, std::ofstream &f, int act)
+std::string genStatement(statementNode *n, std::ofstream &f, int act)
 {
+  std::string res="",r1;
+  if (act==GENSTATEMENTS) {
   if (n->lExpr!=NULL)
-    if (act==GENSTATEMENTS)
-      genLExpr(n->lExpr, f, act);
+    genLExpr(n->lExpr, f, act);
 
-  if (act==GENSTATEMENTS)
-    if (strcmp(n->str,"ASSIGN")==0)
-      f<<"=";
+  if (strcmp(n->str,"ASSIGN")==0)
+    f<<"=";
 
   // NEED TO FIGURE OUT CORRECT ORDER TO TRAVERSE THESE NODES
-  /*
-    if (n->rExpr!=NULL)
-      checkRExpr(n->rExpr, classNames, act);
 
-    if (n->stblock!=NULL)
-      checkStatementBlock(n->stblock, classNames, act);
+  if (n->rExpr!=NULL) {
+    // if (Q) f<<"state:rEXPR"<<res<<std::endl;
+    r1=genRExprBit(n->rExpr,f,"[NAME]");
+    f<<"ARTLESS:"<<r1<<std::endl;
+    // checkRExpr(n->rExpr, classNames, act);
+  }
 
-    if (n->elifs!=NULL)
-      checkElifs(n->elifs, classNames, act);
+  if (n->stblock!=NULL) {
+    if (Q) f<<"state:STBLOCK"<<res<<std::endl;
+    // checkStatementBlock(n->stblock, classNames, act);
+  }
 
-    if (n->elseN!=NULL)
-      checkElse(n->elseN, classNames, act);
-  */
+  if (n->elifs!=NULL) {
+    if (Q) f<<"state:ELIFS"<<res<<std::endl;
+    // checkElifs(n->elifs, classNames, act);
+  }
+
+  if (n->elseN!=NULL) {
+    if (Q) f<<"state:ELSEN"<<res<<std::endl;
+    // checkElse(n->elseN, classNames, act);
+  }
+
+  }
+  return res;
 }
 
 
@@ -338,10 +350,14 @@ void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act)
   f<<"){\n";
 
   // ARTLESS TODO
+  std::string r1="";
   if (n->statementBlock==NULL) return;
-  //  for (statementNode s : n->statementBlock->statements->list) {
-    // genStatement(&s,f,GENSTATEMENTS);
-  //  }
+  if (n->statementBlock->statements==NULL) return;
+
+  for (statementNode s : n->statementBlock->statements->list) {
+    r1=genStatement(&s,f,GENSTATEMENTS);
+    f<<"  return "<<r1<<";\n";
+  }
 
   f<<"};\n";
 }
