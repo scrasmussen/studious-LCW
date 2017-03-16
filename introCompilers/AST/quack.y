@@ -276,6 +276,7 @@ Statement
    statementNode *node = new statementNode;
    node->linenum=yylineno;
    node->rExpr=$1;
+   node->str="REXPR";
    node->name="";
    node->str="R_expr; Only";
    $$=node;
@@ -379,6 +380,7 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str="";
    node->name=$1;
+   node->linenum=yylineno;
    //std::cout<<node->name<<"  lexpr"<<std::endl;
    $$=node;
    msg("L_Expr: IDENT");
@@ -387,6 +389,7 @@ L_Expr
    lExprNode *node=new lExprNode;
    node->str=".";
    node->name=$3;
+   node->linenum=yylineno;
    node->rExpr=$1;
    $$=node;
    msg("L_Expr: R_Expr . IDENT");
