@@ -8,6 +8,25 @@
 int Q=1;
 int FIN=1;
 
+// replace was plundered from Mateen Ulhaq  on stackoverflow
+std::string replace(std::string s, const std::string toReplace, const std::string replaceWith) {
+  std::cout<<s<<std::endl;
+  if (s.find(toReplace)==std::string::npos)
+    return s;
+  return(s.replace(s.find(toReplace), toReplace.length(), replaceWith));
+}
+
+std::string cleanString(std::string word) {
+  // ARTLESS TODO: Add all other characters in string that could cause trouble
+  word=replace(word,"\"","Q");
+  word=replace(word,"\"","Q");
+  word=replace(word,"(","leftparen");
+  word=replace(word,")","rightparen");
+  word=replace(word,",","comma");
+  
+  return word;
+}
+
 void genStructLine(std::ofstream &f,char const* name) {
   f<<"struct class_"<<name<<"_struct;\n";
 }
@@ -46,35 +65,50 @@ void genLExpr(lExprNode *n, std::ofstream &f, int act)
 
 std::string genStatement(statementNode *n, std::ofstream &f, int act)
 {
+  act=GENSTATEMENTS;
   std::string res="",r1;
   if (act==GENSTATEMENTS) {
-  if (n->lExpr!=NULL)
-    genLExpr(n->lExpr, f, act);
 
-  if (strcmp(n->str,"ASSIGN")==0)
+  if (strcmp(n->str,"ASSIGN")==0) {
+    genLExpr(n->lExpr, f, act);
+    f<<"=TODODODOTO=";
     f<<"=";
+    return res;
+  }
+
+  if (strcmp(n->str,"RETURN")==0) {
+    r1=genRExprBit(n->rExpr,f,"[NAME]");
+    f<<"  return "<<r1<<";\n";
+    return res;
+  }
+
+  if (strcmp(n->str,"RETURN VOID")==0) {
+    f<<"  return;\n";
+    return res;
+  }
+
+
+  f<<"===TODO:"<<n->str<<std::endl;
 
   // NEED TO FIGURE OUT CORRECT ORDER TO TRAVERSE THESE NODES
 
   if (n->rExpr!=NULL) {
     // if (Q) f<<"state:rEXPR"<<res<<std::endl;
-    r1=genRExprBit(n->rExpr,f,"[NAME]");
-    f<<"ARTLESS:"<<r1<<std::endl;
     // checkRExpr(n->rExpr, classNames, act);
   }
 
   if (n->stblock!=NULL) {
-    if (Q) f<<"state:STBLOCK"<<res<<std::endl;
+    if (Q) f<<"===state:STBLOCK"<<res<<std::endl;
     // checkStatementBlock(n->stblock, classNames, act);
   }
 
   if (n->elifs!=NULL) {
-    if (Q) f<<"state:ELIFS"<<res<<std::endl;
+    if (Q) f<<"===state:ELIFS"<<res<<std::endl;
     // checkElifs(n->elifs, classNames, act);
   }
 
   if (n->elseN!=NULL) {
-    if (Q) f<<"state:ELSEN"<<res<<std::endl;
+    if (Q) f<<"===state:ELSEN"<<res<<std::endl;
     // checkElse(n->elseN, classNames, act);
   }
 
@@ -115,7 +149,7 @@ void genMethodArgs(formalArgumentsNode *n, std::ofstream &f, char const *name, i
   int arity=0;
 
   if (isMethodDef==METHODDEF) {
-    f<<"obj_"<<name<<" this";
+    f<<"obj_"<<name<<" item";
     arity=1;
   }
   
@@ -219,7 +253,7 @@ std::string genActualArgsBit(actualArgsNode *n,std::ofstream &f,char const *name
   return s;
 }
 
-std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
+std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, char const *clazz)
 {
   int found=0;
   std::string res="",r1,r2,r3,type="TYPE",resname="res";
@@ -248,12 +282,12 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
       strcmp(n->str,"TIMES")==0 || (strcmp(n->str,"DIVIDE")==0)){
     found=1;
     r1=genRExprBit(n->rExprFirst,f,name);
-    res.append(r1);
+    res.append(cleanString(r1));
 
     r3=genRExprBit(n->rExprSecond,f,name);
-    res.append(r3);
+    res.append(cleanString(r3));
     type = "TYPE";
-    f<<std::endl<<"  obj_"<<type<<" "<<res<<" = "<<"[TODO]->clazz->";
+    f<<std::endl<<"  obj_"<<type<<" "<<res<<" = "<<"[item]->clazz->";
     if (strcmp(n->str,"PLUS")==0) f<<"PLUS";
     if (strcmp(n->str,"MINUS")==0) f<<"MINUS";
     if (strcmp(n->str,"TIMES")==0) f<<"TIMES";
@@ -309,7 +343,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
     ;
 
   if (!found)
-    f<<"ARTLESS:"<<n->str<<std::endl;
+    f<<"===ARTLESS:"<<n->str<<std::endl;
   return "";
 }
 
@@ -355,11 +389,10 @@ void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act)
   if (n->statementBlock->statements==NULL) return;
 
   for (statementNode s : n->statementBlock->statements->list) {
-    r1=genStatement(&s,f,GENSTATEMENTS);
-    f<<"  return "<<r1<<";\n";
+    genStatement(&s,f,GENSTATEMENTS);
   }
 
-  f<<"};\n";
+  f<<"};\n\n";
 }
 
 void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
