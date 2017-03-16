@@ -5,6 +5,7 @@
 #include "Node.h"
 #include "Generate.h"
 
+int Q=1;
 int FIN=1;
 
 void genStructLine(std::ofstream &f,char const* name) {
@@ -164,44 +165,148 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
   f<<"}\n";
 }
 
-void genLExprBit(lExprNode *n, std::ofstream &f, char const *name)
+std::string genLExprBit(lExprNode *n, std::ofstream &f, char const *name, std::string argName)
 {
-  if (strcmp(n->str,"")==0)
-    f<<"  "<<n->name;
-  if (strcmp(n->str,".")==0) {
-    genRExprBit(n->rExpr,f,name);
-    f<<"."<<n->name;
+  std::string res="";
+  if (strcmp(n->str,"")==0) {
+    res.append(n->name);
+    return res;
   }
+  else if (strcmp(n->str,".")==0) {
+    res.append(argName);
+    res.append("->");
+    res.append(n->name);
+    return res;
+  }
+  else
+    res.append("ERROR:!!");
+  if (Q) std::cout<<"genLEXPRBit:"<<res<<std::endl;
+  return res;
 }
 
-void genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
+std::string genActualArgsBit(actualArgsNode *n,std::ofstream &f,char const *name)
 {
-  if (strcmp(n->str,"string_lit")==0)
-    f<<n->name;
-  if (strcmp(n->str,"lexpr")==0) {
-    genLExprBit(n->lExpr,f,name);
+  std::string s="";
+  int arity=0;
+  for (rExprNode *e : n->list) {
+    if (arity==0)
+      arity=1;
+    else
+      s.append(",");
+    s.append(genRExprBit(e,f,name));
+    std::cout<<"ART"<<s<<std::endl;
   }
+  return s;
+}
+
+std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
+{
+  int found=0;
+  std::string res="",r1,r2,r3,type="TYPE",resname="res";
+
+  if (strcmp(n->str,"string_lit")==0) {
+    found=1;
+    res.append(n->name);
+    if (Q) std::cout<<"string_lit:"<<res<<std::endl;
+    return res;
+  }
+  if (strcmp(n->str,"lexpr")==0) {
+    found=1;
+    res.append(genLExprBit(n->lExpr,f,name,"item"));
+    if (Q) std::cout<<"lexpr:"<<res<<std::endl;
+    return res;
+  }
+  if (strcmp(n->str,"PLUS")==0){
+    found=1;
+    r1=genRExprBit(n->rExprFirst,f,name);
+    res.append(r1);
+    r2=" + ";
+    r3=genRExprBit(n->rExprSecond,f,name);
+    res.append(r3);
+    type = "TYPE";
+    f<<std::endl<<"  obj_"<<type<<" "<<res<<" = "<<"[TODO]->clazz->PLUS(";
+    f<<r1<<","<<r3<<");\n";
+    if (Q) std::cout<<"PLUS:"<<res<<std::endl;
+    return res;
+  }
+  if (strcmp(n->str,"const")==0) {
+    found=1;
+    r1 = genActualArgsBit(n->actualArgs,f,name);
+    f<<"\n  the_class_"<<(n->name)<<"->constructor(";
+    f<<r1;
+    f<<")";
+    if (Q) std::cout<<"constructor:"<<res<<std::endl;
+    return res;
+  }
+
+  if (strcmp(n->str,"method")==0) {
+    r1 = genRExprBit(n->rExprFirst,f,name);
+    r2 = genActualArgsBit(n->actualArgs,f,name);
+    resname.append(n->name);
+    f<<"  obj_"<<type<<" "<<resname<<"="<<r1<<"->clazz->"<<n->name<<"("<<r2<<");";
+    return resname;
+  }
+
+  
+  if (strcmp(n->str,"int_lit")==0)
+    ;
+  if (strcmp(n->str,"MINUS")==0)
+    ;
+  if (strcmp(n->str,"TIMES")==0)
+    ;
+  if (strcmp(n->str,"DIVIDE")==0)
+    ;
+  if (strcmp(n->str,"NEG")==0)
+    ;
+  if (strcmp(n->str,"EQUALS")==0)
+    ;
+  if (strcmp(n->str,"ATMOST")==0)
+    ;
+  if (strcmp(n->str,"LESS")==0)
+    ;
+  if (strcmp(n->str,"ATLEAST")==0)
+    ;
+  if (strcmp(n->str,"ATMOST")==0)
+    ;
+  if (strcmp(n->str,"MORE")==0)
+    ;
+  if (strcmp(n->str,"AND")==0)
+    ;
+  if (strcmp(n->str,"OR")==0)
+    ;
+  if (strcmp(n->str,"NOT")==0)
+    ;
+  if (strcmp(n->str,"FIRSTBRACE")==0)
+    ;
+
+  if (!found)
+    f<<"ARTLESS:"<<n->str<<std::endl;
+  return "";
 }
 
 void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
 {
   f<<"obj_"<<name<<" new_"<<name<<"(";
-
+    
   genMethodArgs(n->sig->fArguments, f);
   f<<") {\n";
-  f<<"  obj_"<<name<<" item = (obj_"<<name<<")\n";
+  std::string argName="  item";
+  f<<"  obj_"<<name<<" "<<argName<<" = (obj_"<<name<<")\n";
   f<<"  malloc(sizeof(struct obj_"<<name<<"_struct));\n";
   f<<"  item->clazz = the_class_"<<name<<";\n";
 
   for (statementNode &s : n->classBody->statements->list) {
-  if (s.lExpr!=NULL) {
-  genLExprBit(s.lExpr,f,name);
-  if (strcmp(s.str,"ASSIGN")==0)
-    f<<" = ";
-  genRExprBit(s.rExpr,f,name);
-}
-  f<<";\n";
-}
+    if (s.lExpr!=NULL) {
+      std::string r1,r2;
+      r1 = genLExprBit(s.lExpr,f,name,argName);
+      r2 = genRExprBit(s.rExpr,f,name);
+      f<<r1;
+      if (strcmp(s.str,"ASSIGN")==0)
+	f<<" = ";
+      f<<r2;
+    }
+    f<<";\n";
+  }
 
   f<<"  return item;\n";
   f<<"}\n";
