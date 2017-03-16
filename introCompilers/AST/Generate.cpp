@@ -65,14 +65,19 @@ void genLExpr(lExprNode *n, std::ofstream &f, int act)
 
 std::string genStatement(statementNode *n, std::ofstream &f, int act)
 {
+  // statementNode: rExpr, lExpr, stblock, elifs, elseN
   act=GENSTATEMENTS;
-  std::string res="",r1;
+  std::string res="",r1,r2;
   if (act==GENSTATEMENTS) {
 
   if (strcmp(n->str,"ASSIGN")==0) {
-    genLExpr(n->lExpr, f, act);
-    f<<"=TODODODOTO=";
+    char const * blank="[A]";
+    r1 = genLExprBit(n->lExpr, f, blank, "[B]"); // name, argname
+    r2 = genRExprBit(n->rExpr, f, "[C]");
+    f<<"  "<<r1;
     f<<"=";
+    f<<r2;
+    f<<";\n";
     return res;
   }
 
@@ -87,11 +92,25 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     return res;
   }
 
+  if (strcmp(n->str,"WHILE")==0) {
+    r1=genRExprBit(n->rExpr,f,"[NAME]");
+    f<<"  while(";
+    f<<r1;
+    f<<") {\n";
+    if (n->stblock->statements!=NULL) {
+      for (statementNode s : n->stblock->statements->list) {
+	genStatement(&s,f,GENSTATEMENTS);
+      }
+    }
+    f<<"}\n";
+    f<<"  return "<<r1<<";\n";
+    return res;
+  }
+
 
   f<<"===TODO:"<<n->str<<std::endl;
 
   // NEED TO FIGURE OUT CORRECT ORDER TO TRAVERSE THESE NODES
-
   if (n->rExpr!=NULL) {
     // if (Q) f<<"state:rEXPR"<<res<<std::endl;
     // checkRExpr(n->rExpr, classNames, act);
@@ -318,14 +337,21 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     return resname;
   }
 
+  if (strcmp(n->str,"LESS")==0) {
+    r1 = genRExprBit(n->rExprFirst,f,name);
+    r2 = genRExprBit(n->rExprSecond,f,name);
+    res.append(r1);
+    res.append("<");    
+    res.append(r2);
+    return res;
+  }
+  
   // ARTLESS TODO
   if (strcmp(n->str,"NEG")==0)
     ;
   if (strcmp(n->str,"EQUALS")==0)
     ;
   if (strcmp(n->str,"ATMOST")==0)
-    ;
-  if (strcmp(n->str,"LESS")==0)
     ;
   if (strcmp(n->str,"ATLEAST")==0)
     ;
