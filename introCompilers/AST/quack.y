@@ -9,7 +9,7 @@
   #include "quack.tab.h"
 
   using namespace std;
-  int printparse=0;
+  int printparse=1;
 
   void msg (std::string s) {
     if (printparse)
@@ -277,14 +277,14 @@ Statement
    node->linenum=yylineno;
    node->rExpr=$1;
    node->name="";
-   node->str="";
+   node->str="R_expr; Only";
    $$=node;
    msg("Statement: R_Expr ;");
    }
 | RETURN ";" {
    statementNode *node = new statementNode;
    node->name="RETURN";
-   node->str="";
+   node->str="RETURN VOID";
    node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN ;");
@@ -293,7 +293,7 @@ Statement
    statementNode *node = new statementNode;
    node->rExpr=$2;
    node->name="RETURN";
-   node->str="";
+   node->str="RETURN";
    node->linenum=yylineno;
    $$=node;
    msg("Statement: RETURN R_Expr ;");
