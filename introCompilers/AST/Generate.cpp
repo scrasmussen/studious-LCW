@@ -12,7 +12,7 @@ void genStructLine(std::ofstream &f,char const* name) {
   f<<"struct class_"<<name<<"_struct;\n";
 }
 void genTypeDefStructLine(std::ofstream &f,char const* name){
-  f<<"typedef struct class_"<<name<<"_struct* class_Pt;\n";
+  f<<"typedef struct class_"<<name<<"_struct* class_"<<name<<";\n";
 }
 void genClassStructLine(std::ofstream &f,char const* name) {
   f<<"struct class_"<<name<<"_struct the_class_"<<name<<"_struct;\n";
@@ -138,7 +138,8 @@ void genBuiltinFuncPointers(classNode *n, std::ofstream &f, char const *name)
 
   // Builtin Classes
   genFuncPointerFor("STRING","String",n,f);
-  genFuncPointerFor("PRINT","Obj",n,f);  
+  genFuncPointerFor("PRINT","Obj",n,f);
+  // ARTLESS TODO: Finish all the built-in funcs
   // genFuncPointerFor("EQUALS","Boolean",n,f);
 
   // std::string returnType=getReturnType(s.type);
@@ -162,9 +163,10 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
     genMethodArgTypes(m.fArguments,f);
     f<<");\n";
   }
-  f<<"}\n";
+  f<<"};\n";
 }
 
+// Generate the lExpr, can only be IDENT or R_Expr.IDENT
 std::string genLExprBit(lExprNode *n, std::ofstream &f, char const *name, std::string argName)
 {
   std::string res="";
@@ -210,33 +212,50 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
     if (Q) std::cout<<"string_lit:"<<res<<std::endl;
     return res;
   }
+  if (strcmp(n->str,"int_lit")==0) {
+    found=1;
+    res.append(n->name);
+    if (Q) std::cout<<"int_lit:"<<res<<std::endl;
+    return res;
+  }
+
   if (strcmp(n->str,"lexpr")==0) {
     found=1;
     res.append(genLExprBit(n->lExpr,f,name,"item"));
     if (Q) std::cout<<"lexpr:"<<res<<std::endl;
     return res;
   }
-  if (strcmp(n->str,"PLUS")==0){
+
+  if (strcmp(n->str,"PLUS")==0 || (strcmp(n->str,"MINUS")==0) ||
+      strcmp(n->str,"TIMES")==0 || (strcmp(n->str,"DIVIDE")==0)){
     found=1;
     r1=genRExprBit(n->rExprFirst,f,name);
     res.append(r1);
-    r2=" + ";
+
     r3=genRExprBit(n->rExprSecond,f,name);
     res.append(r3);
     type = "TYPE";
-    f<<std::endl<<"  obj_"<<type<<" "<<res<<" = "<<"[TODO]->clazz->PLUS(";
+    f<<std::endl<<"  obj_"<<type<<" "<<res<<" = "<<"[TODO]->clazz->";
+    if (strcmp(n->str,"PLUS")==0) f<<"PLUS";
+    if (strcmp(n->str,"MINUS")==0) f<<"MINUS";
+    if (strcmp(n->str,"TIMES")==0) f<<"TIMES";
+    if (strcmp(n->str,"DIVIDE")==0) f<<"DIVIDE";
+    f<<"(";
     f<<r1<<","<<r3<<");\n";
-    if (Q) std::cout<<"PLUS:"<<res<<std::endl;
+    if (Q) std::cout<<"PLUS|MINUS|TIMES|DIVIDE:"<<res<<std::endl;
     return res;
   }
+  
   if (strcmp(n->str,"const")==0) {
     found=1;
+    resname.append(n->name);
     r1 = genActualArgsBit(n->actualArgs,f,name);
-    f<<"\n  the_class_"<<(n->name)<<"->constructor(";
+    f<<"  obj_"<<n->name<<" "<<resname<<" = ";
+    f<<"the_class_"<<(n->name)<<"->constructor(";
     f<<r1;
-    f<<")";
+    f<<");\n";
     if (Q) std::cout<<"constructor:"<<res<<std::endl;
-    return res;
+    return resname;
   }
 
   if (strcmp(n->str,"method")==0) {
@@ -247,15 +266,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
     return resname;
   }
 
-  
-  if (strcmp(n->str,"int_lit")==0)
-    ;
-  if (strcmp(n->str,"MINUS")==0)
-    ;
-  if (strcmp(n->str,"TIMES")==0)
-    ;
-  if (strcmp(n->str,"DIVIDE")==0)
-    ;
+  // ARTLESS TODO
   if (strcmp(n->str,"NEG")==0)
     ;
   if (strcmp(n->str,"EQUALS")==0)
@@ -309,7 +320,7 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   }
 
   f<<"  return item;\n";
-  f<<"}\n";
+  f<<"};\n";
 }
 
 
