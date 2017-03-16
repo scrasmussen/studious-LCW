@@ -323,6 +323,13 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"};\n";
 }
 
+void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act) {
+  f<<"obj_"<<n->returnType<<" "<<name<<"_method_"<<n->name<<"(";
+  // ARTESS TODO: add the method arguments
+  f<<"){\n";
+  // ARTESS TODO: add the method statements
+  f<<"};\n";
+}
 
 void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
 {
@@ -334,7 +341,7 @@ void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
     f<<"\n";
     genConstructor(n,f,name,act);
     for (methodNode &s : n->classBody->methods->list) {
-      // genClassStructVar(&s,f,act);
+      genClassMethods(&s,f,name,act);
     }
 
   }
