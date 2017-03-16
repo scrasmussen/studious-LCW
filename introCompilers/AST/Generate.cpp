@@ -103,10 +103,48 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
       }
     }
     f<<"}\n";
-    f<<"  return "<<r1<<";\n";
+    f<<"  return "<<r1<<";\n"; // TODO: is this return statement wrong?
     return res;
   }
 
+  if (strcmp(n->str,"IF")==0) {
+    // rExpr, stblock, elifs, elseN
+    r1=genRExprBit(n->rExpr,f,"[NAME]");
+    f<<"  if(";
+    f<<r1;
+    f<<") {\n";
+    if (n->stblock->statements!=NULL) {
+      for (statementNode s : n->stblock->statements->list) {
+	genStatement(&s,f,GENSTATEMENTS);
+      }
+    }
+    f<<"  }\n";
+
+    // else if statements
+    for (elifNode *e : n->elifs->list) {
+      r1=genRExprBit(e->rExpr,f,"[NAME]");
+      f<<"  else if(";
+      f<<r1;
+      f<<") {\n";
+      if (e->statementBlock->statements!=NULL) {
+	for (statementNode s : e->statementBlock->statements->list) {
+	  genStatement(&s,f,GENSTATEMENTS);
+	}
+      }
+      f<<"  }\n";
+    }
+
+    if (n->elseN!=NULL) {
+      f<<"  else {\n";
+      if (n->elseN->statementBlock!=NULL && n->elseN->statementBlock->statements!=NULL) {
+	for (statementNode s : n->elseN->statementBlock->statements->list) {
+	  genStatement(&s,f,GENSTATEMENTS);
+	}
+      }
+      f<<"  }\n";
+    }
+    return res;
+  }
 
   f<<"===TODO:"<<n->str<<std::endl;
 
@@ -337,11 +375,24 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     return resname;
   }
 
-  if (strcmp(n->str,"LESS")==0) {
+
+  if (strcmp(n->str,"LESS")==0 || strcmp(n->str,"MORE")==0 ||
+      strcmp(n->str,"ATLEAST")==0 || strcmp(n->str,"ATMOST")==0) {
+    std::string comparison;
+    if (strcmp(n->str,"LESS")==0)
+      comparison = "<";
+    if (strcmp(n->str,"MORE")==0)
+      comparison = ">";
+    if (strcmp(n->str,"ATLEAST")==0)
+      comparison = ">=";
+    if (strcmp(n->str,"ATMOST")==0)
+      comparison = "<=";
+
+    
     r1 = genRExprBit(n->rExprFirst,f,name);
     r2 = genRExprBit(n->rExprSecond,f,name);
     res.append(r1);
-    res.append("<");    
+    res.append(comparison);    
     res.append(r2);
     return res;
   }
@@ -350,14 +401,6 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
   if (strcmp(n->str,"NEG")==0)
     ;
   if (strcmp(n->str,"EQUALS")==0)
-    ;
-  if (strcmp(n->str,"ATMOST")==0)
-    ;
-  if (strcmp(n->str,"ATLEAST")==0)
-    ;
-  if (strcmp(n->str,"ATMOST")==0)
-    ;
-  if (strcmp(n->str,"MORE")==0)
     ;
   if (strcmp(n->str,"AND")==0)
     ;
