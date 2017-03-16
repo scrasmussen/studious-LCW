@@ -50,12 +50,11 @@ int main(int argc, char*argv[]) {
   traverse(CHECKMETHOD);
   for(int i=0;i<10;i++)   traverse(CHECKLCA); 
   traverse(CHECKOBJECT);
-  //traverse(PRINT);
+  // traverse(PRINT);
   // traverse(PRINTST);
   traverse(CHECKARGTYPE);
   traverse(CHECKRETURNTYPE);
   traverse(CHECKLOGIC);
-  traverse(PRINTST);
   // traverse(PRINTST);
-  //generate();
+  generate();
 }
