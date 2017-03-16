@@ -147,28 +147,6 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
   }
 
   f<<"===TODO:"<<n->str<<std::endl;
-
-  // NEED TO FIGURE OUT CORRECT ORDER TO TRAVERSE THESE NODES
-  if (n->rExpr!=NULL) {
-    // if (Q) f<<"state:rEXPR"<<res<<std::endl;
-    // checkRExpr(n->rExpr, classNames, act);
-  }
-
-  if (n->stblock!=NULL) {
-    if (Q) f<<"===state:STBLOCK"<<res<<std::endl;
-    // checkStatementBlock(n->stblock, classNames, act);
-  }
-
-  if (n->elifs!=NULL) {
-    if (Q) f<<"===state:ELIFS"<<res<<std::endl;
-    // checkElifs(n->elifs, classNames, act);
-  }
-
-  if (n->elseN!=NULL) {
-    if (Q) f<<"===state:ELSEN"<<res<<std::endl;
-    // checkElse(n->elseN, classNames, act);
-  }
-
   }
   return res;
 }
@@ -428,16 +406,7 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"  item->clazz = the_class_"<<name<<";\n";
 
   for (statementNode &s : n->classBody->statements->list) {
-    if (s.lExpr!=NULL) {
-      std::string r1,r2;
-      r1 = genLExprBit(s.lExpr,f,name,argName);
-      r2 = genRExprBit(s.rExpr,f,name);
-      f<<r1;
-      if (strcmp(s.str,"ASSIGN")==0)
-	f<<" = ";
-      f<<r2;
-    }
-    f<<";\n";
+    genStatement(&s,f,GENSTATEMENTS);
   }
 
   f<<"  return item;\n";
