@@ -23,6 +23,7 @@ std::string cleanString(std::string word) {
   word=replace(word,"(","leftparen");
   word=replace(word,")","rightparen");
   word=replace(word,",","comma");
+  word=replace(word,"->","REF");
   
   return word;
 }
@@ -103,7 +104,6 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
       }
     }
     f<<"}\n";
-    f<<"  return "<<r1<<";\n"; // TODO: is this return statement wrong?
     return res;
   }
 
@@ -146,6 +146,12 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     return res;
   }
 
+  if (strcmp(n->str,"REXPR; ONLY")==0) {
+    r1=genRExprBit(n->rExpr,f,"");  // TODO : TEST, what will create this?
+    return res;
+  }
+
+  // n->str=LONG_ASSIGN is not implemented, there are no test cases so it's not beign down right now
   f<<"===TODO:"<<n->str<<std::endl;
   }
   return res;
