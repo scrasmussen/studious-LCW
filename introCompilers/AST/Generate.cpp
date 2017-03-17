@@ -264,14 +264,7 @@ void genFuncPointerFor(std::string str, std::string returnstr, classNode *n, std
 
 void genBuiltinFuncPointers(classNode *n, std::ofstream &f, char const *name)
 {
-  // Constructor Function Pointer
-  f<<"  obj_"<<name<<" (*constructor) (";
-  genMethodArgTypes(n->sig->fArguments,f);
-  f<<");\n";
 
-  // Builtin Classes
-  genFuncPointerFor("STRING","String",n,f);
-  genFuncPointerFor("PRINT","Obj",n,f);
   // ARTLESS TODO: Finish all the built-in funcs
   // genFuncPointerFor("EQUALS","Boolean",n,f);
 
@@ -288,14 +281,68 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
 {
   f<<"struct class_"<<name<<"_struct {\n";
   // Generate guaranteed built in methods
-  genBuiltinFuncPointers(n,f,name);
-  
+    // Constructor Function Pointer
+  f<<"  obj_"<<name<<" (*constructor) (";
+  genMethodArgTypes(n->sig->fArguments,f);
+  f<<");\n";
+  // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
+
+  std::vector<std::string> defined;
+  f<<"// classes methods\n";
   for (methodNode m : n->classBody->methods->list) {
+    defined.push_back(m.name);
     f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
     // Generate method arg types
     genMethodArgTypes(m.fArguments,f);
     f<<");\n";
   }
+
+  
+  // Builtin Classes
+  std::string ext = n->sig->extends;
+  f<<"// build-in methods\n";
+  if (ext=="Obj") {
+    // STRING, PRINT, EQUALS
+    f<<"  obj_String (*STRING) (obj_Obj);\n";
+    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+    f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+  }
+  else if (ext=="String") {
+    f<<"  obj_String (*STRING) (obj_String);\n";
+    f<<"  obj_String (*PRINT) (obj_String);\n";
+    f<<"  obj_Boolean (*EQUALS) (obj_String, obj_Obj);\n";
+    f<<"// ===DO WE NEED TO ADD MORE??===\n";
+    f<<"// ===YES===\n";
+  }
+  else if (ext=="Int") {
+    f<<"  obj_Int (*constructor) ( void );\n";
+    f<<"  obj_String (*STRING) (obj_Int);\n";
+    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+    f<<"  obj_Boolean (*EQUALS) (obj_Int, obj_Obj);\n";
+    f<<"  obj_Boolean (*LESS) (obj_Int, obj_Int);\n";
+    f<<"  obj_Int (*PLUS) (obj_Int, obj_Int);\n";
+  }
+  else if (ext=="Boolean") {
+    f<<"  obj_String (*STRING) (obj_Boolean);\n";
+    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+    f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+  }
+  else if (ext=="Nothing") {
+    f<<"  obj_String (*STRING) (obj_Nothing);\n";
+    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+    f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+  }
+  else {
+  // for (classNode &c : root->classes.list) {
+  //   std::string className=c.sig->name;
+  //   if (ext==className)
+      
+  // }
+  }
+  
+  genFuncPointerFor("STRING","String",n,f);
+  genFuncPointerFor("PRINT","Obj",n,f);
+  
   f<<"};\n";
 }
 
