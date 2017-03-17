@@ -9,7 +9,7 @@
   #include "quack.tab.h"
 
   using namespace std;
-  int printparse=1;
+  int printparse=0;
 
   void msg (std::string s) {
     if (printparse)
