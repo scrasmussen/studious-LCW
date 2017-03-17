@@ -2,11 +2,19 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "Node.h"
 #include "Generate.h"
 
 int Q=1;
 int FIN=1;
+std::vector<std::string> currentNames, tmpNames;
+
+
+void clearNames() {
+  currentNames.clear();
+  tmpNames.clear();
+}
 
 // replace was plundered from Mateen Ulhaq  on stackoverflow
 std::string replace(std::string s, const std::string toReplace, const std::string replaceWith) {
@@ -94,14 +102,19 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
 {
   // statementNode: rExpr, lExpr, stblock, elifs, elseN
   act=GENSTATEMENTS;
-  std::string res="",r1,r2;
+  std::string res="",r1,r2, type="  ";
   if (act==GENSTATEMENTS) {
 
   if (strcmp(n->str,"ASSIGN")==0) {
     char const * blank="[A]";
-    r1 = genLExprBit(n->lExpr, f, blank, "[B]"); // name, argname
+    r1 = genLExprBit(n->lExpr, f, blank, "[B]"); // TODO, NEED TO TYPE THIS
     r2 = genRExprBit(n->rExpr, f, "[C]");
-    f<<"  "<<r1;
+    if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
+      type="  getType("+r1+")  ";
+      currentNames.push_back(r1);
+    }
+
+    f<<type<<r1;
     f<<"=";
     f<<r2;
     f<<";\n";
@@ -354,8 +367,13 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
 
     r3=genRExprBit(n->rExprSecond,f,name);
     res.append(cleanString(r3));
-    type = "TYPE";
-    f<<std::endl<<"  obj_"<<type<<" "<<res<<" = "<<"[item]->clazz->";
+
+    type="";
+    if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
+      type = "obj_TYPE";
+      tmpNames.push_back(res);
+    }
+    f<<std::endl<<"  "<<type<<" "<<res<<" = "<<"[item]->clazz->";
     if (strcmp(n->str,"PLUS")==0) f<<"PLUS";
     if (strcmp(n->str,"MINUS")==0) f<<"MINUS";
     if (strcmp(n->str,"TIMES")==0) f<<"TIMES";
@@ -370,7 +388,14 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     found=1;
     resname.append(n->name);
     r1 = genActualArgsBit(n->actualArgs,f,name);
-    f<<"  obj_"<<n->name<<" "<<resname<<" = ";
+
+    std::string type="";
+    if(std::find(tmpNames.begin(), tmpNames.end(), resname) == tmpNames.end()) {
+      std::string t = n->name;
+      type = "obj_"+t;
+      tmpNames.push_back(resname);
+    }
+    f<<"  "<<type<<" "<<resname<<" = ";
     f<<"the_class_"<<(n->name)<<"->constructor(";
     f<<r1;
     f<<");\n";
@@ -459,7 +484,7 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"  obj_"<<name<<" "<<argName<<" = (obj_"<<name<<")\n";
   f<<"  malloc(sizeof(struct obj_"<<name<<"_struct));\n";
   f<<"  item->clazz = the_class_"<<name<<";\n";
-
+  clearNames();
   for (statementNode &s : n->classBody->statements->list) {
     genStatement(&s,f,GENSTATEMENTS);
   }
@@ -478,6 +503,8 @@ void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act)
 
   // ARTLESS TODO
   std::string r1="";
+  clearNames();
+  
   if (n->statementBlock==NULL) return;
   if (n->statementBlock->statements==NULL) return;
 
@@ -527,6 +554,7 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 
   
   if (act==GENSTATEMENTS) {
+    clearNames();
     f<<"\nint main()\n{\n";
     for (statementNode &s : n->statements.list) {
       genStatement(&s,f,act);
