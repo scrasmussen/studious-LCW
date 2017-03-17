@@ -333,15 +333,16 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
     f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
   }
   else {
-  // for (classNode &c : root->classes.list) {
-  //   std::string className=c.sig->name;
-  //   if (ext==className)
-      
-  // }
+    for (classNode &c : root->classes.list) {
+      std::string className=c.sig->name;
+      if (ext==className) {
+	
+      }
+    }
   }
   
-  genFuncPointerFor("STRING","String",n,f);
-  genFuncPointerFor("PRINT","Obj",n,f);
+  // genFuncPointerFor("STRING","String",n,f);
+  // genFuncPointerFor("PRINT","Obj",n,f);
   
   f<<"};\n";
 }
