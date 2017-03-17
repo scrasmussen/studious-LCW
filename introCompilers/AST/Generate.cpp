@@ -86,13 +86,6 @@ void genClassArgLines(std::ofstream &f, classSignatureNode *n) {
   f<<"} * obj_"<<n->name<<";\n";
 }
 
-
-void writeType(std::ofstream &f,char const* type)
-{
-  if (strcmp(type,"Int")==0)
-    f<<"int";
-}
-
 void genLExpr(lExprNode *n, std::ofstream &f, int act)
 {
   if (act==GENSTATEMENTS)
