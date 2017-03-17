@@ -14,7 +14,7 @@ static int METHODDEF=11;
 
 void generate();
 std::string genRExprBit(rExprNode*,std::ofstream&,char const*);
-std::string genLExprBit(lExprNode*,std::ofstream&,char const*);
+std::string genLExprBit(lExprNode*,std::ofstream&,char const*, std::string);
 
 extern ProgramNode *root;
 #endif

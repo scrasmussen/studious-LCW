@@ -9,7 +9,7 @@
   #include "quack.tab.h"
 
   using namespace std;
-  int printparse=1;
+  int printparse=0;
 
   void msg (std::string s) {
     if (printparse)
@@ -264,7 +264,7 @@ Statement
 
 | L_Expr ":" IDENT "=" R_Expr ";" {
    statementNode *node = new statementNode;
-   node->str="assignment longer";
+   node->str="LONG ASSIGN";
    node->linenum=yylineno;
    node->name=$3;
    node->rExpr=$5;
@@ -276,9 +276,8 @@ Statement
    statementNode *node = new statementNode;
    node->linenum=yylineno;
    node->rExpr=$1;
-   node->str="REXPR";
+   node->str="REXPR; ONLY";
    node->name="";
-   node->str="R_expr; Only";
    $$=node;
    msg("Statement: R_Expr ;");
    }
@@ -399,12 +398,9 @@ L_Expr
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; 
    rN->str="string_lit";
-   //std::string a=$1; 
-   rN->name=$1;
+    rN->name=$1;
    rN->linenum=yylineno;
-   //std::cout<<rN->name<<"|"<<std::endl;
-   //std::cout<<a<<"|"<<std::endl;
-   $$ = rN;
+    $$ = rN;
 } 
 | INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; 
    rN->name=$1;
