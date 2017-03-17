@@ -262,45 +262,11 @@ void genFuncPointerFor(std::string str, std::string returnstr, classNode *n, std
   // ARTLESS TODO: WHAT ABOUT BOOLEAN?
 }
 
-void genBuiltinFuncPointers(classNode *n, std::ofstream &f, char const *name)
+void genBuiltinFuncPointers(std::vector<std::string> defined, std::ofstream &f, std::string ext)
 {
 
-  // ARTLESS TODO: Finish all the built-in funcs
-  // genFuncPointerFor("EQUALS","Boolean",n,f);
-
-  // std::string returnType=getReturnType(s.type);
-  // std::string argType=getArgTypes(s.type);
-  // f<<"  obj_"<<returnType<<" (*"<<s.name<< ") (";
-  // if (argType.length()==2)
-  // 	f<<")\n";
-  // else
-  // 	f<<"TODO:"<<argType<<")\n";
-}
-
-void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
-{
-  f<<"struct class_"<<name<<"_struct {\n";
-  // Generate guaranteed built in methods
-    // Constructor Function Pointer
-  f<<"  obj_"<<name<<" (*constructor) (";
-  genMethodArgTypes(n->sig->fArguments,f);
-  f<<");\n";
-  // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
-
-  std::vector<std::string> defined;
-  f<<"// classes methods\n";
-  for (methodNode m : n->classBody->methods->list) {
-    defined.push_back(m.name);
-    f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
-    // Generate method arg types
-    genMethodArgTypes(m.fArguments,f);
-    f<<");\n";
-  }
-
-  
-  // Builtin Classes
-  std::string ext = n->sig->extends;
   f<<"// build-in methods\n";
+  // TODO Have to check what has been defined?? Maybe it will work without that?
   if (ext=="Obj") {
     // STRING, PRINT, EQUALS
     f<<"  obj_String (*STRING) (obj_Obj);\n";
@@ -332,15 +298,49 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
     f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
     f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
   }
-  else {
-    for (classNode &c : root->classes.list) {
-      std::string className=c.sig->name;
-      if (ext==className) {
-	
+
+}
+
+void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
+{
+  f<<"struct class_"<<name<<"_struct {\n";
+  // Generate guaranteed built in methods
+    // Constructor Function Pointer
+  f<<"  obj_"<<name<<" (*constructor) (";
+  genMethodArgTypes(n->sig->fArguments,f);
+  f<<");\n";
+  // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
+
+  std::vector<std::string> defined;
+  f<<"// classes methods\n";
+  for (methodNode m : n->classBody->methods->list) {
+    defined.push_back(m.name);
+    f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
+    // Generate method arg types
+    genMethodArgTypes(m.fArguments,f);
+    f<<");\n";
+  }
+
+  // Builtin Classes
+  std::string ext = n->sig->extends;
+  for (classNode &c : root->classes.list) {
+    std::string className=c.sig->name;
+    if (ext==className) {
+      int proceed=0;
+      if (c.classBody!=NULL && c.classBody->methods!=NULL)
+	proceed=1;
+      if (proceed) {
+	for (methodNode &m : c.classBody->methods->list) {
+	  defined.push_back(m.name);
+	  f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
+	  // Generate method arg types
+	  genMethodArgTypes(m.fArguments,f);
+	  f<<");\n";
+	}
       }
     }
   }
-  
+  genBuiltinFuncPointers(defined,f,ext);
   // genFuncPointerFor("STRING","String",n,f);
   // genFuncPointerFor("PRINT","Obj",n,f);
   
