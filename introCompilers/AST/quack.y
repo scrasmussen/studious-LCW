@@ -264,7 +264,7 @@ Statement
 
 | L_Expr ":" IDENT "=" R_Expr ";" {
    statementNode *node = new statementNode;
-   node->str="assignment longer";
+   node->str="LONG ASSIGN";
    node->linenum=yylineno;
    node->name=$3;
    node->rExpr=$5;
@@ -276,9 +276,8 @@ Statement
    statementNode *node = new statementNode;
    node->linenum=yylineno;
    node->rExpr=$1;
-   node->str="REXPR";
+   node->str="REXPR; ONLY";
    node->name="";
-   node->str="R_expr; Only";
    $$=node;
    msg("Statement: R_Expr ;");
    }
