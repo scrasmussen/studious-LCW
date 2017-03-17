@@ -398,12 +398,9 @@ L_Expr
 R_Expr
 : STRING_LIT {msg("R_Expr: STRING_LIT"); rExprNode *rN = new rExprNode; 
    rN->str="string_lit";
-   //std::string a=$1; 
-   rN->name=$1;
+    rN->name=$1;
    rN->linenum=yylineno;
-   //std::cout<<rN->name<<"|"<<std::endl;
-   //std::cout<<a<<"|"<<std::endl;
-   $$ = rN;
+    $$ = rN;
 } 
 | INT_LIT { msg("R_Expr: INT_LIT"); rExprNode *rN = new rExprNode; 
    rN->name=$1;

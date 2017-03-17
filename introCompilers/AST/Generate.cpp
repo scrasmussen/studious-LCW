@@ -10,7 +10,6 @@ int FIN=1;
 
 // replace was plundered from Mateen Ulhaq  on stackoverflow
 std::string replace(std::string s, const std::string toReplace, const std::string replaceWith) {
-  std::cout<<s<<std::endl;
   if (s.find(toReplace)==std::string::npos)
     return s;
   return(s.replace(s.find(toReplace), toReplace.length(), replaceWith));
@@ -20,10 +19,37 @@ std::string cleanString(std::string word) {
   // ARTLESS TODO: Add all other characters in string that could cause trouble
   word=replace(word,"\"","Q");
   word=replace(word,"\"","Q");
-  word=replace(word,"(","leftparen");
-  word=replace(word,")","rightparen");
+  word=replace(word,"(","lparen");
+  word=replace(word,")","rparen");
   word=replace(word,",","comma");
   word=replace(word,"->","REF");
+  word=replace(word,"!","excla");
+  word=replace(word,"@","at");
+  word=replace(word,"#","bang");
+  word=replace(word,"$","dollar");
+  word=replace(word,"%","perc");
+  word=replace(word,"^","carrot");
+  word=replace(word,"&","and");
+  word=replace(word,"*","star");
+  word=replace(word,"[","lbrack");
+  word=replace(word,"]","rbrack");
+  word=replace(word,":","semic");
+  word=replace(word,";","colon");
+  word=replace(word,"<","gt");
+  word=replace(word,">","gt");
+  word=replace(word,".","period");
+  word=replace(word,"?","que");
+  word=replace(word,"/","fslash");
+  word=replace(word,"\\","bflash");
+  word=replace(word,"|","pipe");
+  word=replace(word,"{","rcurl");
+  word=replace(word,"}","lcurl");
+  word=replace(word,"-","minus");
+  word=replace(word,"_","uscore");
+  word=replace(word,"+","plus");
+  word=replace(word,"=","equal");
+  word=replace(word,"~","aprox");
+  word=replace(word,"`","what");
   
   return word;
 }
@@ -148,6 +174,7 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
 
   if (strcmp(n->str,"REXPR; ONLY")==0) {
     r1=genRExprBit(n->rExpr,f,"");  // TODO : TEST, what will create this?
+    // f<<r1<<std::endl;
     return res;
   }
 
@@ -355,7 +382,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     r1 = genRExprBit(n->rExprFirst,f,name);
     r2 = genActualArgsBit(n->actualArgs,f,name);
     resname.append(n->name);
-    f<<"  obj_"<<type<<" "<<resname<<"="<<r1<<"->clazz->"<<n->name<<"("<<r2<<");";
+    f<<"  obj_"<<type<<" "<<resname<<"="<<r1<<"->clazz->"<<n->name<<"("<<r2<<");\n";
     return resname;
   }
 
@@ -380,20 +407,42 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     res.append(r2);
     return res;
   }
-  
-  // ARTLESS TODO
-  if (strcmp(n->str,"NEG")==0)
-    ;
-  if (strcmp(n->str,"EQUALS")==0)
-    ;
-  if (strcmp(n->str,"AND")==0)
-    ;
-  if (strcmp(n->str,"OR")==0)
-    ;
-  if (strcmp(n->str,"NOT")==0)
-    ;
-  if (strcmp(n->str,"FIRSTBRACE")==0)
-    ;
+
+  if (strcmp(n->str,"FIRSTBRACE")==0) { //TODO TEST 
+    res.append("(");
+    r1 = genRExprBit(n->rExprFirst,f,name);
+    res.append(r1);
+    res.append(")");
+    return res;
+  }
+
+  if (strcmp(n->str,"NOT")==0) { //TODO TEST 
+    res.append("!");
+    r1 = genRExprBit(n->rExprFirst,f,name);
+    res.append(r1);
+    return res;
+  }
+
+  if (strcmp(n->str,"AND")==0 || strcmp(n->str,"OR")==0 || strcmp(n->str,"EQUALS")==0) { //TODO TEST
+    r1 = genRExprBit(n->rExprFirst,f,name);
+    r2 = genRExprBit(n->rExprSecond,f,name);
+    res.append(r1);
+    if (strcmp(n->str,"AND")==0)
+      res.append(" && ");
+    if (strcmp(n->str,"OR")==0)
+      res.append(" || ");
+    if (strcmp(n->str,"EQUALS")==0)
+      res.append(" == ");
+    res.append(r2);
+    return res;
+  }
+
+  if (strcmp(n->str,"NEG")==0) {
+    r1 = genRExprBit(n->rExprFirst,f,name);
+    res.append("-");
+    res.append(r1);
+    return res;
+  }
 
   if (!found)
     f<<"===ARTLESS:"<<n->str<<std::endl;
@@ -481,10 +530,9 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
     f<<"\nint main()\n{\n";
     for (statementNode &s : n->statements.list) {
       genStatement(&s,f,act);
-      f<<";"<<std::endl;
     }
 
-    if (FIN) f<<"printf(\"Fin\\n\");\n";
+    if (FIN) f<<"  printf(\"Fin\\n\");\n";
     f<<"}\n\n";
   }
 
