@@ -268,6 +268,7 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
     f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
     f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
   }
+
   else if (ext=="String") {
     f<<"  obj_String (*STRING) (obj_String);\n";
     f<<"  obj_String (*PRINT) (obj_String);\n";
@@ -275,6 +276,7 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
     f<<"// ===DO WE NEED TO ADD MORE??===\n";
     f<<"// ===YES===\n";
   }
+
   else if (ext=="Int") {
     f<<"  obj_Int (*constructor) ( void );\n";
     f<<"  obj_String (*STRING) (obj_Int);\n";
@@ -283,11 +285,13 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
     f<<"  obj_Boolean (*LESS) (obj_Int, obj_Int);\n";
     f<<"  obj_Int (*PLUS) (obj_Int, obj_Int);\n";
   }
+
   else if (ext=="Boolean") {
     f<<"  obj_String (*STRING) (obj_Boolean);\n";
     f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
     f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
   }
+
   else if (ext=="Nothing") {
     f<<"  obj_String (*STRING) (obj_Nothing);\n";
     f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
@@ -359,7 +363,9 @@ std::string genLExprBit(lExprNode *n, std::ofstream &f, char const *name, std::s
     return res;
   }
   else if (strcmp(n->str,".")==0) {
-    res.append(argName);
+    res = genRExprBit(n->rExpr,f,name);
+    if (res == "this")
+      res = "item";
     res.append("->");
     res.append(n->name);
     return res;
@@ -385,7 +391,7 @@ std::string genActualArgsBit(actualArgsNode *n,std::ofstream &f,char const *name
   return s;
 }
 
-std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, char const *clazz)
+std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
 {
   int found=0;
   std::string res="",r1,r2,r3,type="TYPE",resname="res";
@@ -426,6 +432,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
       type = "obj_TYPE";
       tmpNames.push_back(res);
+
     }
     TYPE="obj_TYPE";
     f<<std::endl<<"  "<<type<<" "<<res<<" = "<<"[item]->clazz->";
