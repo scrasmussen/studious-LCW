@@ -8,6 +8,7 @@
 
 int Q=1;
 int FIN=1;
+std::string TYPE;
 std::vector<std::string> currentNames, tmpNames;
 
 
@@ -110,11 +111,12 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     r1 = genLExprBit(n->lExpr, f, blank, "[B]"); // TODO, NEED TO TYPE THIS
     r2 = genRExprBit(n->rExpr, f, "[C]");
     if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
-      type="  getType("+r1+")  ";
+      type="  "+TYPE;
+      // type="  getType("+r1+")  ";
       currentNames.push_back(r1);
     }
-
-    f<<type<<r1;
+    
+    f<<type<<" "<<r1;
     f<<"=";
     f<<r2;
     f<<";\n";
@@ -298,8 +300,9 @@ void genBuiltinFuncPointers(std::vector<std::string> defined, std::ofstream &f, 
     f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
     f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
   }
-
 }
+
+
 
 void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
 {
@@ -312,7 +315,7 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
   // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
 
   std::vector<std::string> defined;
-  f<<"// classes methods\n";
+  f<<"// class's methods\n";
   for (methodNode m : n->classBody->methods->list) {
     defined.push_back(m.name);
     f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
@@ -417,11 +420,15 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     res.append(cleanString(r3));
 
     type="";
+    // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
       type = "obj_TYPE";
       tmpNames.push_back(res);
     }
+    TYPE="obj_TYPE";
     f<<std::endl<<"  "<<type<<" "<<res<<" = "<<"[item]->clazz->";
+    // ===MONIL===
+    
     if (strcmp(n->str,"PLUS")==0) f<<"PLUS";
     if (strcmp(n->str,"MINUS")==0) f<<"MINUS";
     if (strcmp(n->str,"TIMES")==0) f<<"TIMES";
@@ -438,11 +445,12 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     r1 = genActualArgsBit(n->actualArgs,f,name);
 
     std::string type="";
+    std::string t = n->name;
     if(std::find(tmpNames.begin(), tmpNames.end(), resname) == tmpNames.end()) {
-      std::string t = n->name;
       type = "obj_"+t;
       tmpNames.push_back(resname);
     }
+    TYPE="obj_"+t;
     f<<"  "<<type<<" "<<resname<<" = ";
     f<<"the_class_"<<(n->name)<<"->constructor(";
     f<<r1;
