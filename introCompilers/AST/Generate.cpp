@@ -257,7 +257,7 @@ void genFuncPointerFor(std::string str, std::string returnstr, classNode *n, std
   // ARTLESS TODO: WHAT ABOUT BOOLEAN?
 }
 
-void genBuiltinFuncPointers(std::vector<std::string> defined, std::ofstream &f, std::string ext)
+void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, std::ofstream &f)
 {
 
   f<<"// build-in methods\n";
@@ -295,7 +295,33 @@ void genBuiltinFuncPointers(std::vector<std::string> defined, std::ofstream &f, 
   }
 }
 
-
+void genFuncPointers(std::string ext, std::vector<std::string> defined, std::ofstream &f) {
+  // check is extend class in defined classes
+  for (classNode &c : root->classes.list) {
+    std::string className=c.sig->name;
+    if (ext==className) {
+      int proceed=0;
+      std::string newExt = c.sig->extends;
+      if (c.classBody!=NULL && c.classBody->methods!=NULL)
+	proceed=1;
+      if (proceed) {
+	for (methodNode &m : c.classBody->methods->list) {
+	  std::string methName = m.name;
+	  if(std::find(defined.begin(), defined.end(), methName) == defined.end()) {
+	    defined.push_back(methName);
+	    f<<"  obj_"<<m.returnType<<" (*"<<methName<<") (";
+	    // Generate method arg types
+	    genMethodArgTypes(m.fArguments,f);
+	    f<<");\n";
+	  }
+	}
+      }
+      genFuncPointers(newExt,defined, f);
+    }
+  }
+  // check is extend class in built-in classes
+  genBuiltinFuncPointers(ext,defined,f);
+}
 
 void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
 {
@@ -319,26 +345,7 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
 
   // Builtin Classes
   std::string ext = n->sig->extends;
-  for (classNode &c : root->classes.list) {
-    std::string className=c.sig->name;
-    if (ext==className) {
-      int proceed=0;
-      if (c.classBody!=NULL && c.classBody->methods!=NULL)
-	proceed=1;
-      if (proceed) {
-	for (methodNode &m : c.classBody->methods->list) {
-	  defined.push_back(m.name);
-	  f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
-	  // Generate method arg types
-	  genMethodArgTypes(m.fArguments,f);
-	  f<<");\n";
-	}
-      }
-    }
-  }
-  genBuiltinFuncPointers(defined,f,ext);
-  // genFuncPointerFor("STRING","String",n,f);
-  // genFuncPointerFor("PRINT","Obj",n,f);
+  genFuncPointers(ext, defined, f);
   
   f<<"};\n";
 }
@@ -387,12 +394,14 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)//, cha
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"string_lit:"<<res<<std::endl;
+    TYPE="char const *";
     return res;
   }
   if (strcmp(n->str,"int_lit")==0) {
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"int_lit:"<<res<<std::endl;
+    TYPE="int";
     return res;
   }
 
@@ -535,6 +544,7 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"  item->clazz = the_class_"<<name<<";\n";
   clearNames();
   for (statementNode &s : n->classBody->statements->list) {
+    TYPE="";
     genStatement(&s,f,GENSTATEMENTS);
   }
 
@@ -558,6 +568,7 @@ void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act)
   if (n->statementBlock->statements==NULL) return;
 
   for (statementNode s : n->statementBlock->statements->list) {
+    TYPE="";
     genStatement(&s,f,GENSTATEMENTS);
   }
 
@@ -606,6 +617,7 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
     clearNames();
     f<<"\nint main()\n{\n";
     for (statementNode &s : n->statements.list) {
+      TYPE="";
       genStatement(&s,f,act);
     }
 
