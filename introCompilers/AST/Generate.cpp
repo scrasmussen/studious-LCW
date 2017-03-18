@@ -17,6 +17,12 @@ void clearNames() {
   tmpNames.clear();
 }
 
+// credit goes to Charles Salvia on stackoverflow for being a boss
+bool isNumber(const std::string& s)
+{
+  return !s.empty() && std::find_if(s.begin(), s.end(), [](char c) { return !std::isdigit(c); }) == s.end();
+}
+
 // replace was plundered from Mateen Ulhaq  on stackoverflow
 std::string replace(std::string s, const std::string toReplace, const std::string replaceWith) {
   if (s.find(toReplace)==std::string::npos)
@@ -26,6 +32,8 @@ std::string replace(std::string s, const std::string toReplace, const std::strin
 
 std::string cleanString(std::string word) {
   // ARTLESS TODO: Add all other characters in string that could cause trouble
+  if (isNumber(word))
+    word = "num"+word;
   word=replace(word,"\"","Q");
   word=replace(word,"\"","Q");
   word=replace(word,"(","lparen");
@@ -86,18 +94,10 @@ void genClassArgLines(std::ofstream &f, classSignatureNode *n) {
   f<<"} * obj_"<<n->name<<";\n";
 }
 
-void genLExpr(lExprNode *n, std::ofstream &f, int act)
-{
-  if (act==GENSTATEMENTS)
-    f<<n->name;
-}
-
 std::string genStatement(statementNode *n, std::ofstream &f, int act)
 {
   // statementNode: rExpr, lExpr, stblock, elifs, elseN
-  act=GENSTATEMENTS;
   std::string res="",r1,r2, type="  ";
-  if (act==GENSTATEMENTS) {
 
   if (strcmp(n->str,"ASSIGN")==0) {
     char const * blank="[A]";
@@ -108,8 +108,9 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
       // type="  getType("+r1+")  ";
       currentNames.push_back(r1);
     }
-    
-    f<<type<<" "<<r1;
+    if (!NOTYPE)
+      f<<type;
+    f<<" "<<r1;
     f<<"=";
     f<<r2;
     f<<";\n";
@@ -188,7 +189,7 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
 
   // n->str=LONG_ASSIGN is not implemented, there are no test cases so it's not beign down right now
   f<<"===TODO:"<<n->str<<std::endl;
-  }
+
   return res;
 }
 
@@ -243,26 +244,13 @@ void genMethodArgs(formalArgumentsNode *n, std::ofstream &f, char const *name, i
   }
 }
 
-void genFuncPointerFor(std::string str, std::string returnstr, classNode *n, std::ofstream &f)
-{
-  int found=0;
-  for (symbol s : n->sTable->table) {
-    if (s.name==str)
-      found=1;
-  }
-  if (!found && strcmp(n->sig->extends,"Obj")==0) {
-    f<<"  obj_" <<returnstr;
-    f<<" (*"<<str<<") (obj_Obj);\n";
-  }
-  // ARTLESS TODO: WHAT ABOUT BOOLEAN?
-}
-
 void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, std::ofstream &f)
 {
   std::string midmeth="_method_";
   f<<"  // build-in methods\n";
   // TODO Have to check what has been defined?? Maybe it will work without that?
   if (ext=="Obj") {
+    ext="obj";
     // STRING, PRINT, EQUALS
     int s=1,p=1,e=1;
     for (std::string meth : defined) {
@@ -285,6 +273,7 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
   }
 
   else if (ext=="String") {
+    ext="string";
     int s=1,p=1,e=1;
     for (std::string meth : defined) {
       if (meth == "STRING") s=0;
@@ -308,6 +297,7 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
   }
 
   else if (ext=="Int") {
+    ext="int";
     int s=1,p=1,e=1,l=1,pl=1;
     for (std::string meth : defined) {
       if (meth == "STRING") s=0;
@@ -340,6 +330,7 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
   }
 
   else if (ext=="Boolean") {
+    ext="boolean";
     int s=1,p=1,e=1;
     for (std::string meth : defined) {
       if (meth == "STRING") s=0;
@@ -361,6 +352,7 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
   }
 
   else if (ext=="Nothing") {
+    ext="nothing";
     int s=1,p=1,e=1;
     for (std::string meth : defined) {
       if (meth == "STRING") s=0;
@@ -533,7 +525,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
         if (n->sTable->prev !=NULL) n->sTable->prev->print();
         sym=n->sTable->prev->lookup(sym);
         std::cout<<r1<<"|"<<r1.find("->")<<"|"<<temp<<"---------"<<sym.type<<std::endl;
-        f<<std::endl<<"  Obj_"<<sym.type<<" "<<res<<";";
+        f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";";
         type=sym.type;
       }
       else {
@@ -542,7 +534,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
         sym.name=r1;
         sym=n->sTable->lookup(sym);
         std::cout<<r1<<"|"<<r1.find("->")<<"---------"<<sym.type<<std::endl;
-        f<<std::endl<<"  Obj_"<<sym.type<<" "<<res<<";";
+        f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";";
         type=sym.type;
 
       }
@@ -670,7 +662,7 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   clearNames();
   for (statementNode &s : n->classBody->statements->list) {
     TYPE="";
-    genStatement(&s,f,GENSTATEMENTS);
+    genStatement(&s,f,NOTYPE);
   }
 
   f<<"  return item;\n";
@@ -744,6 +736,7 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 {
   if (act==GENSTART) {
     f<<"#include <stdio.h>\n";
+    f<<"#include <stdlib.h>\n";
     f<<"#include \"Builtins.h\"\n\n";
   }
 
