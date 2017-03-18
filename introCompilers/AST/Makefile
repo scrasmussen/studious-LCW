@@ -6,6 +6,7 @@ LEXFILE=$(TD)/LexChallenge.qk
 QFILE=$(TD)/hands.qk
 QFILE=$(TD)/LexChallenge.qk
 QFILE=$(TD)/robot.qk
+QFILE=robot.qk
 QFILE=$(TD)/Sqr.qk
 QFILE=$(TD)/input.qk
 QFILE=Sqr.qk
@@ -40,7 +41,7 @@ builtins Builtins.o:
 objs ast.o: node flex
 	$(CC) -c ast.cpp quack.tab.c lex.yy.c $(CFLAGS)
 
-ast: Node.o Generate.o ast.o quack.tab.o lex.yy.o 
+ast: Builtins.o Node.o Generate.o ast.o quack.tab.o lex.yy.o 
 	$(CC) -o quack ast.o quack.tab.o lex.yy.o Node.o Generate.o  -lfl $(CFLAGS)
 
 gen: generate
@@ -50,8 +51,12 @@ gen: generate
 	cat output.c
 
 test: gen
-	gcc output.c 
+	gcc output.c Builtins.o
+	@echo "===Running Binary==="
 	a.out
+
+comp:
+	gcc output.c Builtins.o
 
 clean:
 	rm -f *~ quack *.yy.* *.tab.* *.dot *.o output.c
