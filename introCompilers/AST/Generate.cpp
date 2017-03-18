@@ -520,15 +520,41 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name)
     res.append(cleanString(r3));
 
     type="";
+   
+
     // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
       type = "obj_TYPE";
+      if(r1.find("->")!=std::string::npos) {
+        std::string temp=r1.substr(r1.find("->")+2,r1.length());
+        //std::cout<<temp<<std::endl;
+        symbol sym;
+        sym.name=temp;
+        if (n->sTable->prev !=NULL) n->sTable->prev->print();
+        sym=n->sTable->prev->lookup(sym);
+        std::cout<<r1<<"|"<<r1.find("->")<<"|"<<temp<<"---------"<<sym.type<<std::endl;
+        f<<std::endl<<"  Obj_"<<sym.type<<" "<<res<<";";
+        type=sym.type;
+      }
+      else {
+//todo
+        symbol sym;
+        sym.name=r1;
+        sym=n->sTable->lookup(sym);
+        std::cout<<r1<<"|"<<r1.find("->")<<"---------"<<sym.type<<std::endl;
+        f<<std::endl<<"  Obj_"<<sym.type<<" "<<res<<";";
+        type=sym.type;
+
+      }
       tmpNames.push_back(res);
 
     }
     TYPE="obj_TYPE";
-    f<<std::endl<<"  "<<type<<" "<<res<<" = "<<"[item]->clazz->";
+
+    f<<std::endl<<"  "<<res<<" = "<<res<<"->clazz->";
     // ===MONIL===
+ 
+
     
     if (strcmp(n->str,"PLUS")==0) f<<"PLUS";
     if (strcmp(n->str,"MINUS")==0) f<<"MINUS";

@@ -40,9 +40,11 @@ public:
 
 class symTable {
  public:
- symTable() : prev(NULL){}
+ symTable() : prev(NULL), next(NULL){}
   std::vector<symbol> table;
   symTable* prev;
+  symTable* next;
+  int travarsed=0;
 
   /* === METHODS === */
 

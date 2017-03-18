@@ -402,14 +402,11 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
   if (n->rExpr!=NULL) {
     if(act==BUILDSYMBOLTABLE) {
       symbol s; s.name=n->name; s.type="[NULL]"; s.scope="[NULL]"; s.tag="[NULL]";
+      if (strcmp(n->rExpr->lExpr->name,"this")==0) s.scope="this";
       n->sTable->insert(s);
       n->rExpr->sTable=n->sTable;  
     } 
     if(act==CHECKUNDEFINEDV) {
-       /*if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")!=0){
-           std::string total = "Variable: \""+std::string(n->rExpr->lExpr->name)+"\" is not allowed to access class variable from here";
-           error(total.c_str(), n->linenum);
-       } */
        if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")!=0){
            int i=1,j=1;
            symTable *s=n->sTable->prev;
@@ -429,9 +426,45 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
            }  
            std::string total = "Variable: \""+std::string(n->rExpr->lExpr->name)+"\" is not allowed to access class variable from here";
            if(j!=0) error(total.c_str(), n->linenum);
-       } 
+        } 
+        if(n->rExpr->lExpr->name!=NULL && strcmp(n->rExpr->lExpr->name,"this")==0){
+           int i=1,j=1;
+           symTable *s=n->sTable->prev;
+           
+           symbol other,current,sym;
+           sym=s->prev->table.front();
+           if (sym.scope!="class") i=0;
+           while(i){
+              sym=s->table.front();
+              current.name=std::string(n->name);
+              //std::cout<<sym.name<<"|"<<sym.scope<<"|"<<n->name<<std::endl; 
+              if (sym.scope=="class" && s->next!=NULL){
+                 other=s->next->lookup(current);
+                 current=n->sTable->lookup(current);
+                 //s->print();n->sTable->print();
+                 //std::cout<<other.name<<"|"<<other.type<<"|"<<current.name<<"|"<<current.type<<std::endl; 
+                 if (other.name!="" && other.type!=current.type){
+                     //std::cout<<other.name<<"|"<<other.type<<"|"<<current.name<<"|"<<current.type<<std::endl; 
+                     std::string total = "Variable: \""+current.name+"\" has wrong type";
+                     error(total.c_str(), n->linenum);
+                 }
+                 for (symbol &temp:s->next->table) {
+                    if(temp.scope=="this"){
+                       other=n->sTable->lookup(temp);
+                       if (other.name==""&&n->sTable->travarsed!=1) {
+                          std::string total = "Inherited variable \""+temp.name+"\" has not been initialized";
+                          error(total.c_str(), n->linenum);
+                       } 
+                    }
+                 }
 
-
+              }
+              if (s->prev==NULL) break;
+              s=s->prev;
+           }  
+         }
+     n->sTable->travarsed=1;
+        
     }
     checkRExpr(n->rExpr, classNames, act);
   }
@@ -924,6 +957,7 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
     for (statementNode &s : n->statements->list) {
       if (act==BUILDSYMBOLTABLE) {
 	s.sTable=st;
+        n->sTable->next=st;
       }
       checkStatement(&s, classNames, act);
     }
