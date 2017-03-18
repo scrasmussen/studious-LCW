@@ -9,7 +9,7 @@
 int Q=1;
 int FIN=1;
 std::string TYPE;
-std::vector<std::string> currentNames, tmpNames;
+std::vector<std::string> currentNames, tmpNames, singleton;
 
 
 void clearNames() {
@@ -259,43 +259,126 @@ void genFuncPointerFor(std::string str, std::string returnstr, classNode *n, std
 
 void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, std::ofstream &f)
 {
-
-  f<<"// build-in methods\n";
+  std::string midmeth="_method_";
+  f<<"  // build-in methods\n";
   // TODO Have to check what has been defined?? Maybe it will work without that?
   if (ext=="Obj") {
     // STRING, PRINT, EQUALS
-    f<<"  obj_String (*STRING) (obj_Obj);\n";
-    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
-    f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+    int s=1,p=1,e=1;
+    for (std::string meth : defined) {
+      if (meth == "STRING") s=0;
+      if (meth == "PRINT") p=0;
+      if (meth == "EQUALS") e=0;
+    }
+    if (s) {
+      f<<"  obj_String (*STRING) (obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"STRING");
+    }
+    if (p) {
+      f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"PRINT");
+    }
+    if (e) {
+      f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"EQUALS");
+    }
   }
 
   else if (ext=="String") {
-    f<<"  obj_String (*STRING) (obj_String);\n";
-    f<<"  obj_String (*PRINT) (obj_String);\n";
-    f<<"  obj_Boolean (*EQUALS) (obj_String, obj_Obj);\n";
+    int s=1,p=1,e=1;
+    for (std::string meth : defined) {
+      if (meth == "STRING") s=0;
+      if (meth == "PRINT") p=0;
+      if (meth == "EQUALS") e=0;
+    }
+    if (s) {
+      f<<"  obj_String (*STRING) (obj_String);\n";
+      singleton.push_back(ext+midmeth+"STRING");
+    }
+    if (p) {
+      f<<"  obj_String (*PRINT) (obj_String);\n";
+      singleton.push_back(ext+midmeth+"PRINT");
+    }
+    if (e) {
+      f<<"  obj_Boolean (*EQUALS) (obj_String, obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"EQUALS");
+    }
     f<<"// ===DO WE NEED TO ADD MORE??===\n";
     f<<"// ===YES===\n";
   }
 
   else if (ext=="Int") {
-    f<<"  obj_Int (*constructor) ( void );\n";
-    f<<"  obj_String (*STRING) (obj_Int);\n";
-    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
-    f<<"  obj_Boolean (*EQUALS) (obj_Int, obj_Obj);\n";
+    int s=1,p=1,e=1,l=1,pl=1;
+    for (std::string meth : defined) {
+      if (meth == "STRING") s=0;
+      if (meth == "PRINT") p=0;
+      if (meth == "EQUALS") e=0;
+      if (meth == "LESS") l=0;
+      if (meth == "PLUS") pl=0;
+    }
+    if (s) {
+      f<<"  obj_String (*STRING) (obj_Int);\n";
+      singleton.push_back(ext+midmeth+"STRING");
+    }
+    if (p) {
+      f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"PRINT");
+    }
+    if (e) {
+      f<<"  obj_Boolean (*EQUALS) (obj_Int, obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"EQUALS");
+    }
+    if (l) {
     f<<"  obj_Boolean (*LESS) (obj_Int, obj_Int);\n";
-    f<<"  obj_Int (*PLUS) (obj_Int, obj_Int);\n";
+      singleton.push_back(ext+midmeth+"LESS");
+    }
+    if (pl) {
+      f<<"  obj_Int (*PLUS) (obj_Int, obj_Int);\n";
+      singleton.push_back(ext+midmeth+"PLUS");
+    }
+    //    f<<"  obj_Int (*constructor) ( void );\n";
   }
 
   else if (ext=="Boolean") {
-    f<<"  obj_String (*STRING) (obj_Boolean);\n";
-    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
-    f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+    int s=1,p=1,e=1;
+    for (std::string meth : defined) {
+      if (meth == "STRING") s=0;
+      if (meth == "PRINT") p=0;
+      if (meth == "EQUALS") e=0;
+    }
+    if (s) {
+      f<<"  obj_String (*STRING) (obj_Boolean);\n";
+      singleton.push_back(ext+midmeth+"STRING");
+    }
+    if (p) {
+      f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"PRINT");
+    }
+    if (e) {
+      f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"EQUALS");
+    }
   }
 
   else if (ext=="Nothing") {
-    f<<"  obj_String (*STRING) (obj_Nothing);\n";
-    f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
-    f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+    int s=1,p=1,e=1;
+    for (std::string meth : defined) {
+      if (meth == "STRING") s=0;
+      if (meth == "PRINT") p=0;
+      if (meth == "EQUALS") e=0;
+    }
+    if (s) {
+      f<<"  obj_String (*STRING) (obj_Nothing);\n";
+      singleton.push_back(ext+midmeth+"STRING");
+    }
+    if (p) {
+      f<<"  obj_Obj (*PRINT) (obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"PRINT");
+    }
+    if (e) {
+      f<<"  obj_Boolean (*EQUALS) (obj_Obj, obj_Obj);\n";
+      singleton.push_back(ext+midmeth+"EQUALS");
+    }
   }
 }
 
@@ -313,6 +396,10 @@ void genFuncPointers(std::string ext, std::vector<std::string> defined, std::ofs
 	  std::string methName = m.name;
 	  if(std::find(defined.begin(), defined.end(), methName) == defined.end()) {
 	    defined.push_back(methName);
+	    std::string single;
+	    single = className+"_method_"+methName;
+	    singleton.push_back(single);
+	    
 	    f<<"  obj_"<<m.returnType<<" (*"<<methName<<") (";
 	    // Generate method arg types
 	    genMethodArgTypes(m.fArguments,f);
@@ -338,9 +425,14 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
   // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
 
   std::vector<std::string> defined;
-  f<<"// class's methods\n";
+
+  f<<"  // class's methods\n";
   for (methodNode m : n->classBody->methods->list) {
+    std::string single, className=name, methodName=m.name;
+    single = className+"_method_"+methodName;
     defined.push_back(m.name);
+    singleton.push_back(single);
+
     f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
     // Generate method arg types
     genMethodArgTypes(m.fArguments,f);
@@ -582,21 +674,35 @@ void genClassMethods(methodNode *n, std::ofstream &f, char const *name, int act)
   f<<"};\n\n";
 }
 
+void genSingleton(classNode *n, std::ofstream &f, char const *name)
+{
+
+  f<<"struct class_"<<name<<"_struct the_class_"<<name<<"_struct = {\n";
+  f<<"  new_"<<name;
+  for (std::string name : singleton) {
+    f<<",\n  ";
+    f<<name;
+  }
+  f<<"\n};\n";
+}
+
 void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
 {
+  singleton.clear();
   // THIS WILL BE THE FUNCTION POINTERS
   genClassFuncPointerStruct(n,f,name,act);
 
   // THIS WILL BE THE STRUCT
   if (n->classBody!=NULL && n->classBody->statements!=NULL) {
     f<<"\n";
+
     genConstructor(n,f,name,act);
     for (methodNode &s : n->classBody->methods->list) {
       genClassMethods(&s,f,name,act);
     }
-
   }
-
+  // GEN THE SINGLETON
+  genSingleton(n,f,name);
 }
 
 void genClass(classNode *n, std::ofstream &f, int act)
