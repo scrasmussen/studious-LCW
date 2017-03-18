@@ -2,26 +2,25 @@ C=gcc
 CC=g++
 TESTDIR=/home/faculty/michal/classes/cis461/17W/trial
 TD=trial/samples
-LEXFILE=$(TD)/LexChallenge.qk
-QFILE=$(TD)/hands.qk
-QFILE=$(TD)/LexChallenge.qk
-QFILE=$(TD)/robot.qk
-QFILE=robot.qk
-QFILE=$(TD)/Sqr.qk
-QFILE=$(TD)/input.qk
-QFILE=Sqr.qk
-QFILE=Sqr22.qk
-# QFILE=SqrClass.qk
-# QFILE=bad_init.qk
-
-
+LEXFILE=$(TD)/LexChallenge
+QNAME=$(TD)/hands
+QNAME=$(TD)/LexChallenge
+QNAME=$(TD)/robot
+QNAME=$(TD)/Sqr
+QNAME=$(TD)/input
+QNAME=SqrClass
+QNAME=bad_init
+QNAME=Sqr
+QNAME=Sqr22
+QNAME=robot
+QFILE=$(QNAME).qk
 
 CFLAGS=-std=c++11 -g
 
 %.o : %.c
 	$(CC) -c $(CFLAGS) $< -o $@
 
-all: node generate ast gen
+all: node generate ast test
 
 flex : bison
 	flex quack.l #-d
@@ -48,10 +47,10 @@ gen: generate
 	$(CC) -o quack ast.o quack.tab.o lex.yy.o Builtins.o Node.o Generate.o  -lfl $(CFLAGS)	
 	./quack ${QFILE}
 	@echo
-	cat output.c
+	cat ${QNAME}.c
 
 test: gen
-	gcc output.c Builtins.o
+	gcc ${QNAME}.c Builtins.o
 	@echo "===Running Binary==="
 	a.out
 
