@@ -23,6 +23,8 @@ int main(int argc, char*argv[]) {
   }
 
   FILE *f = fopen(argv[1], "r");
+  std::string fileName = argv[1];
+
   // make sure it is valid:
   if (!f) {
     std::cout << "Unable to open input file!" << std::endl;
@@ -58,5 +60,5 @@ int main(int argc, char*argv[]) {
   //traverse(PRINTST);
   //generate();
   //traverse(PRINTST);
-  generate();
+  generate(fileName);
 }
