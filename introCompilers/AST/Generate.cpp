@@ -34,6 +34,7 @@ std::string cleanString(std::string word) {
   // ARTLESS TODO: Add all other characters in string that could cause trouble
   if (isNumber(word))
     word = "num"+word;
+
   word=replace(word,"\"","Q");
   word=replace(word,"\"","Q");
   word=replace(word,"(","lparen");
@@ -127,11 +128,11 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     r2 = genRExprBit(n->rExpr, f, "[C]",REG);
     if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
       type="  "+TYPE;
-      // type="  getType("+r1+")  ";
       currentNames.push_back(r1);
     }
     if (!NOTYPE)
       f<<type;
+    
     f<<" "<<r1;
     f<<"=";
     f<<r2;
@@ -320,13 +321,16 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
 
   else if (ext=="Int") {
     ext="int";
-    int s=1,p=1,e=1,l=1,pl=1;
+    int s=1,p=1,e=1,l=1,m1=1,m2=1,m3=1,m4=1;
     for (std::string meth : defined) {
       if (meth == "STRING") s=0;
       if (meth == "PRINT") p=0;
       if (meth == "EQUALS") e=0;
       if (meth == "LESS") l=0;
-      if (meth == "PLUS") pl=0;
+      if (meth == "PLUS") m1=0;
+      if (meth == "MINUS") m2=0;
+      if (meth == "TIMES") m3=0;
+      if (meth == "DIVIDE") m4=0;
     }
     if (s) {
       f<<"  obj_String (*STRING) (obj_Int);\n";
@@ -344,9 +348,21 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
     f<<"  obj_Boolean (*LESS) (obj_Int, obj_Int);\n";
       singleton.push_back(ext+midmeth+"LESS");
     }
-    if (pl) {
+    if (m1) {
       f<<"  obj_Int (*PLUS) (obj_Int, obj_Int);\n";
       singleton.push_back(ext+midmeth+"PLUS");
+    }
+    if (m2) {
+      f<<"  obj_Int (*MINUS) (obj_Int, obj_Int);\n";
+      singleton.push_back(ext+midmeth+"MINUS");
+    }
+    if (m3) {
+      f<<"  obj_Int (*TIMES) (obj_Int, obj_Int);\n";
+      singleton.push_back(ext+midmeth+"TIMES");
+    }
+    if (m4) {
+      f<<"  obj_Int (*DIVIDE) (obj_Int, obj_Int);\n";
+      singleton.push_back(ext+midmeth+"DIVIDE");
     }
     //    f<<"  obj_Int (*constructor) ( void );\n";
   }
@@ -537,7 +553,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     r1=genRExprBit(n->rExprFirst,f,name,act);
     res.append(cleanString(r1));
-
+    
     r3=genRExprBit(n->rExprSecond,f,name,act);
     res.append(cleanString(r3));
 
@@ -557,7 +573,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
         if (n->sTable->prev !=NULL) n->sTable->prev->print();
         sym=n->sTable->prev->lookup(sym);
         std::cout<<r1<<"|"<<r1.find("->")<<"|"<<temp<<"---------"<<sym.type<<std::endl;
-	if (!JUSTTYPE)
+	if (act!=JUSTTYPE)
 	  f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";";
         type=sym.type;
       }
@@ -567,7 +583,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
         sym.name=r1;
         sym=n->sTable->lookup(sym);
         std::cout<<r1<<"|"<<r1.find("->")<<"---------"<<sym.type<<std::endl;
-	if (!JUSTTYPE)
+	if (act!=JUSTTYPE)
 	  f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";";
         type=sym.type;
 
@@ -576,15 +592,15 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 
     }
     TYPE="obj_TYPE";
-    if (!JUSTTYPE)
+    if (act!=JUSTTYPE)
       f<<std::endl<<"  "<<res<<" = "<<res<<"->clazz->";
     // ===MONIL===
  
-    if (strcmp(n->str,"PLUS")==0 && !JUSTTYPE) f<<"PLUS";
-    if (strcmp(n->str,"MINUS")==0 && !JUSTTYPE) f<<"MINUS";
-    if (strcmp(n->str,"TIMES")==0 && !JUSTTYPE) f<<"TIMES";
-    if (strcmp(n->str,"DIVIDE")==0 && !JUSTTYPE) f<<"DIVIDE";
-    if (!JUSTTYPE) {
+    if (strcmp(n->str,"PLUS")==0 && act!=JUSTTYPE) f<<"PLUS";
+    if (strcmp(n->str,"MINUS")==0 && act!=JUSTTYPE) f<<"MINUS";
+    if (strcmp(n->str,"TIMES")==0 && act!=JUSTTYPE) f<<"TIMES";
+    if (strcmp(n->str,"DIVIDE")==0 && act!=JUSTTYPE) f<<"DIVIDE";
+    if (act!=JUSTTYPE) {
       f<<"(";
       f<<r1<<","<<r3<<");\n";
     }
@@ -605,7 +621,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
       tmpNames.push_back(resname);
     }
     TYPE="obj_"+t;
-    if (!JUSTTYPE) {
+    if (act!=JUSTTYPE) {
       f<<"  "<<type<<" "<<resname<<" = ";
       f<<"the_class_"<<(n->name)<<"->constructor(";
       f<<r1;
@@ -619,7 +635,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     r1 = genRExprBit(n->rExprFirst,f,name,act);
     r2 = genActualArgsBit(n->actualArgs,f,name);
     resname.append(n->name);
-    if (!JUSTTYPE) {
+    if (act!=JUSTTYPE) {
       f<<"  obj_"<<type<<" "<<resname<<"="<<r1<<"->clazz->"<<n->name<<"("<<r2<<");\n";
     }
     return resname;
@@ -640,7 +656,13 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 
     
     r1 = genRExprBit(n->rExprFirst,f,name,act);
+    if (act==REG && TYPE!="int")
+      f<<"  "<<TYPE<<" "<<r1<<";\n";
     r2 = genRExprBit(n->rExprSecond,f,name,act);
+    if (act==REG && TYPE!="int")
+      f<<"  "<<TYPE<<" "<<r2<<";\n";
+    if (act==REG)
+      f<<"  "<<TYPE<<" "<<r1<<";\n";
     res.append(r1);
     res.append(comparison);    
     res.append(r2);
@@ -799,8 +821,10 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 
 }
 
-void generate(){
-  std::ofstream f("output.c");
+void generate(std::string fileName){
+  fileName = fileName.substr(0,fileName.size()-3);
+  fileName = fileName + ".c";
+  std::ofstream f(fileName);
 
   if (!f.is_open())
     std::cerr<<"Error opening output.c to generate code\n";

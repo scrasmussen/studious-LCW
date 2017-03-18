@@ -15,7 +15,7 @@ static int NOTYPE=13;
 static int JUSTTYPE=17;
 static int REG=19;
 
-void generate();
+void generate(std::string);
 std::string genRExprBit(rExprNode*,std::ofstream&,char const*, int);
 std::string genLExprBit(lExprNode*,std::ofstream&,char const*,std::string,int);
 std::string genStatement(statementNode*,std::ofstream&,int);
