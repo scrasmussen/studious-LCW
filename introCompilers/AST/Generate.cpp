@@ -106,9 +106,7 @@ void genRecStatements(std::ofstream &f, statementNode *s) {
     }
 
   }
-
-
-  if (strcmp(s->str,"ASSIGN")==0) {
+  else if (strcmp(s->str,"ASSIGN")==0) {
     char const *blank="[A1]";
     // getting writ in here somewhere   TESTART
     std::string r1 = genLExprBit(s->lExpr, f, blank, "[B]",JUSTTYPE);
@@ -120,6 +118,8 @@ void genRecStatements(std::ofstream &f, statementNode *s) {
       currentNames.push_back(r2);
       if (sym.type!="")
 	f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
+      else
+	f<<"  obj_"<<TYPE<<" "<<r1<<";\n";
     }
   }
 }
@@ -565,7 +565,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"string_lit:"<<res<<std::endl;
-    TYPE="char const *";
+    TYPE="String";
     return res;
   }
 
@@ -573,7 +573,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"int_lit:"<<res<<std::endl;
-    TYPE="int";
+    TYPE="Int";
     return res;
   }
 
@@ -631,7 +631,6 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
       tmpNames.push_back(res);
 
     }
-    TYPE="obj_TYPE";
 
     if (act!=JUSTTYPE)
       f<<std::endl<<"  "<<res<<" = "<<res<<"->clazz->";
