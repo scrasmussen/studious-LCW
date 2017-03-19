@@ -48,7 +48,7 @@ gen: generate
 	$(CC) -o quack ast.o quack.tab.o lex.yy.o Builtins.o Node.o Generate.o  -lfl $(CFLAGS)	
 	./quack ${QFILE}
 	@echo
-	cat ${QNAME}.c
+	#cat ${QNAME}.c
 
 test: gen
 	gcc ${QNAME}.c Builtins.o
