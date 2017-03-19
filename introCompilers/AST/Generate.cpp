@@ -132,8 +132,10 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
       type="  "+TYPE;
       currentNames.push_back(r1);
     }
+
     if (act!=NOTYPE)
-      f<<type<<" ";
+      if (r1.find("->")==std::string::npos)
+	f<<type<<" ";
     else
       if (r1.find("->")==std::string::npos)
 	f<<"item->";
@@ -732,8 +734,6 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     r2 = genRExprBit(n->rExprSecond,f,name,act);
     if (act==REG && TYPE!="int")
       f<<"  "<<TYPE<<" "<<r2<<";\n";
-    if (act==REG)
-      f<<"  "<<TYPE<<" "<<r1<<";\n";
     res.append(r1);
     res.append(comparison);    
     res.append(r2);
@@ -784,14 +784,14 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
 {
   f<<"obj_"<<name<<" new_"<<name<<"(";
-    
+  clearNames();    
   genMethodArgs(n->sig->fArguments,f,name,NOTAMETHODDEF);
   f<<") {\n";
   std::string argName="  item";
   f<<"  obj_"<<name<<" "<<argName<<" = (obj_"<<name<<")\n";
   f<<"  malloc(sizeof(struct obj_"<<name<<"_struct));\n";
   f<<"  item->clazz = the_class_"<<name<<";\n";
-  clearNames();
+
   for (statementNode &s : n->classBody->statements->list) {
     TYPE="";
     genStatement(&s,f,NOTYPE);
