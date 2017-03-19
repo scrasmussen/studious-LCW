@@ -446,34 +446,40 @@ void genFuncPointers(std::string ext, std::vector<std::string> defined, std::ofs
 
 void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
 {
-  f<<"struct class_"<<name<<"_struct {\n";
+  if (act!=STOP)
+    f<<"struct class_"<<name<<"_struct {\n";
   // Generate guaranteed built in methods
     // Constructor Function Pointer
-  f<<"  obj_"<<name<<" (*constructor) (";
-  genMethodArgTypes(n->sig->fArguments,f);
-  f<<");\n";
+  if (act!=STOP) {
+    f<<"  obj_"<<name<<" (*constructor) (";
+    genMethodArgTypes(n->sig->fArguments,f);
+    f<<");\n";
+  }
   // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
 
   std::vector<std::string> defined;
-
-  f<<"  // class's methods\n";
+  if (act!=STOP)
+    f<<"  // class's methods\n";
   for (methodNode m : n->classBody->methods->list) {
     std::string single, className=name, methodName=m.name;
     single = className+"_method_"+methodName;
     defined.push_back(m.name);
     singleton.push_back(single);
 
-    f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
-    // Generate method arg types
-    genMethodArgTypes(m.fArguments,f);
-    f<<");\n";
+    if (act!=STOP) {
+      f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
+      // Generate method arg types
+      genMethodArgTypes(m.fArguments,f);
+      f<<");\n";
+    }
   }
 
   // Builtin Classes
-  std::string ext = n->sig->extends;
-  genFuncPointers(ext, defined, f);
-  
-  f<<"};\n";
+  if (act!=STOP) {
+    std::string ext = n->sig->extends;
+    genFuncPointers(ext, defined, f);
+    f<<"};\n";
+  }
 }
 
 // Generate the lExpr, can only be IDENT or R_Expr.IDENT
@@ -821,8 +827,8 @@ void genSingleton(classNode *n, std::ofstream &f, char const *name)
 void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
 {
   singleton.clear();
-  // THIS WILL BE THE FUNCTION POINTERS
-  genClassFuncPointerStruct(n,f,name,act);
+  // FUNCTION POINTERS procuded other places but need the vec string info, hence STOP
+  genClassFuncPointerStruct(n,f,name,STOP);
 
   // THIS WILL BE THE STRUCT
   if (n->classBody!=NULL && n->classBody->statements!=NULL) {
@@ -839,13 +845,7 @@ void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
 }
 
 void genClass(classNode *n, std::ofstream &f, int act, int sigsfirst) //NEWART
-//void genClass(classNode *n, std::ofstream &f, int act)
 {
-  // if (n->sig != NULL)
-  //   genSignature(n, f, act);
-
-  // if (n->classBody != NULL)
-  //   genStructs(n, f, n->sig->name, act);
   if (sigsfirst==1) {
     genSignature(n, f, act);
   }
@@ -854,23 +854,6 @@ void genClass(classNode *n, std::ofstream &f, int act, int sigsfirst) //NEWART
   }
   f<<std::endl;
 }
-/*
--  if (n->sig != NULL)
-+  if (sigsfirst==1)
-genSignature(n, f, act);
--  f<<std::endl;
--  if (n->classBody != NULL)
-+  else if (sigsfirst==2) { //GENFUNCPOINTERS
-    +    genClassFuncPointerStruct(n,f,n->sig->name,act);
-    +  }
-+  else {
-  genStructs(n, f, n->sig->name, act);
-  +  }
-+
-+  f<<std::endl;*/
-
-
-
 
 void genProgram(ProgramNode *n, std::ofstream &f, int act)
 {
@@ -880,15 +863,12 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
     f<<"#include \"Builtins.h\"\n\n";
   }
 
-  // if (act==GENCLASSES)
-  //   for (auto &c : n->classes.list)
-  //     genClass(&c, f, act);
   int sigsfirst=1;
   if (act==GENCLASSES) {
     for (auto &c : n->classes.list)
       genClass(&c, f, act, sigsfirst);
-    // for (auto &c : n->classes.list)
-    //   genClass(&c, f, act, 2);
+    for (auto &c : n->classes.list)
+      genClassFuncPointerStruct(&c,f,c.sig->name,act);
     if (n->classes.list.empty()==true)
       std::cout<<"GGG GOT TO STEP UP\n";
     sigsfirst=0;
@@ -913,9 +893,6 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 }
 
 void generate(std::string fileName){
-  // fileName = fileName.substr(0,fileName.size()-3);
-  // fileName = fileName.substr(fileName.find_last_of("\\/")+1,fileName.size());
-  // fileName = fileName + ".c";
   std::ofstream f(fileName);
 
   if (!f.is_open())
