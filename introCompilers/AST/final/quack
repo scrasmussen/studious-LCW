@@ -1,0 +1,11 @@
+#!/bin/bash
+C=gcc
+CFLAGS=-w
+
+quackCompiler $1
+FILENAME=$(basename "$1")
+FILENAME="${FILENAME%.*}"
+echo ${C} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
+${C} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
+echo ./${FILENAME}
+./${FILENAME}
