@@ -339,5 +339,6 @@ symbol searchTillRoot(symTable *,symbol);
 std::string getReturnType(std::string);
 std::string getArgTypes(std::string);
 extern ProgramNode *root;
+extern int errornum;
 #endif
 	
