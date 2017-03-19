@@ -133,7 +133,7 @@ void checkArgTypes(rExprNode *n) {
   // std::string type = n->sTable->getType(n->name);
   std::string argTypes = getArgTypes(type);
   if (argTypes!=argString) {
-    // std::cout<<argTypes<<" does not match "<<argString<<" at "<<linenum<<std::endl;
+    //std::cout<<argTypes<<" does not match "<<argString<<" at "<<linenum<<std::endl;
     // ARTLESS: ADD ERROR MESSAGE
     // error("Argument types do not match function or method", linenum);
   }
@@ -690,7 +690,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
           }
           //std::cout<<std::endl<<newSym.name<<newSym.type<<"--------- "<<std::endl;
           if (newSym1.type==""&& b.type!=""&&act==CHECKOBJECT) {
-             std::string total = "Method: \""+b.name+"\" is not valid member of this object: " + newSym.name;
+             std::string total = "Method: \""+b.name+"\" is not valid member of this object: " + newSym.name+" as it's type is "+ newSym.type;
              error(total.c_str(), n->linenum);
           }
           else if(newSym1.type!="") {
@@ -811,15 +811,19 @@ void checkMethod(methodNode* n, std::vector<char const*> *classNames,  int act)
 
     }
     
-    if (n->fArguments!=NULL)
+    /*if (n->fArguments!=NULL)
       n->fArguments->sTable=n->sTable;
     if (n->statementBlock!=NULL)
-      n->statementBlock->sTable=n->sTable; 
+      n->statementBlock->sTable=n->sTable;  */
   }
-  if (n->fArguments!=NULL)
+  if (n->fArguments!=NULL) {
+      if (act==BUILDSYMBOLTABLE) n->fArguments->sTable=n->sTable;
     checkFormalArguments(n->fArguments, classNames, act);
-  if (n->statementBlock!=NULL)
+  }
+  if (n->statementBlock!=NULL) {
+      if (act==BUILDSYMBOLTABLE)  n->statementBlock->sTable=n->sTable; 
     checkStatementBlock(n->statementBlock, classNames, act);
+  }
 
   if (act==CHECKRETURNTYPE) {
     // std::cout<<getReturnType(n)<<std::endl;
@@ -945,8 +949,31 @@ void checkClassBody(classBodyNode * n, std::vector<char const*> *classNames, int
               }
               i++;
               lca=leastCommonAnc(prev,current); 
-              //std::cout<<lca<<"| lca "<<i<<std::endl;
-              if (returnType!=lca) error("Method returning wrong type",s.linenum);
+              //m.sTable->print();
+              symbol sym;
+              sym.name=lca; 
+              sym=m.sTable->lookup(sym);
+              //std::cout<<sym.name<<"-------------|"<<std::endl;
+              if (sym.type!="") lca=sym.type;
+              //std::cout<<prev<<"-------------|"<<current<<"|"<<lca<<"| lca "<<i<<std::endl;
+              
+              std::string total = "Method \""+std::string(m.name)+"\" returning wrong type \""+lca+"\" instead of \""+returnType+"\" ";
+              
+              if (returnType!=lca) error(total,s.linenum);
+              else{
+                 sym.name=std::string(m.name); 
+                 sym=searchTillRoot(n->sTable->prev,sym);
+                 if (sym.type!=""){
+                    //n->sTable->print();  
+                    std::string newRetType=getReturnType(sym.type);
+                    lca=leastCommonAnc(returnType,newRetType); 
+                    if (lca!=newRetType){
+                       //std::cout<<returnType<<newRetType<<sym.type<<std::endl; 
+                       total = "Overriding Method \""+std::string(m.name)+"\" is violating covariance rule as return type \""+returnType+"\" is a supertype instead of subtype of \""+newRetType+"\" ";
+                       error(total,s.linenum);
+                    }
+                 }
+              }
 	  }
 	}
       }

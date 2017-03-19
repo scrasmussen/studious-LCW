@@ -13,6 +13,7 @@ QNAME=bad_init
 QNAME=Sqr
 QNAME=Sqr22
 QNAME=robot
+QNAME=$(TD)/covarAndContra
 QFILE=$(QNAME).qk
 
 CFLAGS=-std=c++11 -g

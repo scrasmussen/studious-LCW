@@ -128,7 +128,7 @@ struct returnInfo {
 
 struct argumentNode {
 argumentNode(): name(NULL), type(NULL), sTable(NULL){}
-  ~argumentNode(){if (sTable) delete sTable;}
+  //~argumentNode(){if (sTable) delete sTable;}
   char const* name="";
   char const* type;
   int linenum;
@@ -138,14 +138,14 @@ argumentNode(): name(NULL), type(NULL), sTable(NULL){}
 
 struct argumentsNode {
 argumentsNode(): sTable(NULL) {}
-  ~argumentsNode(){if (sTable) delete sTable;}
+  //~argumentsNode(){if (sTable) delete sTable;}
   std::vector<argumentNode *> list;
   symTable *sTable;
 };
 
 struct formalArgumentsNode {
 formalArgumentsNode(): name(NULL), type(NULL), sTable(NULL) {}
-  ~formalArgumentsNode(){if (sTable) delete sTable;}
+  //~formalArgumentsNode(){if (sTable) delete sTable;}
   char const* name="";
   char const* type;
   std::vector<argumentNode *> list;
@@ -154,7 +154,7 @@ formalArgumentsNode(): name(NULL), type(NULL), sTable(NULL) {}
 
 struct classSignatureNode {
 classSignatureNode(): extends(NULL), fArguments(NULL), sTable(NULL) {}
-  ~classSignatureNode(){if (sTable) delete sTable;}
+  //~classSignatureNode(){if (sTable) delete sTable;}
   char const* name;
   char const* extends;
   formalArgumentsNode *fArguments; 
@@ -163,7 +163,7 @@ classSignatureNode(): extends(NULL), fArguments(NULL), sTable(NULL) {}
 
 struct classSigExtendsNode {
 classSigExtendsNode(): extends(NULL), sTable(NULL) {}
-  ~classSigExtendsNode(){if (sTable) delete sTable;}
+  //~classSigExtendsNode(){if (sTable) delete sTable;}
   char const* extends;
   symTable *sTable; 
 };
@@ -173,7 +173,7 @@ class lExprNode;
 
 struct rExprNode {
 rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL), sTable(NULL), name(NULL) {linenum=-1;}
-  ~rExprNode(){if (sTable) delete sTable;}
+  //~rExprNode(){if (sTable) delete sTable;}
   int val;
   const char* str = "";
   const char* name = "";
@@ -187,21 +187,21 @@ rExprNode() : rExprFirst(NULL), rExprSecond(NULL), lExpr(NULL), actualArgs(NULL)
 
 struct rExprsNode {
 rExprsNode() : sTable(NULL) {}
-  ~rExprsNode(){if (sTable) delete sTable;}
+  //~rExprsNode(){if (sTable) delete sTable;}
   std::vector<rExprNode*> list;
   symTable *sTable; 
 };
 
 struct actualArgsNode{
 actualArgsNode() : sTable(NULL){}
-  ~actualArgsNode(){if (sTable) delete sTable;}
+  //~actualArgsNode(){if (sTable) delete sTable;}
   std::vector<rExprNode*> list;
   symTable *sTable; 
 };
 
 struct lExprNode {
 lExprNode(): rExpr(NULL), sTable(NULL) {}
-  ~lExprNode(){if (sTable) delete sTable;}
+  //~lExprNode(){if (sTable) delete sTable;}
   const char* str;
   const char* name;
   int linenum;
@@ -219,28 +219,28 @@ statementBlockNode() : statements(NULL), sTable(NULL) {}
 
 struct elifNode {
 elifNode() : rExpr(NULL), statementBlock(NULL), sTable(NULL) {}
-  ~elifNode(){if (sTable) delete sTable;}
+  //~elifNode(){if (sTable) delete sTable;}
   rExprNode* rExpr;
   statementBlockNode  *statementBlock;
   symTable *sTable; 
 };
 
 struct elifsNode {
-  ~elifsNode(){if (sTable) delete sTable;}
+  //~elifsNode(){if (sTable) delete sTable;}
   std::vector<elifNode*> list;
   symTable *sTable; 
 };
 
 struct methodReturnNode {
 methodReturnNode() : sTable(NULL) {}
-  ~methodReturnNode(){if (sTable) delete sTable;}
+  //~methodReturnNode(){if (sTable) delete sTable;}
   symTable *sTable;
   const char* name="";
 };
 
 struct methodNode {
 methodNode() : statementBlock(NULL), fArguments(NULL), sTable(NULL) {}
-  ~methodNode(){if (sTable) delete sTable;}
+  //~methodNode(){if (sTable) delete sTable;}
   statementBlockNode  *statementBlock;
   formalArgumentsNode* fArguments;
   symTable *sTable; 
@@ -251,14 +251,14 @@ methodNode() : statementBlock(NULL), fArguments(NULL), sTable(NULL) {}
 
 struct methodsNode {
 methodsNode() : sTable(NULL) {}
-  ~methodsNode(){if (sTable) delete sTable;}
+  //~methodsNode(){if (sTable) delete sTable;}
   std::vector<methodNode> list;
   symTable *sTable; 
 };
 
 struct elseNode {
 elseNode() : statementBlock(NULL), sTable(NULL) {}
-  ~elseNode(){if (sTable) delete sTable;}
+  //~elseNode(){if (sTable) delete sTable;}
   statementBlockNode  *statementBlock;
   symTable *sTable; 
 };
@@ -282,14 +282,14 @@ statementNode() : str(NULL),name(NULL),rExpr(NULL), lExpr(NULL), stblock(NULL), 
 
 struct statementsNode {
 statementsNode() : sTable(NULL) {}
-  ~statementsNode(){if (sTable) delete sTable;}
+  //~statementsNode(){if (sTable) delete sTable;}
   std::vector<statementNode> list;
   symTable *sTable; 
 };
 
 struct classBodyNode {
 classBodyNode() : statements(NULL), methods(NULL), sTable(NULL) {}
-  ~classBodyNode(){if (sTable) delete sTable;}
+  //~classBodyNode(){if (sTable) delete sTable;}
   const char* name="classBodyNode";
   statementsNode* statements;
   methodsNode* methods;
@@ -298,7 +298,7 @@ classBodyNode() : statements(NULL), methods(NULL), sTable(NULL) {}
 
 struct classNode {
 classNode() : sig(NULL), classBody(NULL), sTable(NULL) {}
-  ~classNode(){if (sTable) delete sTable;}
+  //~classNode(){if (sTable) delete sTable;}
   classSignatureNode* sig;
   classBodyNode* classBody;
   symTable *sTable;
@@ -307,7 +307,7 @@ classNode() : sig(NULL), classBody(NULL), sTable(NULL) {}
 
 struct classesNode {
 classesNode() : sTable(NULL) {}
-  ~classesNode(){if (sTable) delete sTable;}
+  //~classesNode(){if (sTable) delete sTable;}
   std::vector<classNode> list;
   symTable *sTable; 
 };
@@ -315,7 +315,7 @@ classesNode() : sTable(NULL) {}
 
 struct ProgramNode {
 ProgramNode() : sTable(NULL) {}
-  ~ProgramNode(){if (sTable) delete sTable;}
+  //~ProgramNode(){if (sTable) delete sTable;}
   classesNode classes;
   statementsNode statements;
   symTable *sTable; 
