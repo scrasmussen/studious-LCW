@@ -40,8 +40,13 @@ int main(int argc, char*argv[]) {
   // set flex to read from it instead of defaulting to STDIN:
   yyin = f;
   if (yyparse() == 0) {
-    std::cout << "Finished parse with no errors\n";
+    // std::cout << "Finished parse with no errors\n";
   }
+  else {
+    std::cout<<"File contained parse errors, not generating C file\n";
+    return 1;
+  }
+    
 
   /* === TRAVERSAL ACTIONS === */
   traverse(CHECKCLASSHIERARCHY);
@@ -64,10 +69,10 @@ int main(int argc, char*argv[]) {
   //traverse(PRINTST);
 
   if (errornum>0) {
-    std::cout<<"File contained errors, writing empty file\n";
-    std::ofstream f(fileName);
-    f<<"int main() {}\n";
+    std::cout<<"File contained errors, not generating C file\n";
+    return 1;
   }
   else
     generate(fileName);
+  return 0;
 }

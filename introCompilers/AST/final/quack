@@ -2,7 +2,13 @@
 CC=gcc
 CFLAGS=-w
 
-quackCompiler $1
+if quackCompiler $1; then
+    :
+else
+    echo "===ERROR==="
+    exit
+fi
+
 FILENAME=$(basename "$1")
 FILENAME="${FILENAME%.*}"
 echo ${CC} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}

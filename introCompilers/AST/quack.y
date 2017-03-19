@@ -577,7 +577,7 @@ R_Expr
   rN->rExprFirst=$2; 
   rN->rExprSecond=NULL;
   rN->name="";
-  rN->str="FIRTBRACE";
+  rN->str="FIRSTBRACE";
   //rN->str="const"; 
   $$=rN;
   msg("R_Expr: ( R_Expr )");}

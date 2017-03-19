@@ -803,7 +803,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
   }
 
   if (!found)
-    f<<"===ARTLESS:"<<n->str<<std::endl;
+    f<<"===ARTLESS:"<<n->str<<":"<<std::endl;
   return "";
 }
 
@@ -941,5 +941,4 @@ void generate(std::string fileName){
 
   f.close();
   if (Q) std::cout<<"Fin Generate"<<std::endl;
-  std::cout<<"Fin Generate of "<<fileName<<std::endl;
 }
