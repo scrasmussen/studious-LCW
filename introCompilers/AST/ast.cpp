@@ -64,7 +64,7 @@ int main(int argc, char*argv[]) {
   //traverse(PRINTST);
 
   if (errornum>0) {
-    std::cout<<"There are errors, writing empty file\n";
+    std::cout<<"File contained errors, writing empty file\n";
     std::ofstream f(fileName);
     f<<"int main() {}\n";
   }
