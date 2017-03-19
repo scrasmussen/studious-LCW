@@ -86,6 +86,45 @@ void genTheClassExternLine(std::ofstream &f,char const* name) {
   f<<"extern class_"<<name<<" the_class_"<<name<<";\n";
 }
 
+void genRecStatements(std::ofstream &f, statementNode *s) {
+
+  if (strcmp(s->str,"IF")==0 || strcmp(s->str,"WHILE")==0) {
+    for (statementNode nextS :  s->stblock->statements->list) {
+      genRecStatements(f,&nextS);
+    }
+    if (s->elifs!=NULL) {
+      for (elifNode *e : s->elifs->list) {
+    	for (statementNode nextS :  e->statementBlock->statements->list) {
+    	  genRecStatements(f,&nextS);
+    	}
+      }
+    }
+    if (s->elseN!=NULL) {
+      for (statementNode nextS :  s->elseN->statementBlock->statements->list) {
+	genRecStatements(f,&nextS);
+      }
+    }
+
+  }
+
+
+  if (strcmp(s->str,"ASSIGN")==0) {
+    char const *blank="[A1]";
+    // getting writ in here somewhere   TESTART
+    std::string r1 = genLExprBit(s->lExpr, f, blank, "[B]",JUSTTYPE);
+    std::string r2 = genRExprBit(s->rExpr, f, "[C]",JUSTTYPE);
+    symbol sym;
+    sym.name=r2;
+    sym=s->sTable->lookup(sym);
+    if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
+      currentNames.push_back(r2);
+      if (sym.type!="")
+	f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
+    }
+  }
+}
+
+
 void genClassArgLines(std::ofstream &f, classNode *n) {
   f<<"typedef struct obj_"<<n->sig->name<<"_struct {\n";
   f<<"  class_"<<n->sig->name<<" clazz;\n";
@@ -99,21 +138,7 @@ void genClassArgLines(std::ofstream &f, classNode *n) {
     currentNames.push_back(aName);
     }*/
   for (statementNode s :  n->classBody->statements->list) {
-    if (strcmp(s.str,"ASSIGN")==0) {
-      char const *blank="[A1]";
-      // getting writ in here somewhere   TESTART
-      std::string r1 = genLExprBit(s.lExpr, f, blank, "[B]",JUSTTYPE);
-      std::string r2 = genRExprBit(s.rExpr, f, "[C]",JUSTTYPE);
-	    
-      symbol sym;
-      sym.name=r2;
-      sym=s.sTable->lookup(sym);
-      if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
-	currentNames.push_back(r2);
-	if (sym.type!="")
-	  f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
-      }
-    }
+    genRecStatements(f,&s);
   }
   
   f<<"\n} * obj_"<<n->sig->name<<";\n";
@@ -492,6 +517,7 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
 std::string genLExprBit(lExprNode *n, std::ofstream &f, char const *name, std::string argName, int act)
 {
   std::string res="";
+
   if (strcmp(n->str,"")==0) {
     res.append(n->name);
     return res;
