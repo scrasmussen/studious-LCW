@@ -7,7 +7,7 @@
 #include "Generate.h"
 
 int Q=0;
-int FIN=1;
+int FIN=0;
 int var=0;
 std::string TYPE;
 std::vector<std::string> currentNames, tmpNames, singleton;

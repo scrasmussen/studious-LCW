@@ -2,10 +2,11 @@
 CC=gcc
 CFLAGS=-w
 
+# If everything compiled correctly generate c code, else stop
 if quackCompiler $1; then
     :
 else
-    echo "===ERROR==="
+    :
     exit
 fi
 
