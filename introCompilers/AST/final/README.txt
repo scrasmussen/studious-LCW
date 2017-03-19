@@ -11,7 +11,8 @@ Soren Rasmussen
 
 Step 1
 ======
-To compile all required files enter the following command. All needed files are copied and compiled.
+To compile all required files enter the following command. All the required
+files are copied and compiled.
 
 shell$ make
 
@@ -26,4 +27,7 @@ shell$ ./quack path/to/file/[test.file]
 =======
 DETAILS
 =======
-The quack compiler is the binary named "quackCompiler". "quack" is a bash script that 
+The quack compiler is the binary named "quackCompiler". "quack" is a bash script
+that internally calls "quackCompiler" on [test.qk], compiles the generated [test.c], and runs
+the resulting [test] binary.
+
