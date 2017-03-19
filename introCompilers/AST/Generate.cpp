@@ -558,9 +558,6 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     res.append(cleanString(r3));
 
     type="";
-    // LESSART
-    // if (act==NOTYPE)
-    //   return res;
 
     // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
@@ -823,6 +820,7 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 
 void generate(std::string fileName){
   fileName = fileName.substr(0,fileName.size()-3);
+  fileName = fileName.substr(fileName.find_last_of("\\/")+1,fileName.size());
   fileName = fileName + ".c";
   std::ofstream f(fileName);
 
