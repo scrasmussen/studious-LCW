@@ -91,19 +91,20 @@ void genClassArgLines(std::ofstream &f, classNode *n) {
   f<<"  class_"<<n->sig->name<<" clazz;\n";
 
   clearNames();
+  // Probs DO NOT NEED THIS
+  /*
   for (auto a :  n->sig->fArguments->list) {
     std::string aName = a->name;
     f<<"  obj_"<<a->type<<" "<<aName<<";\n";
     currentNames.push_back(aName);
-  }
-
+    }*/
   for (statementNode s :  n->classBody->statements->list) {
     if (strcmp(s.str,"ASSIGN")==0) {
       char const *blank="[A1]";
+      // getting writ in here somewhere   TESTART
       std::string r1 = genLExprBit(s.lExpr, f, blank, "[B]",JUSTTYPE);
       std::string r2 = genRExprBit(s.rExpr, f, "[C]",JUSTTYPE);
 	    
-
       symbol sym;
       sym.name=r2;
       sym=s.sTable->lookup(sym);
@@ -132,9 +133,12 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
       currentNames.push_back(r1);
     }
     if (act!=NOTYPE)
-      f<<type;
+      f<<type<<" ";
+    else
+      if (r1.find("->")==std::string::npos)
+	f<<"item->";
     
-    f<<" "<<r1;
+    f<<r1;
     f<<"=";
     f<<r2;
     f<<";\n";
@@ -519,7 +523,6 @@ std::string genActualArgsBit(actualArgsNode *n,std::ofstream &f,char const *name
     else
       s.append(",");
     s.append(genRExprBit(e,f,name,REG));
-    //std::cout<<"ART"<<s<<std::endl;
   }
   return s;
 }
@@ -566,24 +569,34 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     type="";
  // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
-      type = "obj_TYPE";
       if(r1.find("->")!=std::string::npos) {
         std::string temp=r1.substr(r1.find("->")+2,r1.length());
-        //std::cout<<temp<<std::endl;
         symbol sym;
         sym.name=temp;
         //if (n->sTable->prev !=NULL) n->sTable->prev->print();
         sym=n->sTable->lookup(sym);
-        f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";";
+        f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";\n";
         type=sym.type;
       }
       else {
-//todo
         symbol sym;
         sym.name=r1;
         sym=n->sTable->lookup(sym);
         //std::cout<<r1<<"|"<<r1.find("->")<<"---------"<<sym.type<<std::endl;
-        f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";";
+	if (act==JUSTTYPE) {
+	  // need to check both r1 and r3 to see if they need to be added to struct
+	  symbol r;
+	  r.name=r1;
+	  r=n->sTable->lookup(r);
+	  if (r1==cleanString(r1))
+	    f<<std::endl<<"  obj_"<<r.type<<" "<<r1<<";\n";
+	  r.name=r3;
+	  r=n->sTable->lookup(r);
+	  if (r3==cleanString(r3))
+	    f<<std::endl<<"  obj_"<<r.type<<" "<<r3<<";\n";
+	}
+	else
+	  f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";\n";
         type=sym.type;
 
       }
@@ -782,7 +795,6 @@ void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
   for (statementNode &s : n->classBody->statements->list) {
     TYPE="";
     genStatement(&s,f,NOTYPE);
-    //genStatement(&s,f,REG); // NEWART
   }
 
   f<<"  return item;\n";
@@ -844,7 +856,7 @@ void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"class_"<<name<<" the_class_"<<name<<" = "<<"&the_class_"<<name<<"_struct;\n";
 }
 
-void genClass(classNode *n, std::ofstream &f, int act, int sigsfirst) //NEWART
+void genClass(classNode *n, std::ofstream &f, int act, int sigsfirst)
 {
   if (sigsfirst==1) {
     genSignature(n, f, act);
