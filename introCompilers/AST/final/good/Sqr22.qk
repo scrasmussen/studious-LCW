@@ -1,0 +1,34 @@
+/*
+ *  Demonstrates that the statement block of the main program works.
+ *  Constructors and PLUS methods are generated and called correctly.
+ *  Generated code compiles correctly but seg faults when calling a method. This
+ *  is a C code bug, not a code generation problem.
+ */
+
+class Pt(x: Int, y: Int) {
+ this.x = x;
+ this.y = y; 
+ def PLUS(other: Pt):Pt {
+      return Pt(this.x+other.x, this.y+other.y); 
+ }
+}
+
+class Rect(x: Int, y: Int) extends Pt {
+  this.x = x;
+  this.y = y;	
+  def PLUS(other: Pt) : Rect {
+      return  Rect(this.x+other.x, this.x+other.y);
+  }
+}
+
+x=1;
+y=2;
+pt3=Pt(4,5);
+pt1 = Pt(x,y); 
+pt2 = Pt(y,x); 
+pt3 = pt1 + pt2;
+r1 = Rect(x,y);
+r2 = Rect(y,x);
+r3 = Rect(4,2);
+r3 = r1 + r2;
+
