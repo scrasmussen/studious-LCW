@@ -2,13 +2,15 @@
  *  Demonstrates inheritance and some math statements
  * 
  */
+
+
 class Robot() {
     this.name = "Bozotron";
     this.age = 42;
     this.strength = 100;
 
-    def destroy_city(fierceness: Int ) {
-    	/* TBD: how do we actually destroy things? */
+    def destroy_city() {
+       " printing from method \n ".PRINT();
     }
 }
 
@@ -19,3 +21,6 @@ class SmartRobot(iq: Int) extends Robot {
     this.strength = 101;
     this.iq = 4 * this.age;
 }
+
+rob=Robot();
+rob.destroy_city();

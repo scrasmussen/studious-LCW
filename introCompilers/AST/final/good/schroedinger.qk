@@ -3,13 +3,20 @@
 */
 
 class Schroedinger(box: Int) {
-    if (box > 0) {
+    box.PRINT();
+    "\n".PRINT();
+    if (box < -1) {
        this.living = 1;
+       this.living.PRINT();
+       "\n".PRINT();
     }
-    elif (box < 0) {
-       this.is = 71;
+    elif (box < 6) {
+      this.is = 71;
     }   
     else {
        this.dead = 0;
     }
 }
+
+ x=-5;
+ sc1=Schroedinger(x);

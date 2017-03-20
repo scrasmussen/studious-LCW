@@ -1,8 +1,8 @@
 /*
  *  Demonstrates that the statement block of the main program works.
  *  Constructors and PLUS methods are generated and called correctly.
- *  Generated code compiles correctly but seg faults when calling a method. This
- *  is a C code bug, not a code generation problem.
+ *  Generated code compiles correctly and runs smoothly.
+ *  
  */
 
 class Pt(x: Int, y: Int) {

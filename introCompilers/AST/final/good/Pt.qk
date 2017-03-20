@@ -1,3 +1,7 @@
+/* this program demonstrates that this compiler is capable 
+*  of generating correct code for class, statements, mathmethical 
+*  calculation and also can print */
+
 class Pt(x: Int, y: Int) {
     this.x = x;
     this.y = y; 

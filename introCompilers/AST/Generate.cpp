@@ -117,9 +117,10 @@ void genRecStatements(std::ofstream &f, statementNode *s) {
     if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
       currentNames.push_back(r2);
       if (sym.type!="")
-	f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
+	f<<"  obj_"<<sym.type<<" "<<r1<<";\n"; 
+	//f<<"  "<<sym.type<<" "<<r1<<";\n"; //MONIL
       else {
-	if (TYPE=="int") TYPE="Int";
+	if (TYPE=="int" || TYPE=="obj_Int") TYPE="Int";
 	f<<"  obj_"<<TYPE<<" "<<r1<<";\n";
       }
     }
@@ -142,7 +143,7 @@ void genClassArgLines(std::ofstream &f, classNode *n) {
   for (statementNode s :  n->classBody->statements->list) {
     genRecStatements(f,&s);
   }
-  
+ 
   f<<"\n} * obj_"<<n->sig->name<<";\n";
 }
 
@@ -170,6 +171,7 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     f<<r1;
     f<<"=";
     if(TYPE=="obj_Int") r2="int_literal("+r2+")";
+    if(TYPE=="obj_String") r2="str_literal("+r2+")";
     f<<r2;
     f<<";\n";
     return res;
@@ -601,7 +603,16 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     res.append(cleanString(r3));
 
     type="";
-    //std::cout<<res<<std::endl;
+    //std::cout<<r1<<" "<<std::endl;
+    /*symbol newsym;
+    newsym.name=r1;
+    newsym=n->sTable->lookup(newsym);
+    //n->sTable->print();
+    if(newsym.tag=="INT_LIT" || newsym.tag=="STRING_LIT") {
+       f<<std::endl<<"  obj_"<<newsym.type<<" "<<"var"<<var<<";\n";
+       //r1="var"+var;
+       var+=1;
+    }*/ 
  // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
       if(r1.find("->")!=std::string::npos) {
@@ -646,7 +657,17 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 
     }
 
-    if (act!=JUSTTYPE)
+    symbol newsym;
+    newsym.name=r1;
+    newsym=n->sTable->lookup(newsym);
+    //n->sTable->print();
+    if(act!=JUSTTYPE&&(newsym.tag=="INT_LIT" || newsym.tag=="STRING_LIT")) {
+        f<<std::endl<<"  obj_"<<newsym.type<<" "<<"var"<<var<<";\n";
+        //r1="var"+var;
+        f<<std::endl<<"  "<<res<<" = "<<"var"<<var<<"->clazz->";
+        var+=1;
+    } 
+    else if (act!=JUSTTYPE)
       f<<std::endl<<"  "<<res<<" = "<<r1<<"->clazz->";
     // ===MONIL===
 
@@ -655,7 +676,11 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     if (strcmp(n->str,"MINUS")==0 && act!=JUSTTYPE) f<<"MINUS";
     if (strcmp(n->str,"TIMES")==0 && act!=JUSTTYPE) f<<"TIMES";
     if (strcmp(n->str,"DIVIDE")==0 && act!=JUSTTYPE) f<<"DIVIDE";
-    if (act!=JUSTTYPE) {
+    if( act!=JUSTTYPE&&(newsym.tag=="INT_LIT" || newsym.tag=="STRING_LIT")) {
+      f<<"(";
+      f<<"var"<<var-1<<","<<r3<<");\n";
+    }
+    else if (act!=JUSTTYPE) {
       f<<"(";
       f<<r1<<","<<r3<<");\n";
     }
@@ -759,35 +784,77 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 
   // in genRExprBit    
   if (strcmp(n->str,"LESS")==0 || strcmp(n->str,"MORE")==0 ||
-      strcmp(n->str,"ATLEAST")==0 || strcmp(n->str,"ATMOST")==0) {
+      strcmp(n->str,"ATLEAST")==0 || strcmp(n->str,"ATMOST")==0 ||strcmp(n->str,"EQUALS")==0) {
     std::string comparison;
     if (strcmp(n->str,"LESS")==0)
-      comparison = "<";
+      comparison = "->clazz->LESS(";
     if (strcmp(n->str,"MORE")==0)
-      comparison = ">";
+      //comparison = ">";
+      comparison = "->clazz->MORE(";
     if (strcmp(n->str,"ATLEAST")==0)
-      comparison = ">=";
+      //comparison = ">=";
+      comparison = "->clazz->ATLEAST(";
     if (strcmp(n->str,"ATMOST")==0)
-      comparison = "<=";
-
+      comparison = "->clazz->ATMOST(";
+      //comparison = "<=";
+    if (strcmp(n->str,"EQUALS")==0)
+      comparison = "->clazz->EQUALS(";
+ 
     
-    r1 = genRExprBit(n->rExprFirst,f,name,act);
+    //r1 = genRExprBit(n->rExprFirst,f,name,act);
+    if(strcmp(n->rExprFirst->str,"string_lit")==0 ) { 
+        r1 = "str_literal("+std::string(n->rExprFirst->name)+")";
+        //f<<"  "<<TYPE<<" "<<r2<<";\n";
+       if (strcmp(n->str,"EQUALS")==0)
+        r1 = "(obj_Obj) str_literal("+std::string(n->rExprFirst->name)+")";
+    }
+    else if(strcmp(n->rExprFirst->str,"int_lit")==0) { 
+        //r1 = std::string(n->rExprFirst->name);
+        r1 = "int_literal("+std::string(n->rExprFirst->name)+")";
+        if (strcmp(n->str,"EQUALS")==0)
+        r1 = "(obj_Obj) int_literal("+std::string(n->rExprFirst->name)+")";
+    }
+    else {
+        r1 = std::string(n->rExprFirst->lExpr->name);
+    }
+
+    if(strcmp(n->rExprSecond->str,"string_lit")==0 ) { 
+        r2 = "str_literal("+std::string(n->rExprSecond->name)+")";
+        //r2 = std::string(n->rExprSecond->name);
+         if (strcmp(n->str,"EQUALS")==0)
+        r2 = "(obj_Obj) str_literal("+std::string(n->rExprSecond->name)+")";
+   }
+    else if(strcmp(n->rExprSecond->str,"int_lit")==0) { 
+        r2 = "int_literal("+std::string(n->rExprSecond->name)+")";
+        //r2 = std::string(n->rExprSecond->name);
+        if (strcmp(n->str,"EQUALS")==0)
+        r2 = "(obj_Obj) (int_literal("+std::string(n->rExprSecond->name)+")";
+    }
+    else {
+        r2 = std::string(n->rExprSecond->lExpr->name);
+    }
+    
+    //std::cout<<r1<<std::endl;
+    //r1 = std::string(n->rExprFirst->lExpr->name);
+    //std::cout<<r1<<std::endl;
+    //r2 = std::string(n->rExprSecond->name);
     if (act==REG && TYPE!="int")
-      f<<"  "<<TYPE<<" "<<r1<<";\n";
-    r2 = genRExprBit(n->rExprSecond,f,name,act);
+      //f<<"  "<<TYPE<<" "<<r1<<";\n";
+    //r2 = genRExprBit(n->rExprSecond,f,name,act);
+    //r2 = n->rExprSecond->name;
     if (act==REG && TYPE!="int")
-      f<<"  "<<TYPE<<" "<<r2<<";\n";
+      //f<<"  "<<TYPE<<" "<<r2<<";\n";
     res.append(r1);
     res.append(comparison);    
-    res.append(r2);
+    res.append(r1+","+r2+")");
     return res;
   }
 
   if (strcmp(n->str,"FIRSTBRACE")==0) { //TODO TEST 
-    res.append("(");
+    res.append("");
     r1 = genRExprBit(n->rExprFirst,f,name,act);
     res.append(r1);
-    res.append(")");
+    res.append("");
     return res;
   }
 
