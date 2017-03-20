@@ -1,5 +1,5 @@
 /*
- *  Demonstrates inheritance and math 
+ *  Demonstrates inheritance and some math statements
  * 
  */
 class Robot() {
@@ -17,5 +17,5 @@ class SmartRobot(iq: Int) extends Robot {
     this.name = "Einsteinitron";  // OK, compatible
     this.age = 48;
     this.strength = 101;
-    this.iq = 2 * this.age;
+    this.iq = 4 * this.age;
 }
