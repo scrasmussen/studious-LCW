@@ -14,6 +14,8 @@ static int METHODDEF=11;
 static int NOTYPE=13;
 static int JUSTTYPE=17;
 static int REG=19;
+static int GENFUNCPOINTERS=23;
+static int STOP=29;
 
 void generate(std::string);
 std::string genRExprBit(rExprNode*,std::ofstream&,char const*, int);

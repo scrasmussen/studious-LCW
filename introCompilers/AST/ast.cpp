@@ -3,6 +3,7 @@
  */
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include "quack.tab.h"
 #include "lex.yy.h"
 #include "Node.h"
@@ -12,6 +13,7 @@ extern int yyparse();
 extern void yyrestart(FILE *f);
 extern void yyerror(const char *s);
 extern int yy_flex_debug;
+extern int errornum;
 
 extern struct ProgramNode *root;
 
@@ -24,6 +26,9 @@ int main(int argc, char*argv[]) {
 
   FILE *f = fopen(argv[1], "r");
   std::string fileName = argv[1];
+  fileName = fileName.substr(0,fileName.size()-3);
+  fileName = fileName.substr(fileName.find_last_of("\\/")+1,fileName.size());
+  fileName = fileName + ".c";
 
   // make sure it is valid:
   if (!f) {
@@ -35,11 +40,15 @@ int main(int argc, char*argv[]) {
   // set flex to read from it instead of defaulting to STDIN:
   yyin = f;
   if (yyparse() == 0) {
-    std::cout << "Finished parse with no errors\n";
+    // std::cout << "Finished parse with no errors\n";
   }
+  else {
+    std::cout<<"File contained parse errors, not generating C file\n";
+    return 1;
+  }
+    
 
   /* === TRAVERSAL ACTIONS === */
-  //traverse(PRINT);
   traverse(CHECKCLASSHIERARCHY);
   traverse(CHECKCONSTRUCTORCALLS);
   traverse(BUILDLCA);
@@ -58,7 +67,12 @@ int main(int argc, char*argv[]) {
   traverse(CHECKLOGIC);
   traverse(CHECKUNDEFINEDV);
   //traverse(PRINTST);
-  //generate();
-  //traverse(PRINTST);
-  generate(fileName);
+
+  if (errornum>0) {
+    std::cout<<"File contained errors, not generating C file\n";
+    return 1;
+  }
+  else
+    generate(fileName);
+  return 0;
 }

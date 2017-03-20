@@ -1,11 +1,18 @@
 #!/bin/bash
-C=gcc
+CC=gcc
 CFLAGS=-w
 
-quackCompiler $1
+# If everything compiled correctly generate c code, else stop
+if quackCompiler $1; then
+    :
+else
+    :
+    exit
+fi
+
 FILENAME=$(basename "$1")
 FILENAME="${FILENAME%.*}"
-echo ${C} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
-${C} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
+echo ${CC} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
+${CC} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
 echo ./${FILENAME}
 ./${FILENAME}

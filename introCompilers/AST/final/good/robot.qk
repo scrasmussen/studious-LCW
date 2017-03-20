@@ -1,0 +1,21 @@
+/*
+ *  Demonstrates inheritance and math 
+ * 
+ */
+class Robot() {
+    this.name = "Bozotron";
+    this.age = 42;
+    this.strength = 100;
+
+    def destroy_city(fierceness: Int ) {
+    	/* TBD: how do we actually destroy things? */
+    }
+}
+
+
+class SmartRobot(iq: Int) extends Robot {
+    this.name = "Einsteinitron";  // OK, compatible
+    this.age = 48;
+    this.strength = 101;
+    this.iq = 2 * this.age;
+}

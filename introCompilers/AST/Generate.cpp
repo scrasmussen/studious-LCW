@@ -86,36 +86,64 @@ void genTheClassExternLine(std::ofstream &f,char const* name) {
   f<<"extern class_"<<name<<" the_class_"<<name<<";\n";
 }
 
+void genRecStatements(std::ofstream &f, statementNode *s) {
+
+  if (strcmp(s->str,"IF")==0 || strcmp(s->str,"WHILE")==0) {
+    for (statementNode nextS :  s->stblock->statements->list) {
+      genRecStatements(f,&nextS);
+    }
+    if (s->elifs!=NULL) {
+      for (elifNode *e : s->elifs->list) {
+    	for (statementNode nextS :  e->statementBlock->statements->list) {
+    	  genRecStatements(f,&nextS);
+    	}
+      }
+    }
+    if (s->elseN!=NULL) {
+      for (statementNode nextS :  s->elseN->statementBlock->statements->list) {
+	genRecStatements(f,&nextS);
+      }
+    }
+
+  }
+  else if (strcmp(s->str,"ASSIGN")==0) {
+    char const *blank="[A1]";
+    // getting writ in here somewhere   TESTART
+    std::string r1 = genLExprBit(s->lExpr, f, blank, "[B]",JUSTTYPE);
+    std::string r2 = genRExprBit(s->rExpr, f, "[C]",JUSTTYPE);
+    symbol sym;
+    sym.name=r2;
+    sym=s->sTable->lookup(sym);
+    if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
+      currentNames.push_back(r2);
+      if (sym.type!="")
+	f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
+      else {
+	if (TYPE=="int") TYPE="Int";
+	f<<"  obj_"<<TYPE<<" "<<r1<<";\n";
+      }
+    }
+  }
+}
+
+
 void genClassArgLines(std::ofstream &f, classNode *n) {
   f<<"typedef struct obj_"<<n->sig->name<<"_struct {\n";
   f<<"  class_"<<n->sig->name<<" clazz;\n";
 
   clearNames();
+  // Probs DO NOT NEED THIS
+  /*
   for (auto a :  n->sig->fArguments->list) {
     std::string aName = a->name;
     f<<"  obj_"<<a->type<<" "<<aName<<";\n";
     currentNames.push_back(aName);
-  }
-
+    }*/
   for (statementNode s :  n->classBody->statements->list) {
-    if (strcmp(s.str,"ASSIGN")==0) {
-      char const *blank="[A1]";
-      std::string r1 = genLExprBit(s.lExpr, f, blank, "[B]",JUSTTYPE);
-      std::string r2 = genRExprBit(s.rExpr, f, "[C]",JUSTTYPE);
-	    
-
-      symbol sym;
-      sym.name=r2;
-      sym=s.sTable->lookup(sym);
-      if(std::find(currentNames.begin(), currentNames.end(), r1) == currentNames.end()) {
-	currentNames.push_back(r2);
-	if (sym.type!="")
-	  f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
-      }
-    }
+    genRecStatements(f,&s);
   }
   
-  f<<"} * obj_"<<n->sig->name<<";\n";
+  f<<"\n} * obj_"<<n->sig->name<<";\n";
 }
 
 std::string genStatement(statementNode *n, std::ofstream &f, int act)
@@ -131,10 +159,15 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
       type="  "+TYPE;
       currentNames.push_back(r1);
     }
-    if (!NOTYPE)
-      f<<type;
+
+    if (act!=NOTYPE)
+      if (r1.find("->")==std::string::npos)
+	f<<type<<" ";
+    else
+      if (r1.find("->")==std::string::npos)
+	f<<"item->";
     
-    f<<" "<<r1;
+    f<<r1;
     f<<"=";
     f<<r2;
     f<<";\n";
@@ -232,9 +265,8 @@ void genSignature(classNode *n, std::ofstream &f, int act)
   genClassArgLines(f,n);
 }
 
-void genMethodArgTypes(formalArgumentsNode *n, std::ofstream &f)
+void genMethodArgTypes(formalArgumentsNode *n, std::ofstream &f, int arity)
 {
-  int arity=0;
   for (argumentNode *a : n->list) {
     if (arity==0) {
       arity=1;
@@ -365,7 +397,6 @@ void genBuiltinFuncPointers(std::string ext, std::vector<std::string> defined, s
       f<<"  obj_Int (*DIVIDE) (obj_Int, obj_Int);\n";
       singleton.push_back(ext+midmeth+"DIVIDE");
     }
-    //    f<<"  obj_Int (*constructor) ( void );\n";
   }
 
   else if (ext=="Boolean") {
@@ -433,7 +464,7 @@ void genFuncPointers(std::string ext, std::vector<std::string> defined, std::ofs
 	    
 	    f<<"  obj_"<<m.returnType<<" (*"<<methName<<") (";
 	    // Generate method arg types
-	    genMethodArgTypes(m.fArguments,f);
+	    genMethodArgTypes(m.fArguments,f,0);
 	    f<<");\n";
 	  }
 	}
@@ -447,40 +478,48 @@ void genFuncPointers(std::string ext, std::vector<std::string> defined, std::ofs
 
 void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name, int act)
 {
-  f<<"struct class_"<<name<<"_struct {\n";
+  if (act!=STOP)
+    f<<"struct class_"<<name<<"_struct {\n";
   // Generate guaranteed built in methods
     // Constructor Function Pointer
-  f<<"  obj_"<<name<<" (*constructor) (";
-  genMethodArgTypes(n->sig->fArguments,f);
-  f<<");\n";
+  if (act!=STOP) {
+    f<<"  obj_"<<name<<" (*constructor) (";
+    genMethodArgTypes(n->sig->fArguments,f,0); 
+    f<<");\n";
+  }
   // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
 
   std::vector<std::string> defined;
-
-  f<<"  // class's methods\n";
+  if (act!=STOP)
+    f<<"  // class's methods\n";
   for (methodNode m : n->classBody->methods->list) {
     std::string single, className=name, methodName=m.name;
     single = className+"_method_"+methodName;
     defined.push_back(m.name);
     singleton.push_back(single);
-
-    f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
-    // Generate method arg types
-    genMethodArgTypes(m.fArguments,f);
-    f<<");\n";
+    if (act!=STOP) {
+      f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
+      // Generate method arg types
+      f<<"obj_"<<name;
+      genMethodArgTypes(m.fArguments,f,1); //TESTART
+      f<<");\n";
+    }
   }
 
+
   // Builtin Classes
-  std::string ext = n->sig->extends;
-  genFuncPointers(ext, defined, f);
-  
-  f<<"};\n";
+  if (act!=STOP) {
+    std::string ext = n->sig->extends;
+    genFuncPointers(ext, defined, f);
+    f<<"};\n";
+  }
 }
 
 // Generate the lExpr, can only be IDENT or R_Expr.IDENT
 std::string genLExprBit(lExprNode *n, std::ofstream &f, char const *name, std::string argName, int act)
 {
   std::string res="";
+
   if (strcmp(n->str,"")==0) {
     res.append(n->name);
     return res;
@@ -514,7 +553,6 @@ std::string genActualArgsBit(actualArgsNode *n,std::ofstream &f,char const *name
     else
       s.append(",");
     s.append(genRExprBit(e,f,name,REG));
-    //std::cout<<"ART"<<s<<std::endl;
   }
   return s;
 }
@@ -529,7 +567,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"string_lit:"<<res<<std::endl;
-    TYPE="char const *";
+    TYPE="String";
     return res;
   }
 
@@ -561,33 +599,43 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     type="";
  // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
-      type = "obj_TYPE";
       if(r1.find("->")!=std::string::npos) {
         std::string temp=r1.substr(r1.find("->")+2,r1.length());
-        //std::cout<<temp<<std::endl;
         symbol sym;
         sym.name=temp;
         //if (n->sTable->prev !=NULL) n->sTable->prev->print();
         sym=n->sTable->lookup(sym);
-        f<<std::endl<<"  Obj_"<<sym.type<<" "<<res<<";";
+        f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";\n";
         type=sym.type;
       }
       else {
-//todo
         symbol sym;
         sym.name=r1;
         sym=n->sTable->lookup(sym);
         //std::cout<<r1<<"|"<<r1.find("->")<<"---------"<<sym.type<<std::endl;
-        f<<std::endl<<"  Obj_"<<sym.type<<" "<<res<<";";
+	if (act==JUSTTYPE) {
+	  // need to check both r1 and r3 to see if they need to be added to struct
+	  symbol r;
+	  r.name=r1;
+	  r=n->sTable->lookup(r);
+	  if (r1==cleanString(r1))
+	    f<<std::endl<<"  obj_"<<r.type<<" "<<r1<<";\n";
+	  r.name=r3;
+	  r=n->sTable->lookup(r);
+	  if (r3==cleanString(r3))
+	    f<<std::endl<<"  obj_"<<r.type<<" "<<r3<<";\n";
+	}
+	else
+	  f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";\n";
         type=sym.type;
 
       }
       tmpNames.push_back(res);
 
     }
-    TYPE="obj_TYPE";
 
-    f<<std::endl<<"  "<<res<<" = "<<res<<"->clazz->";
+    if (act!=JUSTTYPE)
+      f<<std::endl<<"  "<<res<<" = "<<res<<"->clazz->";
     // ===MONIL===
 
  
@@ -644,7 +692,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     //std::cout<<n->str<<"-------- "<<std::endl;
     if (n->rExprFirst!=NULL) {
        symbol sym;
-       //std::cout<<n->rExprFirst->name<<"-------------"<<n->rExprFirst->str<<std::endl;
+       if (Q) std::cout<<n->rExprFirst->name<<"-------------"<<n->rExprFirst->str<<std::endl;
        if (strcmp(n->rExprFirst->str,"lexpr")!=0) {
           sym.name= std::string(n->rExprFirst->name); 
           sym=n->sTable->lookup(sym);
@@ -657,22 +705,22 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
           //f<<"  "<<"var"<<var<<"="<<sym.typesym.name<<";\n";
           var+=1; 
           if(strcmp(n->name,"PRINT")==0)
-          if (act!=JUSTTYPE) 
-             f<<"  var"<<(var-1)<<"->clazz->"<<n->name<<"("<<"var"<<(var-1)<<");\n";
-          else
-          if (act!=JUSTTYPE) 
-             f<<"  var"<<(var-1)<<"->clazz->"<<n->name<<"("<<r2<<");\n";
+	    if (act!=JUSTTYPE) 
+	      f<<"  var"<<(var-1)<<"->clazz->"<<n->name<<"("<<"var"<<(var-1)<<");\n";
+	    else
+	      if (act!=JUSTTYPE) 
+		f<<"  var"<<(var-1)<<"->clazz->"<<n->name<<"("<<r2<<");\n";
        }
        else {
           
           sym.name= std::string(n->rExprFirst->lExpr->name); 
           sym=n->sTable->lookup(sym);
           if (sym.type=="String" || sym.type=="Int") 
-          if (act!=JUSTTYPE) 
-          f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
-          else  
-          if (act!=JUSTTYPE) 
-          f<<"  "<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<std::string(n->rExprFirst->lExpr->name)<<");\n";
+	    if (act!=JUSTTYPE) 
+	      f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_Obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
+	    else  
+	      if (act!=JUSTTYPE) 
+		f<<"  "<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<std::string(n->rExprFirst->lExpr->name)<<");\n";
        }
     }
     else if (n->rExprFirst->lExpr->name!=NULL) {
@@ -713,8 +761,6 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     r2 = genRExprBit(n->rExprSecond,f,name,act);
     if (act==REG && TYPE!="int")
       f<<"  "<<TYPE<<" "<<r2<<";\n";
-    if (act==REG)
-      f<<"  "<<TYPE<<" "<<r1<<";\n";
     res.append(r1);
     res.append(comparison);    
     res.append(r2);
@@ -758,21 +804,21 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
   }
 
   if (!found)
-    f<<"===ARTLESS:"<<n->str<<std::endl;
+    f<<"===ARTLESS:"<<n->str<<":"<<std::endl;
   return "";
 }
 
 void genConstructor(classNode *n, std::ofstream &f, char const *name, int act)
 {
   f<<"obj_"<<name<<" new_"<<name<<"(";
-    
+  clearNames();    
   genMethodArgs(n->sig->fArguments,f,name,NOTAMETHODDEF);
   f<<") {\n";
   std::string argName="  item";
   f<<"  obj_"<<name<<" "<<argName<<" = (obj_"<<name<<")\n";
   f<<"  malloc(sizeof(struct obj_"<<name<<"_struct));\n";
   f<<"  item->clazz = the_class_"<<name<<";\n";
-  clearNames();
+
   for (statementNode &s : n->classBody->statements->list) {
     TYPE="";
     genStatement(&s,f,NOTYPE);
@@ -820,8 +866,8 @@ void genSingleton(classNode *n, std::ofstream &f, char const *name)
 void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
 {
   singleton.clear();
-  // THIS WILL BE THE FUNCTION POINTERS
-  genClassFuncPointerStruct(n,f,name,act);
+  // FUNCTION POINTERS procuded other places but need the vec string info, hence STOP
+  genClassFuncPointerStruct(n,f,name,STOP);
 
   // THIS WILL BE THE STRUCT
   if (n->classBody!=NULL && n->classBody->statements!=NULL) {
@@ -837,13 +883,15 @@ void genStructs(classNode *n, std::ofstream &f, char const *name, int act)
   f<<"class_"<<name<<" the_class_"<<name<<" = "<<"&the_class_"<<name<<"_struct;\n";
 }
 
-void genClass(classNode *n, std::ofstream &f, int act)
+void genClass(classNode *n, std::ofstream &f, int act, int sigsfirst)
 {
-  if (n->sig != NULL)
+  if (sigsfirst==1) {
     genSignature(n, f, act);
-  f<<std::endl;
-  if (n->classBody != NULL)
+  }
+  else {
     genStructs(n, f, n->sig->name, act);
+  }
+  f<<std::endl;
 }
 
 void genProgram(ProgramNode *n, std::ofstream &f, int act)
@@ -854,10 +902,20 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
     f<<"#include \"Builtins.h\"\n\n";
   }
 
-  if (act==GENCLASSES)
-  for (auto &c : n->classes.list)
-    genClass(&c, f, act);
+  int sigsfirst=1;
+  if (act==GENCLASSES) {
+    for (auto &c : n->classes.list)
+      genClass(&c, f, act, sigsfirst);
+    for (auto &c : n->classes.list)
+      genClassFuncPointerStruct(&c,f,c.sig->name,act);
+    if (n->classes.list.empty()==true)
+      std::cout<<"GGG GOT TO STEP UP\n";
+    sigsfirst=0;
+    for (auto &c : n->classes.list)
+      genClass(&c, f, act, sigsfirst);
+  }
 
+  
   
   if (act==GENSTATEMENTS) {
     clearNames();
@@ -874,9 +932,6 @@ void genProgram(ProgramNode *n, std::ofstream &f, int act)
 }
 
 void generate(std::string fileName){
-  fileName = fileName.substr(0,fileName.size()-3);
-  fileName = fileName.substr(fileName.find_last_of("\\/")+1,fileName.size());
-  fileName = fileName + ".c";
   std::ofstream f(fileName);
 
   if (!f.is_open())
@@ -886,5 +941,5 @@ void generate(std::string fileName){
   genProgram(root, f, GENSTATEMENTS);
 
   f.close();
-  std::cout<<"Fin Generate"<<std::endl;
+  if (Q) std::cout<<"Fin Generate"<<std::endl;
 }

@@ -1,0 +1,7 @@
+/*
+* math.qk demonstrates that the math functions work
+*/
+
+x = 2 + 4;
+y = 3 * x;
+z = x / 2;

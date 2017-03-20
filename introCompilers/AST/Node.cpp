@@ -1397,4 +1397,3 @@ void traverse(int act) {
     checkProgram(root, &emptyClassNames, CHECKUNDEFINEDV);
 }
 
-
