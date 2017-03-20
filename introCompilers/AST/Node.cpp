@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include <vector>
 #include "Node.h"
 int marker=0;
@@ -114,29 +115,141 @@ std::string getArgTypes(std::string type) {
 
 void checkArgTypes(rExprNode *n) {
   // std::cout<<n->str<<" "<<n->name<<": ";
-  std::string argString="(";
+  std::string argString="";
   int arity=0;
   int linenum=-1;
+  symbol sym;
   for (rExprNode *r : n->actualArgs->list) {
     arity=1;
-    std::string t = getArgType((std::string) r->name,(std::string)r->str,n->sTable);
-    argString+=t;
-    argString+=",";
+    //std::cout<<r->str<<r->linenum<<std::endl;
+    //if(
+    if (r->lExpr!=NULL) {
+      sym.name=std::string(r->lExpr->name); 
+      sym=r->sTable->lookup(sym);
+    }
+    else if(r->rExprFirst!=NULL) {
+      if(strcmp(r->rExprFirst->str,"method")==0){      
+        //std::cout<<r->rExprFirst->str<<std::endl;
+        sym.name=std::string(r->rExprFirst->name);
+        sym=r->sTable->lookup(sym);
+        sym.type=getReturnType(sym.type);
+      }
+      else if(strcmp(r->rExprFirst->str,"const")==0){      
+        //std::cout<<r->rExprFirst->str<<std::endl;
+        sym.name=std::string(r->rExprFirst->name);
+        sym=r->sTable->lookup(sym);
+        //sym.type=getreturntype(sym.type);
+      }
+      else {      
+        //std::cout<<r->rExprFirst->str<<std::endl;
+        sym.name=std::string(r->rExprFirst->lExpr->name);
+        sym=r->sTable->lookup(sym);
+        //sym.type=getreturntype(sym.type);
+      }
+    }
+    else {
+      //std::cout<<r->str<<std::endl;
+      sym.name=std::string(r->name);
+      sym=r->sTable->lookup(sym);
+    
+    }
+ 
+    //std::cout<<r->lExpr->name<<" asfas "<<sym.type<<std::endl;
+    //std::string t = getArgType((std::string) r->name,(std::string)r->str,n->sTable);
+    argString=sym.type+","+argString;
   }
   if (arity==1)
     argString.replace(argString.end()-1,argString.end(),"");
-  argString+=")";
-
+  argString="("+argString+")";
+  //std::reverse(argString.begin(),argString.end()); 
+ 
+  //MONIL
   // get line number
   linenum=n->linenum;
-  std::string type = getConstType(n->name, n->sTable);
-  // std::string type = n->sTable->getType(n->name);
-  std::string argTypes = getArgTypes(type);
-  if (argTypes!=argString) {
-    //std::cout<<argTypes<<" does not match "<<argString<<" at "<<linenum<<std::endl;
+  //std::cout<<argString<<" "<<linenum<<std::endl;
+  std::string name; 
+  if(std::string(n->str)=="method") name="Method";
+  else name="Constructor";
+
+  if(n->rExprFirst!=NULL)  {
+  sym.name=std::string(n->rExprFirst->lExpr->name);
+  sym=n->sTable->lookup(sym); 
+  for (auto &c : root->classes.list) {
+      if (sym.type.compare(c.sig->name)==0) {
+          sym.name=std::string(n->name);
+          sym = c.sTable->lookup(sym);
+          //c.sTable->print();
+          break;
+      }
+  }
+  //std::cout<<n->str<<" "<<sym.type<<std::endl;
+  }
+  else {
+  sym.name=std::string(n->name);
+  for (auto &c : root->classes.list) {
+      if (sym.name.compare(c.sig->name)==0) {
+          sym = c.sTable->lookup(sym);
+          break;
+      }
+  }
+  //std::cout<<n->str<<" "<<sym.type<<std::endl;
+  }
+  //n->sTable->print();
+  //n->sTable->prev->print();
+  std::string errorS="";
+  if(sym.type.find("->")!=std::string::npos) {
+     std::string temp=sym.type.substr(0,sym.type.find("->"));
+     int a = std::count(temp.begin(),temp.end(),',');
+     int b = std::count(argString.begin(),argString.end(),',');
+     if (temp.length()>2 && a==0) a=1;
+     else if (temp.length()>2 && a>0) a+=1;
+     if (argString.length()>2 && b==0) b=1;
+     else if (argString.length()>2 && b>0) b+=1;
+     //std::cout<<temp<<"  "<<argString<<" "<<a<<" "<<b<<std::endl;
+     if (b>a) errorS=name+" "+std::string(n->name)+" has given more argument than required" ;
+     else if(b<a) errorS=name+" "+std::string(n->name)+" has given less argument than required"; 
+     else if(temp==argString) errorS="";
+     else {
+        std::string first,second,lca;
+        //while(temp!=""){
+        //std::cout<<temp<<" "<<temp.length()<<std::endl;
+        temp=temp.substr(1,temp.length()-2);
+        //std::cout<<temp<<" "<<temp.length()<<std::endl;
+        argString=argString.substr(1,(argString.length()-2));
+        for(int i=0;i<=b;i++){
+          a = std::count(temp.begin(),temp.end(),',');
+          if (a==0){ 
+              first=temp;
+              second=argString;
+              lca=leastCommonAnc(first,second); 
+              temp="";
+              } 
+          else {
+              first=temp.substr(0,temp.find(","));
+              second=argString.substr(0,argString.find(","));;
+              lca=leastCommonAnc(first,second); 
+              temp=temp.substr(temp.find(",")+1, temp.length());
+              argString=argString.substr(argString.find(",")+1,argString.length());
+          }
+          //std::cout<<first<<"  "<<second<<"  "<<lca<<" "<<linenum<<std::endl;
+          if(lca!=first&&lca==second) {
+             errorS=name+" "+std::string(n->name)+" is violating contravariance rule because the argument is not a subtype of " +first;
+             error(errorS, linenum);
+             errorS="";
+          }
+          else if(lca!=first){
+             errorS=name+" "+std::string(n->name)+" can not take "+ second +" argument it requires argument of type or subtype of " +first;
+             error(errorS, linenum);
+             errorS="";
+ 
+          }
+       }
+     } 
+     if(errorS!="")error(errorS, linenum);
+     //std::cout<<temp<<"  to be matched"<<a<<" "<<b<<"  "<<argString<<std::endl;
+  }  
     // ARTLESS: ADD ERROR MESSAGE
     // error("Argument types do not match function or method", linenum);
-  }
   return;
 }
 
@@ -355,10 +468,25 @@ void checkRExpr(rExprNode *n, std::vector<char const*> *classNames,  int act)
        if (newSym.name!="") n->sTable->update(newSym,newSym.type);
        else {
           //std::cout<<n->name<<std::endl;
-          std::string total = "Method: \""+std::string(n->str)+"\" does not exist";
+          std::string total = "Method: \""+std::string(n->name)+"\" does not exist";
           error(total.c_str(),n->linenum);      
        }
     }
+     if(strcmp(n->str,"const")==0) {
+       symbol a,b,newSym;
+       a.name=n->name;
+       b.name="";
+       for (auto &c : root->classes.list) {
+          b=c.sTable->lookup(a);
+          if (b.name!="")  newSym=b;
+       } 
+       if (newSym.name=="") {
+          //std::cout<<n->name<<std::endl;
+          std::string total = "Constructor: \""+std::string(n->name)+"\" does not exist";
+          error(total.c_str(),n->linenum);      
+       }
+    }
+ 
   }  
   if (act==CHECKARGTYPE) {
     if(strcmp(n->str,"method")==0 || strcmp(n->str,"const")==0) {
@@ -473,7 +601,7 @@ void checkLExpr(lExprNode *n, std::vector<char const*> *classNames,  int act)
        symbol s;
        s.name=n->name;
        s=n->sTable->lookup(s);
-       if (s.type=="[NULL]"){
+       if (s.type=="[NULL]"&&s.name!="True"&&s.name!="False"){
          std::string total = "Variable: \""+std::string(n->name)+"\" is not initialized";
          error(total.c_str(), n->linenum);
        } 
@@ -671,9 +799,14 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       b=n->sTable->lookup(b); 
       a=n->sTable->lookup(a); 
       //std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
-      if (act==DECLARATION && (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0)) {
+      if (act==DECLARATION && (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0)||strcmp(n->rExpr->rExprFirst->str,"int_lit")==0 || strcmp(n->rExpr->rExprFirst->str,"string_lit")==0) {
 	//std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
+        if(b.name==""){
+          b.name=n->rExpr->rExprFirst->name; 
+          //b=n->sTable->lookup(b); 
+        }
 	newSym=n->sTable->lookup(b);
+	//n->sTable->print();
 	n->sTable->update(a,newSym.type);
       } 
      else if(strcmp(n->rExpr->str,"method")==0 && (act==CHECKLCA||act==DECLARATION||act==CHECKOBJECT)){

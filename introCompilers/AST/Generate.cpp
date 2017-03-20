@@ -6,7 +6,7 @@
 #include "Node.h"
 #include "Generate.h"
 
-int Q=1;
+int Q=0;
 int FIN=1;
 int var=0;
 std::string TYPE;
@@ -644,7 +644,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     //std::cout<<n->str<<"-------- "<<std::endl;
     if (n->rExprFirst!=NULL) {
        symbol sym;
-       std::cout<<n->rExprFirst->name<<"-------------"<<n->rExprFirst->str<<std::endl;
+       //std::cout<<n->rExprFirst->name<<"-------------"<<n->rExprFirst->str<<std::endl;
        if (strcmp(n->rExprFirst->str,"lexpr")!=0) {
           sym.name= std::string(n->rExprFirst->name); 
           sym=n->sTable->lookup(sym);
