@@ -6,7 +6,7 @@
 #include "Node.h"
 #include "Generate.h"
 
-int Q=1;
+int Q=0;
 int FIN=0;
 int var=0;
 std::string TYPE;
@@ -166,7 +166,7 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     else
       if (r1.find("->")==std::string::npos)
 	f<<"item->";
-    std::cout<<r1<<" asdfasdf "<<r2<<std::endl; 
+    //std::cout<<r1<<" asdfasdf "<<r2<<std::endl; 
     f<<r1;
     f<<"=";
     if(TYPE=="obj_Int") r2="int_literal("+r2+")";
@@ -601,7 +601,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     res.append(cleanString(r3));
 
     type="";
-    std::cout<<res<<std::endl;
+    //std::cout<<res<<std::endl;
  // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
       if(r1.find("->")!=std::string::npos) {
@@ -700,7 +700,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
   if (strcmp(n->str,"method")==0) {
     r1 = genRExprBit(n->rExprFirst,f,name,act);
     r2 = genActualArgsBit(n->actualArgs,f,name);
-    std::cout<<n->name<<"-------------"<<n->str<<"  "<<r1<< "  "<<r2<<std::endl;
+    //std::cout<<n->name<<"-------------"<<n->str<<"  "<<r1<< "  "<<r2<<std::endl;
     //std::cout<<n->str<<"-------- "<<std::endl;
     if (n->rExprFirst!=NULL) {
        symbol sym;
@@ -727,7 +727,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
           sym.name= std::string(n->rExprFirst->lExpr->name); 
           sym=n->sTable->lookup(sym);
          
-          std::cout<<sym.name<<" "<<sym.type<<std::endl; 
+          //std::cout<<sym.name<<" "<<sym.type<<std::endl; 
           if (sym.type=="String" || sym.type=="Int") {
 	    if (act!=JUSTTYPE) 
 	      //f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_Obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
