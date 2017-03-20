@@ -118,8 +118,10 @@ void genRecStatements(std::ofstream &f, statementNode *s) {
       currentNames.push_back(r2);
       if (sym.type!="")
 	f<<"  obj_"<<sym.type<<" "<<r1<<";\n";
-      else
+      else {
+	if (TYPE=="int") TYPE="Int";
 	f<<"  obj_"<<TYPE<<" "<<r1<<";\n";
+      }
     }
   }
 }
