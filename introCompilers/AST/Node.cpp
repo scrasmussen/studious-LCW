@@ -128,7 +128,14 @@ void checkArgTypes(rExprNode *n) {
       sym=r->sTable->lookup(sym);
     }
     else if(r->rExprFirst!=NULL) {
-      if(strcmp(r->rExprFirst->str,"method")==0){      
+      if(strcmp(r->str,"method")==0){      
+        //std::cout<<r->name<<std::endl;
+        sym.name=std::string(r->name);
+        sym=r->sTable->lookup(sym);
+        sym.type=getReturnType(sym.type);
+        //std::cout<<sym.type<<std::endl;
+      }
+      else if(strcmp(r->rExprFirst->str,"method")==0){      
         //std::cout<<r->rExprFirst->str<<std::endl;
         sym.name=std::string(r->rExprFirst->name);
         sym=r->sTable->lookup(sym);
@@ -141,7 +148,7 @@ void checkArgTypes(rExprNode *n) {
         //sym.type=getreturntype(sym.type);
       }
       else {      
-        //std::cout<<r->rExprFirst->str<<std::endl;
+        //std::cout<<r->str<<std::endl;
         sym.name=std::string(r->rExprFirst->lExpr->name);
         sym=r->sTable->lookup(sym);
         //sym.type=getreturntype(sym.type);
@@ -799,7 +806,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       b=n->sTable->lookup(b); 
       a=n->sTable->lookup(a); 
       //std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
-      if (act==DECLARATION && n->rExpr->rExprFirst!=NULL &&(strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0||strcmp(n->rExpr->rExprFirst->str,"int_lit")==0 || strcmp(n->rExpr->rExprFirst->str,"string_lit")==0)) {
+      if (act==DECLARATION && (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0)) {
 	//std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
         if(b.name==""){
           b.name=n->rExpr->rExprFirst->name; 
