@@ -265,9 +265,8 @@ void genSignature(classNode *n, std::ofstream &f, int act)
   genClassArgLines(f,n);
 }
 
-void genMethodArgTypes(formalArgumentsNode *n, std::ofstream &f)
+void genMethodArgTypes(formalArgumentsNode *n, std::ofstream &f, int arity)
 {
-  int arity=0;
   for (argumentNode *a : n->list) {
     if (arity==0) {
       arity=1;
@@ -465,7 +464,7 @@ void genFuncPointers(std::string ext, std::vector<std::string> defined, std::ofs
 	    
 	    f<<"  obj_"<<m.returnType<<" (*"<<methName<<") (";
 	    // Generate method arg types
-	    genMethodArgTypes(m.fArguments,f);
+	    genMethodArgTypes(m.fArguments,f,0);
 	    f<<");\n";
 	  }
 	}
@@ -485,7 +484,7 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
     // Constructor Function Pointer
   if (act!=STOP) {
     f<<"  obj_"<<name<<" (*constructor) (";
-    genMethodArgTypes(n->sig->fArguments,f);
+    genMethodArgTypes(n->sig->fArguments,f,0); 
     f<<");\n";
   }
   // genBuiltinFuncPointers(n,f,name);  // MOVING THIS IN HERE
@@ -498,14 +497,15 @@ void genClassFuncPointerStruct(classNode *n, std::ofstream &f, char const *name,
     single = className+"_method_"+methodName;
     defined.push_back(m.name);
     singleton.push_back(single);
-
     if (act!=STOP) {
       f<<"  obj_"<<m.returnType<<" (*"<<m.name<<") (";
       // Generate method arg types
-      genMethodArgTypes(m.fArguments,f);
+      f<<"obj_"<<name;
+      genMethodArgTypes(m.fArguments,f,1); //TESTART
       f<<");\n";
     }
   }
+
 
   // Builtin Classes
   if (act!=STOP) {
@@ -717,7 +717,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
           sym=n->sTable->lookup(sym);
           if (sym.type=="String" || sym.type=="Int") 
 	    if (act!=JUSTTYPE) 
-	      f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
+	      f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_Obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
 	    else  
 	      if (act!=JUSTTYPE) 
 		f<<"  "<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<std::string(n->rExprFirst->lExpr->name)<<");\n";
