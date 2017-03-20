@@ -115,7 +115,7 @@ std::string getArgTypes(std::string type) {
 
 void checkArgTypes(rExprNode *n) {
   // std::cout<<n->str<<" "<<n->name<<": ";
-  std::string argString="";
+  std::string argString="(";
   int arity=0;
   int linenum=-1;
   symbol sym;
@@ -163,11 +163,14 @@ void checkArgTypes(rExprNode *n) {
  
     //std::cout<<r->lExpr->name<<" asfas "<<sym.type<<std::endl;
     //std::string t = getArgType((std::string) r->name,(std::string)r->str,n->sTable);
-    argString=sym.type+","+argString;
+    argString+=sym.type;
+    argString+=",";
+    //argString=sym.type+","+argString;
   }
   if (arity==1)
     argString.replace(argString.end()-1,argString.end(),"");
-  argString="("+argString+")";
+  //argString="("+argString+")";
+  argString+=")";
   //std::reverse(argString.begin(),argString.end()); 
  
   //MONIL
@@ -212,6 +215,7 @@ void checkArgTypes(rExprNode *n) {
      else if (temp.length()>2 && a>0) a+=1;
      if (argString.length()>2 && b==0) b=1;
      else if (argString.length()>2 && b>0) b+=1;
+     //n->sTable->print();
      //std::cout<<temp<<"  "<<argString<<" "<<a<<" "<<b<<std::endl;
      if (b>a) errorS=name+" "+std::string(n->name)+" has given more argument than required" ;
      else if(b<a) errorS=name+" "+std::string(n->name)+" has given less argument than required"; 

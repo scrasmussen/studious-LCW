@@ -38,7 +38,7 @@ a=b.Foo(c,a);     // this is wrong: more number of argument
 
 e=12; 
 a=b.Foo(e);       // wrong type of argument, cant accept Int
-c=b.Foo(a);       // this is wrong: because of contravarience on a(should be sybtype of b but it's a supertype of b)  
+a=b.Foo(a);       // this is wrong: because of contravarience on a(should be sybtype of b but it's a supertype of b)  
 
 a=b.Bar(a,b);     //This is wrong: both arguments are wrong because of contravariance (both arguments are supertype of their should-be type)
 a=b.Bar(c,c);     // This is right: both arguments are right because of contravariance( both arguments are sub type of the actual types) 
