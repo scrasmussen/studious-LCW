@@ -573,7 +573,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"int_lit:"<<res<<std::endl;
-    TYPE="Int";
+    TYPE="int";
     return res;
   }
 
