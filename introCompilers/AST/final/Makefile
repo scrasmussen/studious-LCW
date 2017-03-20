@@ -42,4 +42,5 @@ comp:
 	gcc output.c Builtins.o
 
 clean:
-	rm -f *~ quackCompiler *.yy.* *.tab.* *.dot *.o *.c quack.output output.c $(FILES)
+	rm -f *~ quackCompiler *.yy.* *.tab.* *.dot *.o *.c quack.output output.c $(FILES) \
+	robot schroedinger Sqr22 a.out
