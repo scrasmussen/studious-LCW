@@ -799,7 +799,7 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
       b=n->sTable->lookup(b); 
       a=n->sTable->lookup(a); 
       //std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
-      if (act==DECLARATION && (strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0)||strcmp(n->rExpr->rExprFirst->str,"int_lit")==0 || strcmp(n->rExpr->rExprFirst->str,"string_lit")==0) {
+      if (act==DECLARATION && n->rExpr->rExprFirst!=NULL &&(strcmp(n->rExpr->str,"const")==0|| strcmp(n->rExpr->str,"int_lit")==0 || strcmp(n->rExpr->str,"string_lit")==0||strcmp(n->rExpr->rExprFirst->str,"int_lit")==0 || strcmp(n->rExpr->rExprFirst->str,"string_lit")==0)) {
 	//std::cout<<std::endl<<"-----------"<<a.name<<" "<<b.name<<std::endl;
         if(b.name==""){
           b.name=n->rExpr->rExprFirst->name; 
@@ -840,6 +840,20 @@ void checkStatement(statementNode* n, std::vector<char const*> *classNames,  int
              }
           }
       }
+     else if (act==DECLARATION&&(strcmp(n->rExpr->str,"PLUS")==0 || strcmp(n->rExpr->str,"MINUS")==0|| strcmp(n->rExpr->str,"TIMES")==0 ||strcmp(n->rExpr->str,"DIVIDE")==0)){
+        if (strcmp(n->rExpr->rExprFirst->str,"int_lit")!=0 &&  strcmp(n->rExpr->rExprFirst->str,"string_lit")!=0) {
+        b.name=n->rExpr->rExprFirst->lExpr->name; 
+	newSym=n->sTable->lookup(b);
+	//n->sTable->print();
+	n->sTable->update(a,newSym.type);
+        }
+        else{
+         b.name=n->rExpr->rExprFirst->name; 
+	 newSym=n->sTable->lookup(b);
+	 //n->sTable->print();
+	 n->sTable->update(a,newSym.type);
+        }
+     } 
     }
   }
   }
@@ -1396,4 +1410,5 @@ void traverse(int act) {
   if (act==CHECKUNDEFINEDV) 
     checkProgram(root, &emptyClassNames, CHECKUNDEFINEDV);
 }
+
 

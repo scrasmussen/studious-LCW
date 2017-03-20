@@ -1,0 +1,28 @@
+/**
+ * It demonstrates three things:  1. taking intersection of all scopes and taking the least common ancestor.
+ *                              2. taking the least common ancestor of all return types
+ *                              3. finding uninitialized variables
+ */
+
+class Waterfowl() {
+
+  def not_duck_typing(x: Int): Int {
+
+     if x < 7 {
+        a = 42;          // a: Int
+        b = 13;          // b: Int
+     } 
+     else {
+        a = "forty-two"; // a: String
+        b = "thirteen";  // b: String
+        a = z;           // ERROR: uninitialized variable
+     }
+     // a,b:  Obj (least common ancestor of Int and String)
+     if a < b {   // ERROR:  cannot compare Obj < Obj 
+        return a;  //ERROR:  return type a and 2 will be obj but method wants an int as return
+     } else {
+        return 2; 
+     } 
+  }
+}
+

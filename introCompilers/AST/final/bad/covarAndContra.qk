@@ -1,0 +1,46 @@
+/*************************************************************************************************************************************/
+/* This program demonstrate 4 features:                                                                                                */
+/*    1. Covariance check: overridden method's return type should be covariant.                                                        */
+/*    2. Contravariance check: overridden method's argument shoudl be contravariant                                                    */
+/*    3. Undefined Method: in the last line undefined method BAR is called.                                                            */
+/*    4. Number of Arguments in Constructor/Method check: program will check the number of arguments of consractor call and method call.*/
+/*    5. Type check of Arguments: for both consructor/method call, types of arguments are checked.                                      */
+/****************************************************************************************************************************************/
+
+class A (){
+}
+
+class B () extends A{
+
+  def Foo(b:B):B {
+     return b; 
+  }
+  def Bar(b:B,c:C):B {
+     return b; 
+  }
+}
+
+class C () extends B{
+  def Foo(a:A):A {
+     return a;  //covariance violation
+  }
+  def Bar(b:B,c:C):C {
+     return c;  //covariance ok 
+  }
+}
+
+a=A();
+b=B();
+c=C();
+
+a=b.Foo(c);       // this is right
+a=b.Foo(c,a);     // this is wrong: more number of argument 
+
+e=12; 
+a=b.Foo(e);       // wrong type of argument, cant accept Int
+c=b.Foo(a);       // this is wrong: because of contravarience on a(should be sybtype of b but it's a supertype of b)  
+
+a=b.Bar(a,b);     //This is wrong: both arguments are wrong because of contravariance (both arguments are supertype of their should-be type)
+a=b.Bar(c,c);     // This is right: both arguments are right because of contravariance( both arguments are sub type of the actual types) 
+
+a=b.BAR(c,c);     // This is wrong: wrong method name  */
