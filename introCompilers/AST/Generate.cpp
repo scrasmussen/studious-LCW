@@ -6,7 +6,7 @@
 #include "Node.h"
 #include "Generate.h"
 
-int Q=0;
+int Q=1;
 int FIN=0;
 int var=0;
 std::string TYPE;
@@ -166,9 +166,10 @@ std::string genStatement(statementNode *n, std::ofstream &f, int act)
     else
       if (r1.find("->")==std::string::npos)
 	f<<"item->";
-    
+    std::cout<<r1<<" asdfasdf "<<r2<<std::endl; 
     f<<r1;
     f<<"=";
+    if(TYPE=="obj_Int") r2="int_literal("+r2+")";
     f<<r2;
     f<<";\n";
     return res;
@@ -545,14 +546,17 @@ std::string genLExprBit(lExprNode *n, std::ofstream &f, char const *name, std::s
 
 std::string genActualArgsBit(actualArgsNode *n,std::ofstream &f,char const *name)
 {
-  std::string s="";
+  std::string s="",p="",m="";
   int arity=0;
   for (rExprNode *e : n->list) {
     if (arity==0)
       arity=1;
     else
-      s.append(",");
-    s.append(genRExprBit(e,f,name,REG));
+       m=",";
+      //s.append(",");
+    p=genRExprBit(e,f,name,REG);
+    s=p+m+s;
+    //s.append(genRExprBit(e,f,name,REG));
   }
   return s;
 }
@@ -567,7 +571,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"string_lit:"<<res<<std::endl;
-    TYPE="String";
+    TYPE="obj_String";
     return res;
   }
 
@@ -575,7 +579,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     found=1;
     res.append(n->name);
     if (Q) std::cout<<"int_lit:"<<res<<std::endl;
-    TYPE="int";
+    TYPE="obj_Int";
     return res;
   }
 
@@ -597,6 +601,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     res.append(cleanString(r3));
 
     type="";
+    std::cout<<res<<std::endl;
  // ===MONIL===
     if(std::find(tmpNames.begin(), tmpNames.end(), res) == tmpNames.end()) {
       if(r1.find("->")!=std::string::npos) {
@@ -607,6 +612,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
         sym=n->sTable->lookup(sym);
         f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";\n";
         type=sym.type;
+        TYPE="   obj_"+sym.type;
       }
       else {
         symbol sym;
@@ -618,15 +624,21 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 	  symbol r;
 	  r.name=r1;
 	  r=n->sTable->lookup(r);
-	  if (r1==cleanString(r1))
+	  if (r1==cleanString(r1)) {
 	    f<<std::endl<<"  obj_"<<r.type<<" "<<r1<<";\n";
+            TYPE="   obj_"+sym.type;
+          }
 	  r.name=r3;
 	  r=n->sTable->lookup(r);
-	  if (r3==cleanString(r3))
+	  if (r3==cleanString(r3)) {
 	    f<<std::endl<<"  obj_"<<r.type<<" "<<r3<<";\n";
+            TYPE="   obj_"+sym.type;
+          }
 	}
-	else
+	else {
 	  f<<std::endl<<"  obj_"<<sym.type<<" "<<res<<";\n";
+          TYPE="   obj_"+sym.type;
+        }
         type=sym.type;
 
       }
@@ -635,7 +647,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
     }
 
     if (act!=JUSTTYPE)
-      f<<std::endl<<"  "<<res<<" = "<<res<<"->clazz->";
+      f<<std::endl<<"  "<<res<<" = "<<r1<<"->clazz->";
     // ===MONIL===
 
  
@@ -688,7 +700,7 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
   if (strcmp(n->str,"method")==0) {
     r1 = genRExprBit(n->rExprFirst,f,name,act);
     r2 = genActualArgsBit(n->actualArgs,f,name);
-    //std::cout<<n->name<<"-------------"<<n->str<<std::endl;
+    std::cout<<n->name<<"-------------"<<n->str<<"  "<<r1<< "  "<<r2<<std::endl;
     //std::cout<<n->str<<"-------- "<<std::endl;
     if (n->rExprFirst!=NULL) {
        symbol sym;
@@ -712,21 +724,25 @@ std::string genRExprBit(rExprNode *n, std::ofstream &f, char const *name, int ac
 		f<<"  var"<<(var-1)<<"->clazz->"<<n->name<<"("<<r2<<");\n";
        }
        else {
-          
           sym.name= std::string(n->rExprFirst->lExpr->name); 
           sym=n->sTable->lookup(sym);
-          if (sym.type=="String" || sym.type=="Int") 
+         
+          std::cout<<sym.name<<" "<<sym.type<<std::endl; 
+          if (sym.type=="String" || sym.type=="Int") {
 	    if (act!=JUSTTYPE) 
-	      f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_Obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
+	      //f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_Obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
+	      f<<"  "<<r1<<"->clazz->"<<n->name<<"("<<"(obj_Obj) "<<r1<<");\n";
 	    else  
 	      if (act!=JUSTTYPE) 
 		f<<"  "<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<std::string(n->rExprFirst->lExpr->name)<<");\n";
+         }
+         else {
+
+	      f<<"  "<<r1<<"->clazz->"<<n->name<<"("<<"(obj_"+sym.type+") "<<r1<<");\n";
+         }
        }
     }
     else if (n->rExprFirst->lExpr->name!=NULL) {
-      //else if (n->rExprFirst->lExpr->name!=NULL&&strcmp(n->rExprFirst->lExpr->rExpr->lExpr->name,"this")==0) {
-      //std::cout<<"asdfasdf"<< std::string(n->rExprFirst->lExpr->name)<<std::endl;
-      //if(strcmp(n->name,"PRINT")==0)
       //f<<"  item"<<"->"<<std::string(n->rExprFirst->lExpr->name)<<"->clazz->"<<n->name<<"("<<"(obj_obj) item->"<<std::string(n->rExprFirst->lExpr->name)<<");\n";
     }
     resname.append(n->name);

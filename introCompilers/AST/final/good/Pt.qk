@@ -1,0 +1,29 @@
+class Pt(x: Int, y: Int) {
+    this.x = x;
+    this.y = y; 
+    def PRINT( ):Pt {
+       "\n".PRINT(); 
+       "(".PRINT(); 
+       this.x.PRINT(); 
+       ", ".PRINT();
+       this.y.PRINT(); 
+       ")".PRINT(); 
+       "\n".PRINT(); 
+     }
+    def PLUS(other: Pt):Pt {
+         return Pt(this.x+other.x, this.y+other.y); 
+     } 
+  }
+
+     x=11;
+     y=23;
+     z=x+y;
+     z.PRINT();
+     pt1 = Pt(x,y); 
+     pt1.PRINT(); 
+     pt2 = Pt(y,x); 
+     pt2.PRINT();
+     pt3 = Pt(y,x); 
+     pt3 = pt1 + pt2; 
+     pt3.PRINT(); 
+
