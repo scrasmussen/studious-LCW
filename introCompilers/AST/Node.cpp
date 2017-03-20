@@ -176,12 +176,16 @@ void checkArgTypes(rExprNode *n) {
   //MONIL
   // get line number
   linenum=n->linenum;
+  int b = std::count(argString.begin(),argString.end(),',');
+  if (argString.length()>2 && b==0) b=1;
+  else if (argString.length()>2 && b>0) b+=1;
   //std::cout<<argString<<" "<<linenum<<std::endl;
   std::string name; 
   if(std::string(n->str)=="method") name="Method";
   else name="Constructor";
 
-  if(n->rExprFirst!=NULL)  {
+  if(n->rExprFirst!=NULL&& n->rExprFirst->lExpr!=NULL)  {
+  //std::cout<<n->rExprFirst->str<<std::endl;
   sym.name=std::string(n->rExprFirst->lExpr->name);
   sym=n->sTable->lookup(sym); 
   for (auto &c : root->classes.list) {
@@ -210,7 +214,7 @@ void checkArgTypes(rExprNode *n) {
   if(sym.type.find("->")!=std::string::npos) {
      std::string temp=sym.type.substr(0,sym.type.find("->"));
      int a = std::count(temp.begin(),temp.end(),',');
-     int b = std::count(argString.begin(),argString.end(),',');
+     b = std::count(argString.begin(),argString.end(),',');
      if (temp.length()>2 && a==0) a=1;
      else if (temp.length()>2 && a>0) a+=1;
      if (argString.length()>2 && b==0) b=1;
