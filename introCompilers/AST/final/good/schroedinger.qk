@@ -1,13 +1,12 @@
 /*
 *  File demonstrates that the if, elif, and else statements work
-*
 */
 
 class Schroedinger(box: Int) {
     if (box > 0) {
        this.living = 1;
     }
-    elif (box > 0) {
+    elif (box < 0) {
        this.is = 71;
     }   
     else {
