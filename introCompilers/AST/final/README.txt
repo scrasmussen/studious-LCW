@@ -32,10 +32,10 @@ that internally calls "quackCompiler" on [test.qk], compiles the generated [test
 the resulting [test] binary. If the quackCompiler finds any errors then no C code will be
 generated.
 
-The lexer, parser, and type checker have all been fully implemented. Generated code compiles
-correctly but seg faults when calling a method. This is a C code bug, not a code generation problem
-and gdb gave no insight so we decided to skip it. Code generation has not been as widely tested as the
-lexer, parser, and type checker so corner cases undoubtedly exist. 
+The lexer, parser, and type checker have all been fully implemented. We have been able to
+successfully define the Quack methods in C and call them. Our good code presents this
+using PRINT statements. Inheratence is also working and is demonstrated for the variables.
+We have implemented if, elif, else and while loops. 
 
 
 ===========
