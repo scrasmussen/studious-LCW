@@ -35,7 +35,9 @@ generated.
 The lexer, parser, and type checker have all been fully implemented. We have been able to
 successfully define the Quack methods in C and call them. Our good code presents this
 using PRINT statements. Inheratence is also working and is demonstrated for the variables.
-We have implemented if, elif, else and while loops. 
+We have implemented if, elif, else and while loops. We have completed most but not all of the 
+implementations of the basic methods (LESS,MORE,...) in the base classes. There are no doubt
+corner cases where our C generated code would break that we haven't tested for.
 
 
 ===========
