@@ -1,9 +1,10 @@
 #!/bin/bash
 CC=gcc
-CFLAGS=-w
+CFLAGS="-w -I/home/users/srasmus2/studious-LCW/introCompilers/AST/final"
+QUACKC=/home/users/srasmus2/studious-LCW/introCompilers/AST/final/quackCompiler
 
 # If everything compiled correctly generate c code, else stop
-if quackCompiler $1; then
+if ${QUACKC} $1; then
     :
 else
     :
