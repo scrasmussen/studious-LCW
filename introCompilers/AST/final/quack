@@ -2,6 +2,7 @@
 CC=gcc
 CFLAGS="-w -I/home/users/srasmus2/studious-LCW/introCompilers/AST/final"
 QUACKC=/home/users/srasmus2/studious-LCW/introCompilers/AST/final/quackCompiler
+BUILTINO=/home/users/srasmus2/studious-LCW/introCompilers/AST/final/Builtins.o
 
 # If everything compiled correctly generate c code, else stop
 if ${QUACKC} $1; then
@@ -13,7 +14,7 @@ fi
 
 FILENAME=$(basename "$1")
 FILENAME="${FILENAME%.*}"
-echo ${CC} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
-${CC} Builtins.o ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
+echo ${CC} ${BUILTINO} ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
+${CC} ${BUILTINO} ${FILENAME}.c ${CFLAGS} -o ${FILENAME}
 echo ./${FILENAME}
 ./${FILENAME}
